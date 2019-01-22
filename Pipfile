@@ -25,8 +25,10 @@ jsonfield = "*"
 jsonpickle = "*"
 tzlocal = "*"
 django-webpack-loader = "*"
+rest-framework = "*"
+djangorestframework = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.7"
+python_version = "3.6.7"
