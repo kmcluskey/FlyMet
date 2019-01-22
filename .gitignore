@@ -110,6 +110,5 @@ db.sqlite3
 .idea
 node_modules
 static/bundles
-*.json
 db.sqlite3.temp
 tissues_life_stages_no_whole.xlsx
