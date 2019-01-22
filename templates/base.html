@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+{% load static %}
+{% load render_bundle from webpack_loader %}
+<html lang="en">
+<head>
+
+    <!-- The following 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>FlyMet{% block title %}{% endblock %}</title>
+
+    <!-- Any other additional things you want to include .. -->
+    {% render_bundle 'base' 'css' %}
+
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Sue+Ellen+Francisco" rel="stylesheet">
+
+
+    {% block head_block %}
+    {% endblock %}
+
+</head>
+<body role="document">
+
+  <!-- Start of Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar1" aria-controls="navbar1" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand img_responsive" href="index.html">
+      <img src="{% static 'images/logojoy_logo3.png'%}" alt="FlyMet_Logo">
+    </a>
+    <div class="collapse navbar-collapse justify-content-between" id="navbar1">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="about.html">About FlyMet</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="metabolite_list.html">Metabolite Explorer</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="pway_ex_tissues.html">Pathway Explorer</a>
+        </li>
+      </ul>
+      <form class="form-inline my-2 my-lg-0">
+        <input class="form-control mr-sm-2" type="text" placeholder="Search">
+        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+      </form>
+    </div>
+  </nav>
+
+{% block body_block %}
+{% endblock %}
+
+<footer class="page-footer footer">
+  <!--Image-->
+  <span>
+    <a href="index.html">
+      <img src="{% static 'images/FlyMet_logo_round.png'%}" class="img-fluid-logos" alt="Logo">
+    </a>
+  </span>
+  <span class = "footer_text align-middle">
+    ...bringing metabolomics to <i> Drosophila </i>
+  </span>
+</footer>
+
+{% render_bundle 'base' 'js' %}
+{% block js_block %}
+{% endblock %}
+
+</body>
+</html>

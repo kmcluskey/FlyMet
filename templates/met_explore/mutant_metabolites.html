@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Metabolites{% endblock %}
+
+{% block head_block %}
+    {% render_bundle 'metabolite_list' 'css' %}
+{% endblock %}
+
+{% block body_block %}
+
+<!-- div for main body-->
+<div class="container-fluid p-4">
+
+  <div>
+    <p class="mt-2 lead">
+      Investigate the metabolites found in <i> Drosophila </i>:
+    </p>
+  </div>
+
+  <!--Tabs to go to new pages-->
+  <div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href={% url 'tissue_metabolites' %}>Tissues</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={% url "life_stage_metabolites"%}>Life Stages</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href={% url "mutant_metabolites"%}>Mutants</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block js_block %}
+    {% render_bundle 'metabolite_list' 'js' %}
+{% endblock %}

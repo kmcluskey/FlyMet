@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Metabolites{% endblock %}
+
+{% block head_block %}
+    {% render_bundle 'metabolite_list' 'css' %}
+{% endblock %}
+
+{% block body_block %}
+
+
+<!-- div for main body-->
+<div class="container-fluid p-4">
+
+  <div>
+    <p class="mt-2 lead">
+      Investigate the metabolites found in <i> Drosophila </i>:
+    </p>
+  </div>
+
+  <!--Tabs to go to new pages-->
+  <div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" href={% url 'tissue_metabolites' %}>Tissues</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={% url "life_stage_metabolites"%}>Life Stages</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href={% url "mutant_metabolites"%}>Mutants</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!--Search info and box-->
+
+  <div>
+    <p class="mt-4 mb-1" >
+      Search for a <b>metabolite</b> and find out the abundance in <i> Drosophila </i> tissues:
+    </p>
+  </div>
+  <form class="form-inline my-2 my-lg-0">
+    <input class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
+    <button class="btn btn-outline-primary my-2 my-sm-0"
+    type="submit">Search</button>
+  </form>
+
+
+  <!--Div for a single table-->
+  <div class="card mt-4 p-2 pb-0 border border-table rounded">
+    <div class="card-header pb-0 table-card-header">
+      L-Histidine levels in <i> Drosophila </i> tissues
+    </div>
+    <div class="container-fluid pb-0" >
+      <div class="row pb-0">
+        <div class="myspan75 p-2 mt-2">
+
+          <table id="example" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+            <thead class="thead-light">
+              <tr>
+                <th class="data">Tissue-Type</th>
+                <th class="AM_met_WT_ratio data">Adult Male FC</th>
+                <th class="AF_met_WT_ratio data">Adult Female FC</th>
+                <th class="L_met_WT_ratio data">Larvae FC</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Head</td>
+                <td>1.40</td>
+                <td>1.80</td>
+                <td>1.24</td>
+              </tr>
+              <tr>
+                <td>Eye</td>
+                <td>0.98</td>
+                <td>1.07</td>
+                <td>0.63</td>
+              </tr>
+              <tr>
+                <td>Brain / CNS </td>
+                <td>1.20</td>
+                <td>1.45</td>
+                <td>0.66</td>
+              </tr>
+              <tr>
+                <td>Thoracicoabdominal ganglion</td>
+                <td>2.30</td>
+                <td>1.86</td>
+                <td>2.2</td>
+              </tr>
+              <tr>
+                <td>Crop</td>
+                <td>1.76</td>
+                <td>2.34</td>
+                <td>0.33</td>
+              </tr>
+              <tr>
+                <td>Midgut</td>
+                <td>0.75</td>
+                <td>1.85</td>
+                <td>1.61</td>
+              </tr>
+              <tr>
+                <td>Hindgut</td>
+                <td>1.97</td>
+                <td>0.65</td>
+                <td>0.59</td>
+              </tr>
+              <tr>
+                <td>Malpighian Tubules</td>
+                <td>1.34</td>
+                <td>2.34</td>
+                <td>0.55</td>
+              </tr>
+              <tr>
+                <td>Fat Body</td>
+                <td>0.75</td>
+                <td>1.21</td>
+                <td>0.39</td>
+              </tr>
+              <tr>
+                <td>Salivary gland</td>
+                <td>1.87</td>
+                <td>0.85</td>
+                <td>0.23</td>
+              </tr>
+              <tr>
+                <td>Heart</td>
+                <td>2.34</td>
+                <td>1.54</td>
+                <td>0.30</td>
+              </tr>
+              <tr>
+                <td>Trachea</td>
+                <td>1.64</td>
+                <td>2.21</td>
+                <td>0.22</td>
+              </tr>
+              <tr>
+                <td>Ovary</td>
+                <td>0.00</td>
+                <td>2.34</td>
+                <td>0.36</td>
+              </tr>
+              <tr>
+                <td>Virgin Spermatheca</td>
+                <td>1.80</td>
+                <td>0.00</td>
+                <td>0.43</td>
+              </tr>
+              <tr>
+                <td>Mated Spermatheca</td>
+                <td>2.76</td>
+                <td>0.00</td>
+                <td>0.19</td>
+              </tr>
+              <tr>
+                <td>Testis</td>
+                <td>2.36</td>
+                <td>0.00</td>
+                <td>0.66</td>
+              </tr>
+              <tr>
+                <td>Accessory glands</td>
+                <td>1.34</td>
+                <td>1.75</td>
+                <td>0.64</td>
+              </tr>
+              <tr>
+                <td>Carcus</td>
+                <td>0.21</td>
+                <td>1.24</td>
+                <td>0.59</td>
+              </tr>
+              <tr>
+                <td>Rectal pad</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!--Bottom infopanel Div-->
+          <fieldset class="fieldset-details">
+            <legend>Pathways containing L-Histidine</legend>
+            <div class="p-2">
+              <ul>
+                <li><a href="../html/pathways_index.html">Histidine catabolism</a>
+                  <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
+                </li>
+                <li><a href="#!">Histidine, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
+                  <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
+                </li>
+
+                <li><a href="#!">Synthesis of diphthamide-EEF2</a>
+                  <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
+                </li>
+
+              </ul>
+
+            </div>
+          </fieldset>
+        </div>
+        <!-- End of main div myspan75 -->
+
+        <div class="myspan25 pl-2 pr-2 pt-2" style="height:100vh; overflow:scroll">
+          <fieldset class="fieldset-details">
+            <legend class="sidebar"><a data-toggle="modal" href="#cmpd_Modal">L-Histidine</a></legend>
+
+            <div class="container-fluid">
+              <div class="row">
+                <div class="mol_span50_L">
+
+                  <a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27570">
+                    <img class="molecule_image float-left" src="https://www.ebi.ac.uk/chebi/displayImage.do?defaultImage=true&imageIndex=0&chebiId=CHEBI:27570" alt="Logo"></a>
+                  </div>
+                  <div class = "mol_span50_R pl-2 molecule_div">
+                    <ul class="molecule_list pl-2">
+                      <li class="pb-2"><u>Formula:</u> C<sub>6</sub>H<sub>9</sub>N<sub>3</sub>O<sub>2</sub></li>
+                      <li class="pb-2"><u>Av Mass:</u> 155.15468</li>
+                      <li class="pb-2"><u>MI Mass:</u> 155.069</li>
+                    </ul>
+
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset id="click_info" class="fieldset-details">
+              <div class="p-2">
+                <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated with Histidine</p>
+              </div>
+            </fieldset>
+
+            <!-- </divs> for the peak data and graphs-->
+            <fieldset class="peak_details fieldset-details">
+              <legend class="sidebar">Peak 1</legend>
+              <div class="p-2">
+                <span id="I" class="badge badge-pill badge-success">I</span>
+                <span id ="F" class="badge badge-pill badge-primary">F</span>
+                <span id="A" class="badge badge-pill badge-warning">A15</span>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-4 peak_data"><u>Ion:</u> M+H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 156.0769</div>
+                  <div class="col-sm-4 peak_data"><u>RT:</u> 854.86 </div>
+                </div>
+              </div>
+              <div class="p-2">
+                <p id="tissue_type1"></p>
+              </div>
+              <div id="highchart" class="p-4">
+              </div>
+            </fieldset>
+
+            <fieldset class="peak_details fieldset-details">
+              <legend class="sidebar">Peak 2</legend>
+              <div class="p-2">
+                <span id="I2" class="badge badge-pill badge-success">I</span>
+                <span id ="F1" class="badge badge-pill badge-primary">F</span>
+                <span id="A1" class="badge badge-pill badge-warning">A4</span>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-4 peak_data"><u>Ion:</u> M-H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 154.0623</div>
+                  <div class="col-sm-4 peak_data"><u>RT:</u> 704.74 </div>
+                </div>
+              </div>
+              <div class="p-2">
+                <p id="tissue_type2"></p>
+              </div>
+              <div id="highchart1" class="p-4">
+              </div>
+            </fieldset>
+
+            <fieldset class="peak_details fieldset-details ">
+              <legend class="sidebar">Peak 3</legend>
+              <div class="p-2">
+                <span id ="F0" class="badge badge-pill badge-danger">F</span>
+                <span id="A2" class="badge badge-pill badge-warning">A47</span>
+                <hr>
+                <div class="row">
+                  <div class="col-sm-4 peak_data"><u>Ion:</u> M-H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 154.0623</div>
+                  <div class="col-sm-4 peak_data"><u>RT:</u> 1055.4 </div>
+                </div>
+              </div>
+              <div class="p-2">
+                <p id="tissue_type3"></p>
+              </div>
+              <div id="highchart2" class="p-4">
+              </div>
+            </fieldset>
+
+          </div>
+          <!-- End of side bar divs -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<ul>
+{% for peak in object_list %}
+    <li>{{peak}}</li>
+
+{% empty %}
+    <li>No peaks yet.</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
+{% block js_block %}
+    {% render_bundle 'metabolite_list' 'js' %}
+{% endblock %}

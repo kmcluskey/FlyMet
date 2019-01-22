@@ -1,0 +1,32 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+django-configurations = "*"
+dj-database-url = "*"
+django-debug-toolbar = "*"
+django-extensions = "*"
+"django-select2" = "*"
+gunicorn = "*"
+whitenoise = "*"
+ipython = "*"
+numpy = "*"
+scipy = "*"
+pandas = "*"
+seaborn = "*"
+scikit-learn = "*"
+matplotlib = "*"
+statsmodels = "*"
+jupyter = "*"
+jsonfield = "*"
+jsonpickle = "*"
+tzlocal = "*"
+django-webpack-loader = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"

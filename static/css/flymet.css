@@ -1,0 +1,394 @@
+.btn-outline-primary {
+  color: #5D2627;
+  background-color: transparent;
+  background-image: none;
+  border-color: #5D2627; }
+
+.btn-outline-primary:hover {
+    color: #fff;
+    background-color: #5D2627;
+    border-color: #5D2627; }
+
+.btn-outline-primary:focus, .btn-outline-primary.focus {
+      -webkit-box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5);
+      box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5); }
+
+.btn-outline-primary.disabled, .btn-outline-primary:disabled {
+        color: #5D2627;
+        background-color: transparent; }
+
+.btn-outline-primary:not(:disabled):not(.disabled):active, .btn-outline-primary:not(:disabled):not(.disabled).active,
+        .show > .btn-outline-primary.dropdown-toggle {
+          color: #fff;
+          background-color: #5D2627;
+          border-color: #5D2627; }
+
+.btn-outline-primary:not(:disabled):not(.disabled):active:focus, .btn-outline-primary:not(:disabled):not(.disabled).active:focus,
+          .show > .btn-outline-primary.dropdown-toggle:focus {
+            -webkit-box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5);
+            box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5); }
+
+.btn-secondary {
+    color: #5D2627;
+    background-color: rgba(0, 0, 0, 0.03);
+    border-color: #d6dce6;
+  }
+
+
+a {
+  color: #5D2627;
+  }
+body
+{
+  font-family: "Comfortaa", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+  .footer {
+      /* position: absolute; */
+      left: 0;
+      bottom: 0;
+      height:8%;
+      width: 100%;
+      background-color:#D6DCE6;
+      color: #5D2627;
+  }
+
+  .img-fluid-logos{
+      max-width: 100%;
+      height: 8vh;
+  }
+
+  .footer_text{
+    color: #5D2627;
+    font-family: 'Sue Ellen Francisco', sans-serif;
+    font-size: 1.7rem;
+  }
+
+  .spacer {
+    width: 100%;
+    height: 12vh;
+    z-index: -1;
+  }
+
+  .lead {
+    font-size: 1rem;
+    font-weight: 300; }
+
+  .explorer_logos {
+    height: 7vh;
+    display: inline-block
+  }
+
+  .flex-container {
+  display: flex;
+  }
+
+  /* Column container */
+.logo_row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+/* Create two unequal columns that sits next to each other */
+/* Sidebar/left column */
+.logo_main {
+    flex: 70%;
+}
+
+/* Main column */
+.logo_side {
+    flex: 30%;
+}
+.minimise-padding {
+  padding: 0.05 0.05;
+}
+
+div.dt-buttons {
+    float: right;
+}
+
+/*Change pagination colours to match scheme*/
+
+.page-link {
+  color: #5D2627;
+   }
+
+.page-item.active .page-link {
+
+      background-color: #99abc9 ;
+      border-color: #99abc9 ; }
+
+.table-card-header {
+  color: #5D2627;
+  background-color:  #D6DCE6;
+
+}
+
+
+card-header {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0;
+  /*background-color:*/
+  color: #5D2627;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.125); }
+  .card-header:first-child {
+    border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0; }
+  .card-header + .list-group .list-group-item:first-child {
+    border-top: 0; }
+
+.myspan12 {
+    width: 100%;
+    margin: 0px;
+    /*background-color: #f5f5f5;*/
+    /*z-index: 4;*/
+}
+
+.myspan75 {
+    overflow-y: scroll;
+    width: 75%;
+    float: left;
+    margin-left:0px;
+    height: 100%;
+    /* z-index: 1; */
+}
+
+.myspan25 {
+    overflow-y: scroll;
+    float: right;
+    width: 25%;
+    background-color: #f5f5f5;
+    z-index: 1;
+    height: 100%;
+}
+
+.myspan50_L {
+    overflow-y: scroll;
+    float: right;
+    width: 50%;
+    /* background-color: #f5f5f5; */
+    z-index: 1;
+    height: 100%;
+}
+
+.myspan60{
+    /* overflow: scroll; */
+    width: 60%;
+    float: left;
+    margin-left:0px;
+}
+.myspan50{
+    /* overflow: scroll; */
+    width: 50%;
+    float: left;
+    margin-left:0px;
+}
+.mol_span50_L{
+    /* overflow: scroll; */
+    width: 50%;
+    float: left;
+    margin-left:0px;
+}
+
+.myspan50_R {
+    overflow-y: scroll;
+    float: right;
+    width: 50%;
+    background-color: #f5f5f5;
+    z-index: 1;
+    height: 100%;
+}
+
+.mol_span50_R {
+    float: right;
+    width: 50%;
+    margin-left:0px;
+    font-size: 12;
+    /*min-width: 175px;*/
+    z-index: 1
+}
+
+.myspan40 {
+    overflow: scroll;
+    float: right;
+    width: 40%;
+    margin-left:0px;
+    /*min-width: 175px;*/
+    background-color: #f5f5f5;
+    z-index: 1
+}
+
+
+.right-panel {
+    display:none;
+    position: absolute;
+    top: 175px;
+    bottom: 0px;
+    right: 0px;
+    /*height:100%;*/
+    /*box-shadow: 2px 0px 9px -2px rgba(0,0,0,.15);*/
+    margin-right: -55%;
+    z-index: 8;
+    overflow: auto;
+    float: right;
+    width: 50%;
+    background-color: #f5f5f5;
+}
+
+/*selected table row colour*/
+
+table.dataTable tbody > tr.selected,
+table.dataTable tbody > tr > .selected {
+  background-color: #99abc9 ;
+  color:  #5D2627;
+  font-weight: bold;
+  width:100% !important;
+}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+  background-color:#99abc9 ;
+}
+
+table.dataTable.fixedHeader-floating,
+table.dataTable.fixedHeader-locked {
+  background-color: white;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  z-index:99;
+}
+.full_width {
+  width:100% !important;
+}
+
+.dataTables_scrollBody {
+    border-bottom: 1px solid #DEE2E6;
+}
+
+th {
+    font-weight: bold;
+    background-color: #5D2627;
+    color: #fff;
+}
+
+
+.fieldset-details {
+  border: 1px solid #5D2627;
+    padding: 0 0 10px 0;
+    border-radius: 5px;
+    box-shadow: 2px 2px 2px #5D2627;
+    margin-bottom: 25px;
+}
+
+
+legend {
+    /* color: #2F9EC2; */
+    font-size: 20px;
+    margin-left: 15px;
+    margin-bottom: 5px;
+    padding: 0 10px 0 3px;
+    text-shadow: 0 1px 1px #ddd;
+    width: auto;
+}
+
+legend.sidebar {
+  font-size: 16px;
+}
+
+table.dataTable td.sorting_1 {
+    font-weight: bolder;
+}
+
+table.dataTable .dt-center {
+  text-align: center;
+}
+
+.pw_items {
+font-weight:lighter;
+padding-top: 2px
+
+}
+
+.molecule_image {
+  mix-blend-mode: multiply;
+  max-width: 100%;
+  max-height: 100%;
+  display: inline-block;
+}
+
+.reaction_image {
+  mix-blend-mode: multiply;
+  max-width: 100%;
+  max-height: 50%;
+  display: inline-block;
+}
+
+.molecule_list{
+font-size: 0.8vw;
+list-style:none;
+padding-left:0;
+}
+
+.molecule_div{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.peak_data{
+  font-size: 0.8vw;
+}
+
+.pb-0{
+  padding-bottom: 0 !important;
+}
+
+.container {
+    height: 100vh;
+    overflow: auto;
+}
+
+
+.highcharts-errorbar-series .highcharts-point {
+    stroke: black;
+}
+
+.highcharts-menu {
+  background: #f5f5f5;
+}
+
+.modal_list_items {
+  color:#1F4B7B;
+}
+.tab {
+       display:inline-block;
+       margin-left: 10px;
+}
+
+.table_link {
+  color:inherit;
+}
+
+.side_table {
+  font-size: 0.75rem;
+}
+
+.data a {
+   color: white;
+   text-decoration: underline;
+
+}
+
+.data a:hover {
+  color: #005db3;
+  text-decoration: underline; }
+
+.enzyme_title {
+  font-style: italic;
+}
+
+.head_back {
+  background-color: #d6dce6;
+  padding: 6px;
+  border-width: thin;
+  border-style: solid;
+  border-color: black;
+}
