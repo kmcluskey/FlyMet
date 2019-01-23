@@ -113,3 +113,4 @@ static/bundles
 db.sqlite3.temp
 tissues_life_stages_no_whole.xlsx
 assets
+notebooks
