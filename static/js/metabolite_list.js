@@ -80,7 +80,7 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
 }
 
 $(document).ready(function() {
-
-    let met_table = initialise_list_table("met_list", 2000000, 672500000, 1340000000);
+    // let met_table = initialise_list_table("met_list", 2000000, 672500000, 1340000000);
+    let met_table = initialise_list_table("met_list", min_value, mean_value, max_value);
 
 });

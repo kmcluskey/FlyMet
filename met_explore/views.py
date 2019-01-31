@@ -94,12 +94,17 @@ def met_ex_tissues(request):
     for c in column_names:
         column_headers.append(group_names[c])
 
+    # Get the max and mean values for the intensities to pass to the 'heat map'
+    df2 = met_ex_df.drop(['Metabolite'], axis=1)
 
+    max_value = df2.values.max()
+    min_value = df2.values.min()
+    mean_value = df2.values.mean()
 
 
     ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
 
-    response = {'columns': column_headers, 'data': met_ex_list}
+    response = {'columns': column_headers, 'data': met_ex_list, 'max_value':max_value, 'min_value':min_value, 'mean_value':mean_value}
 
     return render(request, 'met_explore/met_ex_tissues.html', response)
 

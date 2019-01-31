@@ -52,9 +52,9 @@
   <div>
   <table id="met_list" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
     <thead class="thead-light">
-      <tr>
+      <tr id = "columns">
         {% for column_name in columns %}
-        <th>{{column_name}}</th>
+        <th id = "col">{{column_name}}</th>
         {% endfor %}
       </tr>
     </thead>
@@ -84,6 +84,19 @@
 
   {% endblock %}
 
+
   {% block js_block %}
-      {% render_bundle 'metabolite_list' 'js' %}
+  <script type='text/javascript'>
+
+    const var1 = "YOYOUUOUOUOUOUO";
+    var min_value = {{min_value}}
+    var max_value = {{max_value}}
+    var mean_value = {{mean_value}}
+    
+
+    console.log(min_value, max_value, mean_value)
+
+    </script>
+
+  {% render_bundle 'metabolite_list' 'js' %}
   {% endblock %}
