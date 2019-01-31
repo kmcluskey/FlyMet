@@ -28,7 +28,7 @@
     <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar1" aria-controls="navbar1" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="navbar-brand img_responsive" href="">
+    <a class="navbar-brand img_responsive" href="{% url 'met_explore_index' %}">
       <img src="{% static 'images/logojoy_logo3.png'%}" alt="FlyMet_Logo">
     </a>
     <div class="collapse navbar-collapse justify-content-between" id="navbar1">
@@ -56,7 +56,7 @@
 <footer class="page-footer footer">
   <!--Image-->
   <span>
-    <a href="">
+    <a href="{% url 'met_explore_index' %}">
       <img src="{% static 'images/FlyMet_logo_round.png'%}" class="img-fluid-logos" alt="Logo">
     </a>
   </span>

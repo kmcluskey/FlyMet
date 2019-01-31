@@ -3,6 +3,10 @@ from django.http import HttpResponse
 
 from django.utils import timezone
 from django.views.generic.list import ListView
+from django.views.generic import TemplateView
+from decimal import Decimal
+from collections import OrderedDict
+
 
 from met_explore.models import Peak, SamplePeak, Sample
 
@@ -10,9 +14,13 @@ import pandas as pd
 import operator
 import collections
 
+import json as simplejson
+
+
+
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
-    return render(request, 'index.html')
+    return render(request, 'met_explore/index.html')
 
 # Create your views here.
 
@@ -51,7 +59,7 @@ def met_ex_tissues(request):
 
     peak_sids = list(int_df.index.values)
     compound_names = int_df['Metabolite'].tolist()
-    group_df.insert(0, 'metabolite', compound_names)
+    group_df.insert(0, 'Metabolite', compound_names)
 
 
     duplicate_compounds = [item for item, count in collections.Counter(compound_names).items() if count > 1]
@@ -77,7 +85,23 @@ def met_ex_tissues(request):
     # Get a DF of cmpd_name, Group_columns and average values??
     met_ex_df = group_df.loc[non_dup_ids]
 
-    return render(request, 'met_explore/met_ex_tissues.html')
+    met_ex_list = met_ex_df.values.tolist()
+    column_names = met_ex_df.columns.tolist()
+
+    group_names = get_list_view_column_names(column_names)
+
+    column_headers = []
+    for c in column_names:
+        column_headers.append(group_names[c])
+
+
+
+
+    ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
+
+    response = {'columns': column_headers, 'data': met_ex_list}
+
+    return render(request, 'met_explore/met_ex_tissues.html', response)
 
 
 # A df with all of the samples and their intensities for all of the peaks
@@ -122,12 +146,37 @@ def get_group_df(int_df):
                 int_list.append(intensity)
             average_int = sum(int_list) / len(int_list)
             group_df.loc[i, group] = average_int
+            # group_df.loc[i, group] = '%.2E' % Decimal(average_int)
 
     group_df['max_value'] = group_df.max(axis=1)
-    print ("yo")
+
     return group_df
 
 
+def get_list_view_column_names(column_names):
+    """
+    A method to return user friendly column names given the group name. This also returns a heading for the maximum value
+    This is created for the list view but could be modified for general use.
+    :param column_names:This is the names of the groups.
+    :return: Dictionary with group: user-friendly column name
+    """
+    group_name_dict = {}
+    groups = column_names
+
+    for g in groups:
+        print ("G", g)
+        if g=='max_value':
+            group_name_dict[g] = "Max" + " " + "Value"
+        elif g=='Metabolite':
+            group_name_dict[g] = g
+        else:
+            sample = Sample.objects.filter(group=g)[0]  # Get the first sample of this group.
+            tissue = sample.tissue
+            ls = sample.life_stage
+            group_name_dict[g] = tissue + " " + "(" + ls + ")"
+
+
+    return group_name_dict
 
 
 

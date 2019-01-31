@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Search Metabolites{% endblock %}
+{% block title %} Metabolite Tissue Lists{% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_search' 'css' %}
+    {% render_bundle 'metabolite_list' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -45,18 +45,42 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    Blank paragraph to say something very useful.
+    The average peak intensity levels for metabolites in different <i>Drosophila</i> tissues
     </p>
   </div>
+
+  <div>
+  <table id="met_list" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+    <thead class="thead-light">
+      <tr>
+        {% for column_name in columns %}
+        <th>{{column_name}}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for met_exp_data in data %}
+      <tr>
+            {% for m in met_exp_data %}
+            {% if forloop.first %}
+              <td>{{m}}</td>
+            {% else %}
+              <td>{{m|stringformat:".2e"}}</td>
+            {% endif %}
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
   </div>
+
+  </div>
+
   <!--end of main div-->
   <!--Spacer so that content is not hidden-->
   <div class="spacer">
   </div>
 
-
-  </body>
-  </html>
 
   {% endblock %}
 

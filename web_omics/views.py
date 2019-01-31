@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
+from django.shortcuts import render
+
 
 # from linker.models import Analysis
 
@@ -17,8 +19,13 @@ class LoginRequired(View):
     def dispatch(self, *args, **kwargs):
         return super(LoginRequired, self).dispatch(*args, **kwargs)
 
+#def index(request):
+#    return HttpResponse("Hello, world. You're at the FlyOmics index page.")
+
 def index(request):
-    return HttpResponse("Hello, world. You're at the FlyOmics index page.")
+    return HttpResponse("Hello, you have arrived at the FlyMet front page!.")
+    # return render(request, 'index.html')
+
 
 # class ExperimentListView(LoginRequired, ListView):
 
