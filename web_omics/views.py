@@ -23,8 +23,8 @@ class LoginRequired(View):
 #    return HttpResponse("Hello, world. You're at the FlyOmics index page.")
 
 def index(request):
-    return HttpResponse("Hello, you have arrived at the FlyMet front page!.")
-    # return render(request, 'index.html')
+    # return HttpResponse("Hello, you have arrived at the FlyMet front page!.")
+    return render(request, 'index.html')
 
 
 # class ExperimentListView(LoginRequired, ListView):

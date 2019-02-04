@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Pathway Explorer: Life Stages {% endblock %}
+
+{% block body_block %}
+  <!-- div for main body-->
+
+  <div class="container-fluid p-4">
+    <!-- Splitting into two columns using flex to display the logo-->
+    <div class="logo_row">
+      <div class="logo_main mt-4">
+        <p class="lead">
+          Investigate the changing <i> Drosophila </i> metabolic pathways in tissues between different life stages.
+          </p>
+        </div>
+        <div class = "logo_side">
+          <img src="{% static 'images/met_exp_logo.png'%}" class="explorer_logos" alt="Met_Ex_Logo">
+        </div>
+      </div>
+
+  <!--Tabs to go to new pages-->
+  <div class="card text-center">
+    <div class="card-header">
+
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'path_ex_tissues' %}">Tissues</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'path_ex_lifestages' %}">Life Stages</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
+
+  {% endblock %}

@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Peak Explorer {% endblock %}
+
+{% block body_block %}
+  <!-- div for main body-->
+
+  <div class="container-fluid p-4">
+    <!-- Splitting into two columns using flex to display the logo-->
+    <div class="logo_row">
+      <div class="logo_main mt-4">
+        <p class="lead">
+          Investigate all of the metabolite peaks found in <i> Drosophila </i>.
+          </p>
+        </div>
+        <div class = "logo_side">
+          <img src="{% static 'images/peak_explorer.png'%}" class="explorer_logos" alt="Peak_Ex_Logo">
+        </div>
+      </div>
+
+  <!--Tabs to go to new pages-->
+
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
+
+  {% endblock %}

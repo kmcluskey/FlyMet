@@ -1,0 +1,862 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Search Metabolites {% endblock %}
+
+{% block head_block %}
+    {% render_bundle 'metabolite_search' 'css' %}
+{% endblock %}
+
+{% block body_block %}
+
+  <!-- div for main body-->
+  <div class="container-fluid p-4">
+
+    <div>
+      <p class="mt-2 lead">
+        Choose to search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+      </p>
+    </div>
+
+    <!--Tabs to go to new pages-->
+    <div class="card text-center">
+      <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs">
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'pathway_search' %}">Pathways</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'tissue_search' %}">Tissues</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+
+    <!--Search info and box-->
+
+    <div id="temp_class">
+      <p class="mt-4 mb-1" >
+        Search for a <b>pathway</b> and find out in which <i> Drosophila </i> tissues it changes from the Whole Fly
+      </p>
+    </div>
+    <form id = "pw_form" class="form-inline my-2 my-lg-0" action="#">
+      <input class="form-control mr-sm-2" type="text" placeholder="Enzyme Search">
+      <button class="btn btn-outline-primary my-2 my-sm-0"
+      type="submit">Search</button>
+
+      <div class="form-group col-md-6">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="AF_check" value="option1">
+          <label class="form-check-label" for="AF_check">Adult Female</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="AM_check" value="option2">
+          <label class="form-check-label" for="AF_check">Adult Male</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="L_check" value="option3">
+          <label class="form-check-label" for="L_check">Larvae</label>
+        </div>
+      </div>
+    </form>
+
+
+
+    <!--Div for a single table-->
+    <div class="card mt-4 p-2 pb-0 border border-table rounded">
+      <div class="card-header pb-0 table-card-header">
+        Changes observed in the Histidine catabolism metabolites and enzymes found in <i> Drosophila </i> tissues
+      </div>
+      <div class="container-fluid pb-0" >
+        <div class="row pb-0">
+          <div class="myspan75 p-2 mt-2">
+            <!-- <div class="container-fluid" > -->
+            <!-- <div class="row"> -->
+            <div id="AFtable">
+              <table id="pw_table_AF" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+                <thead class="thead-light">
+                  <tr>
+                    <th colspan=9>Log<sub>2</sub> FC Adult female/Whole Fly:</th>
+                  </tr>
+                  <tr>
+                    <th class="data">Tissue-Type</th>
+                    <th class="data"><a href="{% url 'metabolite_search' %}">L-Histidine</a></th>
+                    <th class="data">Histamine</th>
+                    <th class="data">Carnosine</th>
+                    <th class="data">Anserine</th>
+                    <th class="data">SAM</th>
+                    <th class="data">SAH</th>
+                    <th id = "activity1" class="data enzyme_title"><a href="{% url 'metabolite_search' %}">HDC</a></th>
+                    <th id = "activity2" class="data enzyme_title">CARNMT1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Whole fly</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                    <td>ND</td>
+                    <td>0.00</td>
+                    <td>ND</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                  </tr>
+                  <tr>
+                    <td>Head*</td>
+                    <td>-4.91</td>
+                    <td>-5.30</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-6.0</td>
+                    <td>ND</td>
+                    <td>2.87</td>
+                    <td>2.70</td>
+                  </tr>
+                  <tr>
+                    <td>Eye</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Brain / CNS </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Thoracicoabdominal ganglion</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Crop</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Midgut*</td>
+                    <td>-8.19</td>
+                    <td>-5.05</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-9.54</td>
+                    <td>ND</td>
+                    <td>-4.64</td>
+                    <td>2.46</td>
+                  </tr>
+                  <tr>
+                    <td>Hindgut</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Malpighian Tubules</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Fat Body</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Salivary gland</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Heart</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Trachea</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Ovary*</td>
+                    <td>-7.55</td>
+                    <td>-25</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-7.28</td>
+                    <td>ND</td>
+                    <td>-25</td>
+                    <td>4.75</td>
+                  </tr>
+                  <tr>
+                    <td>Carcus</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Rectal pad</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>*Real Data</p>
+              <hr>
+            </div>
+            <!-- end of div for a single table -->
+
+            <!-- <div class="container-fluid mt-4"> -->
+            <!-- <div class="row"> -->
+            <div id="AMtable">
+              <table id="pw_table_AM" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+                <thead class="thead-light">
+                  <tr>
+                    <th colspan=9>Log<sub>2</sub> FC Adult Male/Whole Fly:</th>
+                  </tr>
+                  <tr>
+                    <th class="data">Tissue-Type</th>
+                    <th class="data">L-Histidine</th>
+                    <th class="data">Histamine</th>
+                    <th class="data">Carnosine</th>
+                    <th class="data">Anserine</th>
+                    <th class="data">SAM</th>
+                    <th class="data">SAH</th>
+                    <th id = "activity1" class="data enzyme_title"><a href="{% url 'metabolite_search' %}">HDC</a></th>
+                    <th id = "activity2" class="data enzyme_title">CARNMT1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Whole fly</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                    <td>ND</td>
+                    <td>0.00</td>
+                    <td>ND</td>
+                    <td>0.00</td>
+                    <td>0.00</td>
+                  </tr>
+                  <tr>
+                    <td>Head*</td>
+                    <td>-5.62</td>
+                    <td>-25</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-6.08</td>
+                    <td>ND</td>
+                    <td>3.01</td>
+                    <td>2.20</td>
+                  </tr>
+                  <tr>
+                    <td>Eye</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Brain / CNS </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Thoracicoabdominal ganglion</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Crop</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Midgut*</td>
+                    <td>-7.52</td>
+                    <td>-25</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-9.54</td>
+                    <td>ND</td>
+                    <td>-6.64</td>
+                    <td>2.5</td>
+                  </tr>
+                  <tr>
+                    <td>Hindgut</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td></td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Malpighian Tubules</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Fat Body</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Salivary gland</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Heart</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Trachea</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Virgin Spermatheca</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Mated Spermatheca</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Testis*</td>
+                    <td>-6.31</td>
+                    <td>-25</td>
+                    <td>-25</td>
+                    <td>ND</td>
+                    <td>-9.54</td>
+                    <td>ND</td>
+                    <td>-4.32</td>
+                    <td>2.07</td>
+                  </tr>
+                  <tr>
+                    <td>Accessory glands</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Carcus</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Rectal pad</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>*Real Data</p>
+              <hr>
+            </div>
+            <!-- <div class="container-fluid mt-4" > -->
+            <!-- <div class="row"> -->
+            <div id="Ltable">
+              <table id="pw_table_L" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+                <thead class="thead-light">
+                  <tr>
+                    <th colspan=9>Log<sub>2</sub> FC Larvae/Whole Fly:</th>
+                  </tr>
+                  <tr>
+                    <th class="data">Tissue-Type</th>
+                    <th class="data">L-Histidine</th>
+                    <th class="data">Histamine</th>
+                    <th class="data">Carnosine</th>
+                    <th class="data">Anserine</th>
+                    <th class="data">SAM</th>
+                    <th class="data">SAH</th>
+                    <th id = "activity1" class="data enzyme_title"><a href="{% url 'metabolite_search' %}">HDC</a></th>
+                    <th id = "activity2" class="data enzyme_title">CARNMT1</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Head*</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Eye</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Brain / CNS </td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Thoracicoabdominal ganglion</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Crop</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Midgut*</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Hindgut</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Malpighian Tubules</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Fat Body</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Salivary gland</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Heart</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Trachea</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Ovary</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Virgin Spermatheca</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Mated Spermatheca</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Testis*</td>
+                    <td>-3.36</td>
+                    <td>-25</td>
+                    <td>-25</td>
+                    <td>-</td>
+                    <td>-8.84</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Accessory glands</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Carcus</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                  <tr>
+                    <td>Rectal pad</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>*Real Data</p>
+              <!-- </div> -->
+              <!-- </div> -->
+              <hr>
+            </div>
+          </div>
+          <!-- End of main div myspan75 -->
+          <div class="myspan25 pl-2 pr-2 pt-2" style="height:100vh; overflow:scroll">
+            <p class="m-2"> Histidine Catabolism </p>
+            <fieldset class="fieldset-details">
+              <legend class="sidebar">Pathway Coverage</legend>
+              <div class="p-2 pb-0">
+                <table id="pw_summary" class="side_table table-sm table-bordered table-hover table-striped table-responsive nowrap">
+                  <thead class="thead-light">
+                    <tr>
+                      <th >Assigned Metabolite Formulas</th>
+                      <th >Total Pathway Formulas</th>
+                      <th >Expressed Genes</th>
+                      <th >Total Pathway Genes</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="text-center">
+                      <td>4</td>
+                      <td>6</td>
+                      <td>2</td>
+                      <td>2</td>
+                    </tr>
+                  </table>
+                  <hr>
+                </div>
+                <div class="container-fluid">
+                  <div class="row">
+                    <!-- <div class="myspan50_R"> -->
+
+                    <a target ="blank_" href="{% url 'temp_his_pw'%}">
+                      <img class="molecule_image float-left" src="{% static 'images/dros_his_cat.png'%}" alt="His_Cat"></a>
+
+                    </div>
+                  </div>
+                </fieldset>
+
+              </div>
+              <!-- End of side bar divs -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- collapasable if we need it -->
+      <div class="container">
+        <h2>Simple Collapsible</h2>
+        <a href="#pathway_info" data-toggle="collapse">Histidine</a>
+        <div id="pathway_info" class="collapse">
+          Lorem ipsum dolor sit amet, consectetur adipisicing elit,
+          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+          quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        </div>
+      </div>
+
+      <!--end of main div-->
+
+
+      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+      <!--replaced slim version of jquery to include ajax and the effects modules-->
+      <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+      <!--script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="https://d3js.org/d3.v5.min.js"></script>
+      <script src="../DataTables/datatables.min.js"></script>
+      <script src="../Highcharts/js/highcharts.js"></script>
+      <script src="../Highcharts/js/modules/data.js"></script>
+      <script src="../Highcharts/js/highcharts-more.js"></script>
+      <script src="../Highcharts/js/modules/exporting.js"></script>
+      <script src="../Highcharts/js/modules/drilldown.js"></script>
+      <script src="../Highcharts/js/themes/sand-signika.js"></script>
+
+      <!-- <script src="../js/flymet_tempchart.js"></script> -->
+      <script src="../js/flymet_highcharts.js"></script>
+      <script src="../js/flymet_tables.js"></script>
+
+      <!-- Initialise the table on this page-->
+
+      <script>
+      // Runs once the page Document Object Model (DOM) is ready for JavaScript code to execute.
+      $(document).ready(function() {
+
+
+        //$("fieldset[class^='peak_details']").hide();
+
+        initialise_table("pw_table_AF",-10.0, 0.0, 10);
+        initialise_table("pw_table_AM",-10.0, 0.0, 10);
+        initialise_table("pw_table_L",-10.0, 0.0, 10);
+
+        $('#activity1').tooltip({title: "Histidine decarboxylase", placement: "top"});
+        $('#activity2').tooltip({title: "Carnosine N-methyltransferase", placement: "top"});
+
+        let check_table_dict = {
+          "AF_check": "AFtable",
+          "AM_check": "AMtable",
+          "L_check": "Ltable",
+            };
+
+        show_hide_tables("pw_form", check_table_dict);
+
+
+      });
+
+      </script>
+
+      {% endblock %}

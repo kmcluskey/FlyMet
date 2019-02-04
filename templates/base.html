@@ -16,7 +16,6 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Sue+Ellen+Francisco" rel="stylesheet">
 
-
     {% block head_block %}
     {% endblock %}
 
@@ -34,13 +33,16 @@
     <div class="collapse navbar-collapse justify-content-between" id="navbar1">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link" href="about.html">About FlyMet</a>
+          <a class="nav-link" href="{% url 'about' %}">About FlyMet</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="met_ex_tissues">Metabolite Explorer</a>
+          <a class="nav-link" href="{% url 'met_ex_tissues' %}">Metabolite Explorer</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="pway_ex_tissues.html">Pathway Explorer</a>
+          <a class="nav-link" href="{% url 'path_ex_tissues' %}">Pathway Explorer</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'peak_explorer' %}">Peak Explorer</a>
         </li>
       </ul>
       <form class="form-inline my-2 my-lg-0">
@@ -50,6 +52,8 @@
     </div>
   </nav>
 
+
+
 {% block body_block %}
 {% endblock %}
 
@@ -57,7 +61,7 @@
   <!--Image-->
   <span>
     <a href="{% url 'met_explore_index' %}">
-      <img src="{% static 'images/FlyMet_logo_round.png'%}" class="img-fluid-logos" alt="Logo">
+      <img src="{% static 'images/FlyMet_logo_round.png' %}" class="img-fluid-logos" alt="Logo">
     </a>
   </span>
   <span class = "footer_text align-middle">

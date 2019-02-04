@@ -29,7 +29,7 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_tissues' %}">Tissues</a>
+          <a class="nav-link" href="{% url 'met_ex_tissues' %}">Tissues</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'met_ex_lifestages' %}">Life Stages</a>
@@ -38,61 +38,22 @@
           <a class="nav-link" href="{% url 'met_ex_mutants' %}">Mutants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
+          <a class="nav-link active" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
         </li>
       </ul>
     </div>
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The average peak intensity levels for metabolites in different <i>Drosophila</i> tissues
-    </p>
+      This will allow the user to search for a particular metabolite and be presented with how it changes (variation in peak intensity)
+      between different <i>Drosophila</i> grown under different conditions </p>
   </div>
 
-  <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
-    <thead class="thead-light">
-      <tr id = "columns">
-        {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for met_exp_data in data %}
-      <tr>
-            {% for m in met_exp_data %}
-            {% if forloop.first %}
-              <td>{{m}}</td>
-            {% else %}
-              <td>{{m|stringformat:".2e"}}</td>
-            {% endif %}
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
 
-  </div>
 
   <!--end of main div-->
   <!--Spacer so that content is not hidden-->
   <div class="spacer">
   </div>
 
-
-  {% endblock %}
-
-
-  {% block js_block %}
-  <script type='text/javascript'>
-    var min_value = {{min_value}}
-    var max_value = {{max_value}}
-    var mean_value = {{mean_value}}
-    console.log(min_value, max_value, mean_value)
-
-    </script>
-
-  {% render_bundle 'metabolite_list' 'js' %}
   {% endblock %}

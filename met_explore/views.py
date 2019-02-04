@@ -24,6 +24,27 @@ def index(request):
 
 # Create your views here.
 
+def temp_his_pw(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    return render(request, 'met_explore/temp_his_pw.html')
+
+
+def about(request):
+    return render(request, 'met_explore/about.html')
+
+def importance(request):
+    return render(request, 'met_explore/importance.html')
+
+def feedback(request):
+    return render(request, 'met_explore/feedback.html')
+
+def links(request):
+    return render(request, 'met_explore/links.html')
+
 def metabolite_search(request):
     """
     View to return the metabolite serach page
@@ -32,21 +53,73 @@ def metabolite_search(request):
 
     return render(request, 'met_explore/metabolite_search.html')
 
-def mutant_metabolite_search(request):
+
+def enzyme_search(request):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
     """
 
-    return render(request, 'met_explore/mutant_metabolites.html')
+    return render(request, 'met_explore/enzyme_search.html')
 
-def ls_metabolite_search(request):
+def tissue_search(request):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
     """
 
-    return render(request, 'met_explore/life_stage_metabolites.html')
+    return render(request, 'met_explore/tissue_search.html')
+
+
+def pathway_search(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    return render(request, 'met_explore/pathway_search.html')
+
+
+def met_ex_gconditions(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    return render(request, 'met_explore/met_ex_gconditions.html')
+
+def met_ex_mutants(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    return render(request, 'met_explore/met_ex_mutants.html')
+
+
+def met_ex_lifestages(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    return render(request, 'met_explore/met_ex_lifestages.html')
+
+def peak_explorer(request):
+
+
+    return render(request, 'met_explore/peak_explorer.html')
+
+
+def path_ex_lifestages(request):
+
+    return render(request, 'met_explore/path_ex_lifestages.html')
+
+
+def path_ex_tissues(request):
+
+    return render(request, 'met_explore/path_ex_tissues.html')
+
 
 def met_ex_tissues(request):
     """
@@ -141,7 +214,6 @@ def get_group_df(int_df):
     group_df = pd.DataFrame(index=df_index, columns=sample_groups)
 
     for group in sample_groups:
-        print("sample_group ", group)
         gp_samples = Sample.objects.filter(group=group)
         int_list = []
         for i in df_index:
@@ -169,7 +241,6 @@ def get_list_view_column_names(column_names):
     groups = column_names
 
     for g in groups:
-        print ("G", g)
         if g=='max_value':
             group_name_dict[g] = "Max" + " " + "Value"
         elif g=='Metabolite':
@@ -179,7 +250,6 @@ def get_list_view_column_names(column_names):
             tissue = sample.tissue
             ls = sample.life_stage
             group_name_dict[g] = tissue + " " + "(" + ls + ")"
-
 
     return group_name_dict
 

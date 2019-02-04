@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Search Metabolites {% endblock %}
+
+{% block head_block %}
+    {% render_bundle 'metabolite_search' 'css' %}
+{% endblock %}
+
+{% block body_block %}
+
+  <!-- end of Nav bar -->
+  <div class="p-4">
+    <div class="card mt-4 p-2 pb-0 border border-table rounded">
+      <div class ="m-2">
+        <div>
+          <p class="m-2 lead">
+            This (temporary image) shows the two reactions found in <i>Drosophila</i> from Reactome's <a href="https://reactome.org/content/detail/R-DME-70921" target="blank_">Histidine catabolism pathway.</a>
+          </p>
+          <p class ="m-4">
+            The plan is that this will be part of the Pathway Explorer pages and will consist of interactive pathways including the addition of gene and metabolite levels
+          </p>
+        </div>
+        <div class="m-2">
+          <img class="molecule_image" src="{% static 'images/dros_his_cat.png'%}" alt="Logo">
+        </div>
+        <p class="head_back rounded m-2 float-right">Take me back to <a href="{% url 'pathway_search' %}">Histidine Catabolism</a>
+      </div>
+
+
+      <div>
+        <p class="m-2 lead">
+        </p>
+      </div>
+      <div>
+        <p class="m-2 lead">
+          The full gap-filled version from <i>Homo Sapians</i> can be found <a href="https://reactome.org/content/detail/R-HSA-70921" target="blank_">here</a>
+        </p>
+      </div>
+      <hr>
+      <div>
+        <p class ="m-2">These diagrams are from <a href="https://metacyc.org/">MetaCyc</a> (<a href https://biocyc.org/META/NEW-IMAGE?type=REACTION&object=HISTIDINE-DECARBOXYLASE-RXN>HDC</a> and <a href="https://biocyc.org/META/NEW-IMAGE?type=REACTION&object=CARNOSINE-N-METHYLTRANSFERASE-RXN">CARNMT1</a>)  and can (most likely) be reproduced with PathwayTools and a Cobra model </p>
+      </div>
+    </div>
+  </div>
+  {% endblock %}

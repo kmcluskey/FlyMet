@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Welcome to FlyMet {% endblock %}
+
+{% block head_block %}
+{% endblock %}
+
+{% block body_block %}
+  <!-- div for main body-->
+  <div class="container-fluid p-4">
+
+    <!-- Splitting into two columns using flex to display the logo-->
+    <div class="logo_row">
+      <div class="logo_main">
+        <p class="mt-4 lead">
+            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+          </p>
+        </div>
+        <div class = "logo_side">
+          <img src="{% static 'images/FlyMet_about_logo.png'%}" class="img-fluid-logos" alt="Logo">
+        </div>
+      </div>
+
+  <!--Tabs to go to new pages-->
+  <!--Tabs to go to new pages-->
+  <div class="card text-center">
+    <div class="card-header">
+      <ul class="nav nav-tabs card-header-tabs">
+        <li class="nav-item ">
+          <a class="nav-link" href="{% url 'about' %}">About</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'importance' %}">Importance</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="{% url 'links' %}">Links</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+
+
+  <div>
+    <p class="mt-5 mb-5" >
+      This page has been set aside to add links to other <i>Drosophila</i> resources.
+    </p>
+  </div>
+  </div>
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
+
+
+  {% endblock %}

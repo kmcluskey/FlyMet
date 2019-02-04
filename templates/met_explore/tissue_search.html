@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Welcome to FlyMet {% endblock %}
+{% block title %} Search Metabolites {% endblock %}
 
 {% block head_block %}
+    {% render_bundle 'metabolite_search' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -13,7 +14,7 @@
 
     <div>
       <p class="mt-2 lead">
-        Search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+        Choose to search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
       </p>
     </div>
 
@@ -31,30 +32,28 @@
             <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'tissue_search' %}">Tissues</a>
+            <a class="nav-link active" href="{% url 'tissue_search' %}">Tissues</a>
           </li>
         </ul>
       </div>
     </div>
 
-    <div>
-      <p class = 'mt-4 lead'>
-        ..or jump straight in and search FlyMet:
-        </p>
-    <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Search FlyMet">
-      <button class="btn btn-outline-primary my-2 my-sm-0"
-      type="submit">Search</button>
-    </form>
-    </div>
-    <div>
-      <p class="mt-3 "> This is the Index page for the main searchable pages  - we need to decide what this should look like.
-      Perhaps a general search box (above) to get the user started? </p>
-    </div>
-    </div>
-    <!--Spacer so that content is not hidden-->
-    <div class="spacer">
-    </div>
+    <!--Search info and box-->
+  <div>
+    <p class="mt-4 mb-1" >
+    Search for a <b>tissue-type</b> and find out which <i> Drosophila </i> metabolic pathways rank most highly:
+    </p>
+  </div>
+  <form class="form-inline my-2 my-lg-0">
+    <input class="form-control mr-sm-2" type="text" placeholder="Tissue Search">
+    <button class="btn btn-outline-primary my-2 my-sm-0"
+    type="submit">Search</button>
+  </form>
+  </div>
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
 
-
-{% endblock %}
+  <!--Footer end-->
+  {% endblock %}

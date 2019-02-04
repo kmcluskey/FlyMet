@@ -5,9 +5,20 @@ urlpatterns = [
     path('', views.index, name='met_explore_index'),
     path('tissue_metabolites', views.MetaboliteListView.as_view(), name='tissue_metabolites'),
     path('metabolite_search', views.metabolite_search, name='metabolite_search'),
-    path('mutant_metabolites', views.mutant_metabolite_search, name='mutant_metabolites'),
-    path('life_stage_metabolites', views.ls_metabolite_search, name='life_stage_metabolites'),
     path('met_ex_tissues', views.met_ex_tissues, name='met_ex_tissues'),
-
+    path('met_ex_lifestages', views.met_ex_lifestages, name='met_ex_lifestages'),
+    path('met_ex_mutants', views.met_ex_mutants, name='met_ex_mutants'),
+    path('met_ex_gconditions', views.met_ex_gconditions, name='met_ex_gconditions'),
+    path('enzyme_search', views.enzyme_search, name='enzyme_search'),
+    path('tissue_search', views.tissue_search, name='tissue_search'),
+    path('pathway_search', views.pathway_search, name='pathway_search'),
+    path('temp_his_pw', views.temp_his_pw, name='temp_his_pw'),
+    path('importance', views.importance, name='importance'),
+    path('feedback', views.feedback, name='feedback'),
+    path('links', views.links, name='links'),
+    path('about', views.about, name='about'),
+    path('path_ex_tissues', views.path_ex_tissues, name='path_ex_tissues'),
+    path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
+    path('peak_explorer', views.peak_explorer, name='peak_explorer'),
 
 ]
