@@ -4,7 +4,7 @@ from django.urls import include, path
 import web_omics.views as views
 
 urlpatterns = [
-    path('', views.index, name='main_index'),
+    path('', views.index, name='index'),
     path('met_explore/', include('met_explore.urls')),
     path('admin/', admin.site.urls),
     path('registration/', include('registration.urls')),

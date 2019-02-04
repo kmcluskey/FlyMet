@@ -1,11 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Search Metabolites{% endblock %}
-
-{% block head_block %}
-    {% render_bundle 'metabolite_search' 'css' %}
-{% endblock %}
+{% block title %} FlyMet {% endblock %}
 
 {% block body_block %}
 
@@ -14,54 +10,17 @@
 
     <div>
       <p class="mt-2 lead">
-        Choose to search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+        Welcome to FlyMet! Bringing metabolomics to <i> Drosophila </i>.
       </p>
     </div>
-
-    <!--Tabs to go to new pages-->
-    <div class="card text-center">
-      <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-          <li class="nav-item">
-            <a class="nav-link" href="enzymes_index.html">Enzymes</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="metabolite_search">Metabolites</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="pathways_index.html">Pathways</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="tissues_index.html">Tissues</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-    <!--Search info and box-->
 
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>metabolite</b> and find out the abundance in <i> Drosophila </i> tissues:
+        This will be the main front page for FlyMet.
       </p>
     </div>
-    <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
-      <button class="btn btn-outline-primary my-2 my-sm-0"
-      type="submit">Search</button>
-    </form>
 
-      <!-- Modal footer -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-      </div>
 
     </div>
-  </div>
-</div>
 
-{% endblock %}
-
-{% block js_block %}
-    {% render_bundle 'metabolite_list' 'js' %}
 {% endblock %}
