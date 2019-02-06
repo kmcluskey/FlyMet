@@ -1,33 +1,14 @@
 // A function to initialise a standard table with buttons. The midpoint is the neutral value
 // and is most likely a temporary way to calculate significance in the data for display purposes
 
-require('popper.js');
-require('bootstrap');
+require ('./init_datatables')
 const d3 = require('d3');
-require('datatables.net');
 
-require('datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css');
-require('datatables.net-bs4/css/dataTables.bootstrap4.min.css');
-require('datatables.net-scroller-bs4/css/scroller.bootstrap4.min.css');
-require('datatables.net-select-bs4/css/select.bootstrap4.min.css');
-
-require('pdfmake/build/pdfmake.js');
-require('pdfmake/build/vfs_fonts.js');
-
-require( 'datatables.net-bs4' );
-require( 'datatables.net-buttons-bs4');
-require( 'datatables.net-buttons/js/buttons.colVis.js' );  // Column visibility
-require( 'datatables.net-buttons/js/buttons.html5.js');
-require( 'datatables.net-buttons/js/buttons.print.js' );
-require( 'datatables.net-fixedcolumns-bs4' );
-require( 'datatables.net-fixedheader-bs4' );
-require( 'datatables.net-responsive-bs4' );
-require( 'datatables.net-scroller-bs4' );
-require( 'datatables.net-select-bs4' );
 
 
 function initialise_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
+    console.log(tName)
     let table = $(tName).DataTable({
         responsive: true,
 
@@ -85,6 +66,8 @@ function init_met_side_table(tableName, lowpoint, midpoint, highpoint){
 
     const tName = '#'+tableName;
 
+    console.log(tName)
+
     let table = $(tName).DataTable({
         responsive: true,
         "bPaginate": false,
@@ -95,7 +78,7 @@ function init_met_side_table(tableName, lowpoint, midpoint, highpoint){
             {
                 "targets": '_all',
                 "createdCell": function (td, cellData, rowData, row, col) {
-                    $td = $(td);
+                    let $td = $(td);
                     //find the table headers
                     var $th = $td.closest('table').find('th').eq($td.index());
 
@@ -115,6 +98,7 @@ function init_met_side_table(tableName, lowpoint, midpoint, highpoint){
         ]
 
     });
+    console.log("returning table")
     return table;
 }
 
@@ -182,18 +166,15 @@ function show_hide_tables(pw_form, dict){
 //
 // }
 //
-// function add_met_tooltips(obj){
-//
-//     $('.AM_met_WT_ratio').tooltip({title: "Fold Change of metabolite Intensity in Adult Male vs Whole Fly", placement: "top"});
-//     $('.AF_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Adult Female vs Whole Fly", placement: "top"});
-//     $('.L_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Larvae vs Whole Fly", placement: "top"});
-//
-// }
+function add_met_tooltips(obj){
 
+    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of metabolite Intensity in Adult Male vs Whole Fly", placement: "top"});
+    $('.AF_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Adult Female vs Whole Fly", placement: "top"});
+    $('.L_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Larvae vs Whole Fly", placement: "top"});
 
+}
 
 function updateEnzymeSidePanel(obj){
-
     let tissue_name = $(obj).children().first().text();
 
     $("fieldset[id='click_info']").hide();
@@ -203,4 +184,4 @@ function updateEnzymeSidePanel(obj){
 }
 
 
-export {initialise_table, init_met_side_table, show_hide_tables }
+export {initialise_table, init_met_side_table, show_hide_tables, updateEnzymeSidePanel, add_met_tooltips }

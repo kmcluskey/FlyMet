@@ -124,7 +124,7 @@ def path_ex_tissues(request):
 def met_ex_tissues(request):
     """
         View to return the metabolite serach page
-        :returns: Render met_explore/metabolite_search and datatable
+        :returns: Render met_explore/met_ex_tissues and datatable
     """
 
     int_df = get_cmpd_intensity_df()
