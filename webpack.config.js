@@ -7,12 +7,14 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
     context: __dirname,
-
+    // As a rule of thumb: for each HTML document use exactly one entry point.
     entry: {
         base: './static/js/base',
+        init_datatables: './static/js/init_datatables',
         metabolite_list: './static/js/metabolite_list',
         metabolite_search: './static/js/metabolite_search',
-
+        enzyme_search: './static/js/enzyme_search',
+        pathway_search: './static/js/pathway_search'
     },
 
     output: {
