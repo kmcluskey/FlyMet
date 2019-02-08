@@ -13,6 +13,12 @@ from configurations import Configuration, values
 from django.contrib.messages import constants as message_constants
 from django.urls import reverse_lazy
 
+import logging
+import sys
+
+
+
+
 
 class Common(Configuration):
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -43,6 +49,22 @@ class Common(Configuration):
         'rest_framework',
         'met_explore'
     ]
+
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'console': {
+                'class': 'logging.StreamHandler',
+            },
+        },
+        # If an env_variable is not set use 'INFO' - set in PyCharm run configurations
+        'root': {
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'handlers': ['console']
+        }
+    }
+
 
     WEBPACK_LOADER = {
         'DEFAULT': {

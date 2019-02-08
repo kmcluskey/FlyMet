@@ -20,5 +20,6 @@ urlpatterns = [
     path('path_ex_tissues', views.path_ex_tissues, name='path_ex_tissues'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
     path('peak_explorer', views.peak_explorer, name='peak_explorer'),
+    path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
 
 ]

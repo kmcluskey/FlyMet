@@ -2,6 +2,9 @@
 require('./init_datatables')
 require('bootstrap/js/dist/tooltip');
 
+Awesomplete = require('awesomplete');
+require('awesomplete/awesomplete.css');
+
 import {initialise_table} from './flymet_tables';
 import {singleMet_intensity_chart} from './flymet_highcharts.js';
 import {test_chart} from './flymet_highcharts.js';
@@ -44,6 +47,15 @@ function add_met_tooltips(obj){
 
 }
 
+async function loadData(viewUrl) {
+    try {
+        const result = await $.getJSON(viewUrl);
+        return result;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 $(document).ready(function() {
 
     $("fieldset[class^='peak_details']").hide();
@@ -55,4 +67,8 @@ $(document).ready(function() {
         updateMetSidePanel(this);
     } )
 
+    //Method to add an autocomplete search function to the DB
+    loadData(('http://127.0.0.1:8000/met_explore/get_metabolite_names')).then(function(data) {
+        new Awesomplete(metabolite_search, {list: data.metaboliteNames});
+});
 });
