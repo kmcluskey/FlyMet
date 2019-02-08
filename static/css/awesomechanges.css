@@ -1,0 +1,8 @@
+.awesomplete mark {
+  background: #DFDFDF;
+}
+
+	.awesomplete > ul > li:hover {
+		background: #8096bb;
+		color: black;
+	}

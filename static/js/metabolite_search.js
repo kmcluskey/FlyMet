@@ -4,6 +4,7 @@ require('bootstrap/js/dist/tooltip');
 
 Awesomplete = require('awesomplete');
 require('awesomplete/awesomplete.css');
+require('../css/awesomechanges.css')
 
 import {initialise_table} from './flymet_tables';
 import {singleMet_intensity_chart} from './flymet_highcharts.js';
