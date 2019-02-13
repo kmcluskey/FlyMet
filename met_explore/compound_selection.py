@@ -37,13 +37,12 @@ def get_group_df(int_df):
     samples = Sample.objects.all()
     sample_groups = set([sp.group for sp in samples])
     df_index = list(int_df.index.values)
-
     group_df = pd.DataFrame(index=df_index, columns=sample_groups)
 
     for group in sample_groups:
         gp_samples = Sample.objects.filter(group=group)
-        int_list = []
         for i in df_index:
+            int_list = []
             for g in gp_samples:
                 sample_name = g.name
                 intensity = int_df.loc[i, sample_name]

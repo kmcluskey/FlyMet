@@ -4,6 +4,7 @@ const d3 = require('d3');
 
 function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
+    const MIN_VAL = 3000;
     let table = $(tName).DataTable({
         responsive: true,
 
@@ -39,15 +40,17 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                     //console.log($th.text())
 
                     const colorScale = d3.scaleLog()
-                        .domain([lowpoint, midpoint, highpoint])
+                        .domain([MIN_VAL, midpoint, highpoint])
                         .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
                     if (!($th.text().includes('Metabolite'))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
+                            if (cellData==0.00){
+                              cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                            };
                             const colour = colorScale(cellData);
                             $(td).css('background-color', colour)
-
                         }
                     }
                 }
