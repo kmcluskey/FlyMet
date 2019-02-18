@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 single_cmpds_df = get_single_cmpd_df()
 
+
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
     return render(request, 'met_explore/index.html')
@@ -67,17 +68,24 @@ def metabolite_search(request):
         min = MIN
         max = MAX
         mean = MEAN
+        hmdb_id = None
+        kegg_id = None
         # If we get a metabolite sent from the view
         if search_query is not None:
 
             met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
 
-            print ("SHAPE ", met_search_df.shape[0])
 
             #If there is a row in the DF matching the searched for metabolite
             if met_search_df.shape[0] == 1:
 
                 logger.info("Getting the details for %s ", search_query)
+
+                hmdb_id = met_search_df['HMDB'].values[0]
+                kegg_id = met_search_df['KEGG'].values[0]
+
+                print("HMDB ", hmdb_id)
+                print("KEGG ", kegg_id)
 
                 #Get the metabolite/tissue comparison DF
 
@@ -117,20 +125,24 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
-    context = {
-        'metabolite': search_query,
-        'met_table_data': met_table_data,
-        'min': min,
-        'max': max,
-        'mean': mean
-        }
 
-    return render(request, 'met_explore/metabolite_search.html', context)
+        context = {
+            'metabolite': search_query,
+            'met_table_data': met_table_data,
+            'min': min,
+            'max': max,
+            'mean': mean,
+            'hmdb_id':hmdb_id,
+            'kegg_id':kegg_id
+            }
+
+        return render(request, 'met_explore/metabolite_search.html', context)
+
 
 
 def enzyme_search(request):
     """
-    View to return the metabolite serach page
+    View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
 
@@ -212,7 +224,10 @@ def met_ex_tissues(request):
         column_headers.append(group_names[c])
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
-    df2 = single_cmpds_df.drop(['Metabolite'], axis=1)
+    single_cmpds_df.drop(['Metabolite'], axis=1, inplace=True)
+    single_cmpds_df.drop(['KEGG'], axis=1, inplace=True)
+    df2 = single_cmpds_df.drop(['HMDB'], axis=1)
+
 
     max_value = np.nanmax(df2)
     min_value = np.nanmin(df2)

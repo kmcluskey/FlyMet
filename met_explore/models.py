@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 class Sample(models.Model):
     """
@@ -46,6 +47,33 @@ class Peak(models.Model):
         """
 
         return "Peak " + str(self.id) + " " + self.cmpd_name
+
+    def get_kegg_id(self):
+
+        kegg_id = None
+        id_list = json.loads(self.cmpd_identifiers)
+
+        if id_list[0]:
+            kegg_ids = [i for i in id_list if i.startswith('C00')]
+            if kegg_ids:
+                kegg_id = kegg_ids[0]
+
+        return kegg_id
+
+    def get_hmdb_id(self):
+
+        hmdb_id = None
+
+        id_list = json.loads(self.cmpd_identifiers)
+
+        if id_list[0]:  # If there is an entry in the list.
+            hmdb_ids = [i for i in id_list if i.startswith('HMDB')]
+
+            if hmdb_ids:
+                hmdb_id = hmdb_ids[0]
+
+        return hmdb_id
+
 
 
 class SamplePeak(models.Model):

@@ -13,13 +13,13 @@ import {test_chart} from './flymet_highcharts.js';
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updateMetSidePanel(obj){
-    let tissue_name = $(obj).children().first().text();
+    // let tissue_name = $(obj).children().first().text();
 
     // find all the paragraphs with id peak in the side panel
 
     $("fieldset[id='click_info']").hide();
     $("fieldset[class^='peak_details']").show();
-    $("p[id^='tissue_type']").text('Intensities in ' +tissue_name);
+    $("p[id^='tissue_type']").text('Intensities in ' + metabolite);
 
     singleMet_intensity_chart('highchart');
     singleMet_intensity_chart('highchart1');
@@ -70,6 +70,7 @@ $(document).ready(function() {
         updateMetSidePanel(this);
     } )
 
+    console.log('metabolite_passed', metabolite)
     //Method to add an autocomplete search function to the DB
     loadData(('http://127.0.0.1:8000/met_explore/get_metabolite_names')).then(function(data) {
         new Awesomplete(metabolite_search, {list: data.metaboliteNames});

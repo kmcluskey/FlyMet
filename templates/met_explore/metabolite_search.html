@@ -94,10 +94,10 @@
 
             <!--Bottom infopanel Div-->
             <fieldset class="fieldset-details">
-              <legend>Pathways containing L-Histidine</legend>
+              <legend>Pathways containing {{metabolite}} </legend>
               <div class="p-2">
                 <ul>
-                  <li><a href="../html/pathways_index.html">Histidine catabolism</a>
+                  <li><a href="../html/pathways_index.html">{{metabolite}} catabolism</a>
                     <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
                   </li>
                   <li><a href="#!">Histidine, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
@@ -117,14 +117,19 @@
 
           <div class="myspan25 pl-2 pr-2 pt-2" style="height:100vh; overflow:scroll">
             <fieldset class="fieldset-details">
-              <legend class="sidebar"><a data-toggle="modal" href="#cmpd_Modal">L-Histidine</a></legend>
+              <legend class="sidebar"><a data-toggle="modal" href="#cmpd_Modal">{{metabolite}}</a></legend>
 
               <div class="container-fluid">
                 <div class="row">
                   <div class="mol_span50_L">
 
-                    <a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27570">
-                      <img class="molecule_image float-left" src="https://www.ebi.ac.uk/chebi/displayImage.do?defaultImage=true&imageIndex=0&chebiId=CHEBI:27570" alt="Logo"></a>
+                      {% if kegg_id is not None %}
+                      <a href="https://www.genome.jp/dbget-bin/www_bget?{{kegg_id}}">
+                      <img class="molecule_image float-left" src="https://www.genome.jp/Fig/compound/{{kegg_id}}.gif" alt="Logo"></a>
+                      {% elif kegg_id is None %}
+                      <a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27570">
+                      <img class="molecule_image float-left" src="{% static 'images/awaiting_image.png'%}"" alt="Waiting"></a>
+                      {% endif %}
                     </div>
                     <div class = "mol_span50_R pl-2 molecule_div">
                       <ul class="molecule_list pl-2">
