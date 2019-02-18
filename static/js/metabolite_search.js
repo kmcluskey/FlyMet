@@ -40,11 +40,13 @@ function updateMetSidePanel(obj){
 
 }
 
-function add_met_tooltips(obj){
+function add_met_tooltips(obj, metabolite){
 
-    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of metabolite Intensity in Adult Male vs Whole Fly", placement: "top"});
-    $('.AF_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Adult Female vs Whole Fly", placement: "top"});
-    $('.L_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Larvae vs Whole Fly", placement: "top"});
+
+
+    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Male: Whole Fly vs Tissue", placement: "top"});
+    $('.AF_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Adult Female: Whole Fly vs Tissue", placement: "top"});
+    $('.L_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Larvae: Whole Fly vs Tissue", placement: "top"});
 
 }
 
@@ -61,8 +63,8 @@ $(document).ready(function() {
 
     $("fieldset[class^='peak_details']").hide();
 
-    let met_table = initialise_table("example", 0.0, 1.0, 3.0);
-    add_met_tooltips(met_table);
+    let met_table = initialise_table("tissue_met_table", min, mid, max);
+    add_met_tooltips(met_table, metabolite);
 
     met_table.on( 'click', 'tr', function () {
         updateMetSidePanel(this);

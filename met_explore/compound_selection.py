@@ -19,7 +19,7 @@ def get_cmpd_intensity_df():
     df_index = [p.psec_id for p in peaks]
     cmpds = [p.cmpd_name for p in peaks]
     columns = [s.name for s in samples]
-    int_df = pd.DataFrame(index=df_index, columns=columns)
+    int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
 
     for i in df_index:
         for c in columns:
@@ -37,7 +37,7 @@ def get_group_df(int_df):
     samples = Sample.objects.all()
     sample_groups = set([sp.group for sp in samples])
     df_index = list(int_df.index.values)
-    group_df = pd.DataFrame(index=df_index, columns=sample_groups)
+    group_df = pd.DataFrame(index=df_index, columns=sample_groups, dtype=float)
 
     for group in sample_groups:
         gp_samples = Sample.objects.filter(group=group)
@@ -79,7 +79,7 @@ def get_list_view_column_names(column_names):
 
     return group_name_dict
 
-def remove_dup_cmpds():
+def get_single_cmpd_df():
     """
     This method returns a dataframe of the peaks without any duplicate compounds.
     :return:
