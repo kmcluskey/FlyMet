@@ -214,10 +214,9 @@ def met_ex_tissues(request):
     # Get the max and mean values for the intensities to pass to the 'heat map'
     df2 = single_cmpds_df.drop(['Metabolite'], axis=1)
 
-    max_value = df2.values.max()
-    min_value = df2.values.min()
-    mean_value = df2.values.mean()
-
+    max_value = np.nanmax(df2)
+    min_value = np.nanmin(df2)
+    mean_value = np.nanmean(df2)
 
     ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
 

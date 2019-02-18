@@ -2,6 +2,7 @@ from met_explore.models import Peak, SamplePeak, Sample
 
 import collections
 import pandas as pd
+import numpy as np
 import operator
 
 import logging
@@ -86,6 +87,10 @@ def get_single_cmpd_df():
     """
     logger.info("Getting a DF of peaks contaiing with no duplicate compounds")
     int_df = get_cmpd_intensity_df()
+    int_df.replace(0, np.nan, inplace=True)
+
+    # KMcL: TEMP: Change zero values to Nan here as a temporary measure - should be done upstream in PiMP.
+
     group_df = get_group_df(int_df)
 
     peak_sids = list(int_df.index.values)
