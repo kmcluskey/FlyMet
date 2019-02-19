@@ -6,15 +6,11 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.generic.list import ListView
 from django.views.generic import TemplateView
-from decimal import Decimal
-from collections import OrderedDict
 
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample
 
 import pandas as pd
-import operator
-import collections
 import logging
 import numpy as np
 
@@ -68,24 +64,19 @@ def metabolite_search(request):
         min = MIN
         max = MAX
         mean = MEAN
-        hmdb_id = None
-        kegg_id = None
+        references = None
+
         # If we get a metabolite sent from the view
         if search_query is not None:
 
             met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
 
-
             #If there is a row in the DF matching the searched for metabolite
             if met_search_df.shape[0] == 1:
 
+                peak_id = met_search_df.index.values[0]
+
                 logger.info("Getting the details for %s ", search_query)
-
-                hmdb_id = met_search_df['HMDB'].values[0]
-                kegg_id = met_search_df['KEGG'].values[0]
-
-                print("HMDB ", hmdb_id)
-                print("KEGG ", kegg_id)
 
                 #Get the metabolite/tissue comparison DF
 
@@ -108,7 +99,6 @@ def metabolite_search(request):
                 view_df = log_df.drop(index='Whole').round(2)
                 log_values = view_df.values.tolist()
                 index = view_df.index.tolist()
-
                 # Get a list to return to the view
                 met_table_data = []
 
@@ -125,6 +115,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
+                references = get_compound_details(peak_id)
 
         context = {
             'metabolite': search_query,
@@ -132,8 +123,7 @@ def metabolite_search(request):
             'min': min,
             'max': max,
             'mean': mean,
-            'hmdb_id':hmdb_id,
-            'kegg_id':kegg_id
+            'references': references
             }
 
         return render(request, 'met_explore/metabolite_search.html', context)
@@ -224,10 +214,7 @@ def met_ex_tissues(request):
         column_headers.append(group_names[c])
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
-    single_cmpds_df.drop(['Metabolite'], axis=1, inplace=True)
-    single_cmpds_df.drop(['KEGG'], axis=1, inplace=True)
-    df2 = single_cmpds_df.drop(['HMDB'], axis=1)
-
+    df2 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=True)
 
     max_value = np.nanmax(df2)
     min_value = np.nanmin(df2)

@@ -97,19 +97,16 @@
               <legend>Pathways containing {{metabolite}} </legend>
               <div class="p-2">
                 <ul>
-                  <li><a href="../html/pathways_index.html">{{metabolite}} catabolism</a>
+                  <li><a href="{% url 'pathway_search' %}">{{metabolite}} catabolism</a>
+                    <p class="m-2">This is currently a placeholder for pathways containing {{metabolite}}.</p>
+                  </li>
+                  <li><a href="#!">{{metabolite}}, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
                     <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
                   </li>
-                  <li><a href="#!">Histidine, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
+                  <li><a href="#!">Synthesis of {{metabolite}}</a>
                     <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
                   </li>
-
-                  <li><a href="#!">Synthesis of diphthamide-EEF2</a>
-                    <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
-                  </li>
-
                 </ul>
-
               </div>
             </fieldset>
           </div>
@@ -123,19 +120,19 @@
                 <div class="row">
                   <div class="mol_span50_L">
 
-                      {% if kegg_id is not None %}
-                      <a href="https://www.genome.jp/dbget-bin/www_bget?{{kegg_id}}">
-                      <img class="molecule_image float-left" src="https://www.genome.jp/Fig/compound/{{kegg_id}}.gif" alt="Logo"></a>
-                      {% elif kegg_id is None %}
+                      {% if references.kegg_id is not None %}
+                      <a href="https://www.genome.jp/dbget-bin/www_bget?{{references.kegg_id}}">
+                      <img class="molecule_image float-left" src="https://www.genome.jp/Fig/compound/{{references.kegg_id}}.gif" alt="Logo"></a>
+                      {% elif references.kegg_id is None %}
                       <a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:27570">
                       <img class="molecule_image float-left" src="{% static 'images/awaiting_image.png'%}"" alt="Waiting"></a>
                       {% endif %}
                     </div>
                     <div class = "mol_span50_R pl-2 molecule_div">
                       <ul class="molecule_list pl-2">
-                        <li class="pb-2"><u>Formula:</u> C<sub>6</sub>H<sub>9</sub>N<sub>3</sub>O<sub>2</sub></li>
-                        <li class="pb-2"><u>Av Mass:</u> 155.15468</li>
-                        <li class="pb-2"><u>MI Mass:</u> 155.069</li>
+                        <li class="pb-2"><u>Formula:</u> {{references.formula}}</li>
+                        <li class="pb-2"><u>Neutral Mass:</u> {{references.mass|stringformat:".2f"}}</li>
+                        <li class="pb-2"><u>m/z:</u> {{references.mz|stringformat:".2f"}}</li>
                       </ul>
 
                     </div>
@@ -145,7 +142,7 @@
 
               <fieldset id="click_info" class="fieldset-details">
                 <div class="p-2">
-                  <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated with Histidine</p>
+                  <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated with {{metabolite}}</p>
                 </div>
               </fieldset>
 
@@ -158,8 +155,8 @@
                   <span id="A" class="badge badge-pill badge-warning">A15</span>
                   <hr>
                   <div class="row">
-                    <div class="col-sm-4 peak_data"><u>Ion:</u> M+H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 156.0769</div>
-                    <div class="col-sm-4 peak_data"><u>RT:</u> 854.86 </div>
+                    <div class="col-sm-4 peak_data"><u>Ion:</u> {{adduct}}</div><div class="col-sm-4 peak_data"><u>Neutral Mass:</u>{{mass}}</div>
+                    <div class="col-sm-4 peak_data"><u>RT:</u>{{rt}}</div>
                   </div>
                 </div>
                 <div class="p-2">
@@ -212,9 +209,7 @@
         </div>
         {% endif %}
         {% endif %}
-
       </div>
-
     </div>
 
     <!--end of main div-->
@@ -227,7 +222,7 @@
 
       <!-- Modal Header -->
       <div class="modal-header">
-        <h5 class="modal-title">L-Histidine Cross References:</h5>
+        <h5 class="modal-title">{{metabolite}} Cross References:</h5>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
 
@@ -236,19 +231,19 @@
         <div class="col-sm-12">
           <h6> DB Identifiers: </h6>
           <ul>
-            <li> <span class= "modal_list_items">ChEBI:</span> <a href="https://www.ebi.ac.uk/chebi/searchId.do?chebiId=CHEBI:15971" class="tab">15971</a></li>
-            <li><span class= "modal_list_items">Kegg:</span> <a href="https://www.genome.jp/dbget-bin/www_bget?C00135" class="tab" >C00135</a></li>
-            <li><span class= "modal_list_items">ChemSpider:</span> <a href="http://www.chemspider.com/Chemical-Structure.6038.html" class="tab">6038</a></li>
-            <li><span class= "modal_list_items">HMDB:</span> <a href="http://www.hmdb.ca/metabolites/HMDB0000177" class="tab" >HMDB0000177</a></li>
+            <li> <span class= "modal_list_items">ChEBI:</span>Awaiting details</li>
+            <li><span class= "modal_list_items">Kegg:</span> <a href="https://www.genome.jp/dbget-bin/www_bget?{{references.kegg_id}}" class="tab" >{{references.kegg_id}}</a></li>
+            <li><span class= "modal_list_items">ChemSpider:</span> Awaiting info </li>
+            <li><span class= "modal_list_items">HMDB:</span> <a href="http://www.hmdb.ca/metabolites/{{references.hmdb_id}}" class="tab" >{{references.hmdb_id}}</a></li>
           </ul>
         <!-- </div> -->
         <!-- <div class="col-md-6"> -->
 
           <h6>Universal Identifiers: </h6>
           <ul >
-            <li> <span class= "modal_list_items">InChIKey: </span><span class="tab">HNDVDQJCIGZPNO-YFKPBYRVSA-N</span></li>
-            <li> <span class= "modal_list_items">Smiles: </span><span class="tab">N[C@@H](CC1=CN=CN1)C(O)=O</span></li>
-            <li> <span class= "modal_list_items">IUPAC: </span><span class="tab">L-Histidine</span></li>
+            <li> <span class= "modal_list_items">InChIKey: </span><span class="tab"> Awaiting details</span></li>
+            <li> <span class= "modal_list_items">Smiles: </span><span class="tab"> Awaiting details</span></li>
+            <li> <span class= "modal_list_items">IUPAC: </span><span class="tab"> Awaiting details</span></li>
           </ul>
         </div>
       <!-- </div> -->

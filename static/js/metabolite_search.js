@@ -13,13 +13,15 @@ import {test_chart} from './flymet_highcharts.js';
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updateMetSidePanel(obj){
-    // let tissue_name = $(obj).children().first().text();
+    let tissue_name = $(obj).children().first().text();
+
+    console.log(tissue_name)
 
     // find all the paragraphs with id peak in the side panel
 
     $("fieldset[id='click_info']").hide();
     $("fieldset[class^='peak_details']").show();
-    $("p[id^='tissue_type']").text('Intensities in ' + metabolite);
+    $("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
 
     singleMet_intensity_chart('highchart');
     singleMet_intensity_chart('highchart1');

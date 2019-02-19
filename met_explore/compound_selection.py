@@ -20,9 +20,6 @@ def get_cmpd_intensity_df():
     df_index = [p.psec_id for p in peaks]
     cmpds = [p.cmpd_name for p in peaks]
     columns = [s.name for s in samples]
-    hmdb_ids = [p.get_hmdb_id() for p in peaks]
-    kegg_ids = [p.get_kegg_id() for p in peaks]
-
     int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
 
     for i in df_index:
@@ -30,8 +27,6 @@ def get_cmpd_intensity_df():
             sp = SamplePeak.objects.get(peak__psec_id=i, sample__name=c)
             int_df.at[i, c] = sp.intensity
 
-    int_df['HMDB'] = hmdb_ids
-    int_df['KEGG'] = kegg_ids
     int_df.insert(0, 'Metabolite', cmpds)
 
     return int_df
@@ -75,7 +70,7 @@ def get_list_view_column_names(column_names):
     for g in groups:
         if g=='max_value':
             group_name_dict[g] = "Max" + " " + "Value"
-        elif g == 'Metabolite' or g == 'HMDB' or g == 'KEGG':
+        elif g == 'Metabolite':
             group_name_dict[g] = g
         else:
             sample = Sample.objects.filter(group=g)[0]  # Get the first sample of this group.
@@ -101,8 +96,6 @@ def get_single_cmpd_df():
     peak_sids = list(int_df.index.values)
     compound_names = int_df['Metabolite'].tolist()
     group_df.insert(0, 'Metabolite', compound_names)
-    group_df['HMDB']=int_df["HMDB"]
-    group_df['KEGG']=int_df["KEGG"]
 
 
     duplicate_compounds = [item for item, count in collections.Counter(compound_names).items() if count > 1]
@@ -132,3 +125,16 @@ def get_single_cmpd_df():
 
     return non_dup_names_df
 
+
+def get_compound_details(peak_id):
+    """
+    Method to return the compound parameters associated with a peak.
+    :param peak_id: Id of the peak that you want the compound details for
+    :return: A dictionary with compound details of the peak
+    """
+    peak = Peak.objects.get(psec_id=peak_id)
+
+    compound_details = {'hmdb_id':peak.get_hmdb_id(), 'kegg_id':peak.get_kegg_id(),'mz':peak.m_z, 'mass': peak.neutral_mass,
+                        'rt': peak.rt, 'formula': peak.cmpd_formula, 'adduct': peak.adduct, 'name': peak.cmpd_name }
+
+    return compound_details
