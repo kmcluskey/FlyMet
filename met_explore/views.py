@@ -16,7 +16,8 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-single_cmpds_df = get_single_cmpd_df()
+cmpd_selector = CompoundSelector()
+single_cmpds_df = cmpd_selector.single_cmpds_df
 
 
 def index(request):
@@ -115,7 +116,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
-                references = get_compound_details(peak_id)
+                references = cmpd_selector.get_compound_details(peak_id)
 
         context = {
             'metabolite': search_query,
@@ -207,7 +208,7 @@ def met_ex_tissues(request):
     print ("met_ex_list", met_ex_list)
     column_names = single_cmpds_df.columns.tolist()
 
-    group_names = get_list_view_column_names(column_names)
+    group_names = cmpd_selector.get_list_view_column_names(column_names)
 
     column_headers = []
     for c in column_names:
@@ -238,6 +239,21 @@ def get_metabolite_names(request):
 
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
+
+def get_tissue_met_data(request, tissue):
+    """
+       A method to return a list of tissue/intensity values for a given cmpd.
+       :return: A list of dictionaries for the metabolite/tissue highcharts.
+
+    """
+    if request.is_ajax():
+
+        pass
+
+    else:
+
+        pass
+
 
 
 def get_group_tissue_ls_dicts(samples):

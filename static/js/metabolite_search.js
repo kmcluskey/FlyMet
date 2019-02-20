@@ -23,9 +23,115 @@ function updateMetSidePanel(obj){
     $("fieldset[class^='peak_details']").show();
     $("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
 
-    singleMet_intensity_chart('highchart');
-    singleMet_intensity_chart('highchart1');
-    singleMet_intensity_chart('highchart2');
+    const series_data = [ {
+      xAxis: 0,
+      name: "Life Stages",
+      id: "master_1",
+      data: [
+        {
+          name: "Adult Male",
+          y: 856364306,
+          drilldown: "1"
+        },
+        {
+          name: "Adult Female",
+          y: 1118386000,
+          drilldown: "2"
+        },
+        {
+          name: "Larvae",
+          y: 409009818,
+          drilldown: "3"
+        }
+      ]
+    },
+    {
+
+      name: 'Standard Deviation',
+      type: 'errorbar',
+      linkedTo: "master_1",
+
+
+      data:[[723223855, 1100098987],[850003341, 1384887665],[45000456, 670881112]],
+
+      marker: {
+        enabled: false
+      },
+      pointWidth: 15, // Sets the width of the error bar -- Must be added, otherwise the width will change unexpectedly #8558
+      pointRange: 0,  //Prevents error bar from adding extra padding on the X-axis
+      tooltip: {
+        pointFormat: ''
+      }
+      //stemWidth: 10,
+      //whiskerLength: 5
+    }
+   ];
+
+   const drilldown_data = [
+     {
+       xAxis: 1,
+       name: "AM",
+       id: "1",
+       data: [
+         [
+           "AM_T1",
+           745231112
+         ],
+         [
+           "AM_T2",
+           723223855
+         ],
+         [
+           "AM_T3",
+           1100098987
+         ],
+
+       ]
+     },
+     {
+       xAxis: 1,
+       name: "AF",
+       id: "2",
+       data: [
+         [
+           "AF_T1",
+           1120993441
+         ],
+         [
+           "AF_T2",
+           850003341
+         ],
+         [
+           "AF_T3",
+           1384887665
+         ],
+
+       ]
+     },
+     {
+       xAxis: 1,
+       name: "L",
+       id: "3",
+       data: [
+         [
+           "L_T1",
+           45000456
+         ],
+         [
+           "L_T2",
+           670881112
+         ],
+         [
+           "L_T3",
+           512986512
+         ],
+
+       ]
+     }
+
+   ];
+
+    singleMet_intensity_chart('highchart', series_data, drilldown_data);
 
     // Add table header tooltips --these are temporary.
     //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
@@ -46,8 +152,8 @@ function add_met_tooltips(obj, metabolite){
 
 
 
-    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Male: Whole Fly vs Tissue", placement: "top"});
-    $('.AF_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Adult Female: Whole Fly vs Tissue", placement: "top"});
+    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Female: Whole Fly vs Tissue", placement: "top"});
+    $('.AF_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Adult Male: Whole Fly vs Tissue", placement: "top"});
     $('.L_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Larvae: Whole Fly vs Tissue", placement: "top"});
 
 }
