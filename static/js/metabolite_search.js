@@ -12,7 +12,7 @@ import {test_chart} from './flymet_highcharts.js';
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updateMetSidePanel(obj){
+function updateMetSidePanel(obj, metabolite){
     let tissue_name = $(obj).children().first().text();
 
     console.log(tissue_name)
@@ -108,7 +108,9 @@ function updateMetSidePanel(obj){
      singleMet_intensity_chart('highchart', series_data, drilldown_data);
    };
 
-    fetch('http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name)
+   // const url = 'http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name+'/'+ metabolite;
+   const url = `http://127.0.0.1:8000/met_explore/met_search_highchart_data/${tissue_name}/${metabolite}`;
+    fetch(url)
     .then(res => res.json())//response type
     .then(handleUpdate); //log the data;
 
@@ -167,7 +169,7 @@ $(document).ready(function() {
     add_met_tooltips(met_table, metabolite);
 
     met_table.on( 'click', 'tr', function () {
-        updateMetSidePanel(this);
+        updateMetSidePanel(this, metabolite);
     } )
 
     console.log('metabolite_passed', metabolite);

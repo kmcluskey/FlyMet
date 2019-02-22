@@ -240,7 +240,7 @@ def get_metabolite_names(request):
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
 
-def met_search_highchart_data(request, tissue):
+def met_search_highchart_data(request, tissue, metabolite):
     """
        A method to return a list of tissue/intensity values for a given cmpd.
        :return: A list of dictionaries for the metabolite/tissue highcharts.
@@ -251,65 +251,43 @@ def met_search_highchart_data(request, tissue):
     met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
         {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
-
-    all_intensities = np.empty((3, 4))
+    all_intensities = np.empty((3, 4), dtype=float)
     all_intensities[:] = np.nan
-    # if request.is_ajax():
-    # metabolite = request.GET['metabolite_search']
-    metabolite = 'Histidine'
-    tissue = tissue
-
     gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
-    print(gp_intensities)
 
-    # AF = data[0]
-    # AM = data[1]
-    # L = data[2]
-
+    # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
+    # AF = data[0], AM = data[1], L = data[2]
+    # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
     for gp, v in gp_intensities.items():
-        print(gp, v)
         if group_ls_tissue_dict[gp][1] == 'F':
             met_series_data[0]['y'] = v
-            print (cmpd_selector.get_group_ints(metabolite, gp))
             all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp)
-            print("This is the female intensity")
 
         elif group_ls_tissue_dict[gp][1] == 'M':
-            print("This is the male intensity")
             met_series_data[1]['y'] = v
-            print (cmpd_selector.get_group_ints(metabolite, gp))
-
             all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp)
 
         elif group_ls_tissue_dict[gp][1] == 'L':
-            print("This is the larvae intensity")
             met_series_data[2]['y'] = v
             all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp)
 
-    print("series data", met_series_data)
-    print("all intensities for sample set", all_intensities)
+    logger.info("Passing the series data %s", met_series_data)
+    logger.info("all intensities F, M and Larvae are %s", all_intensities)
 
-    # Return the interquartile range - q25 and q75 as the error bars.
+    # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
-    # all_intensities = np.array()
     for d in all_intensities:
 
         q25, q75 = np.percentile(d, [25, 75])
         error_series =[q25, q75]
         error_data.append(error_series)
 
-
     #Replacing the NaNs with zeros for highchart.
     error_bar_data= (np.nan_to_num(error_data)).tolist()
 
-    print ("error_bar_data", error_bar_data)
-
+    logger.info("Passing the error bar data %s", error_bar_data)
 
     return JsonResponse({'series_data': met_series_data, 'error_bar_data': error_bar_data})
-
-    # else:
-    #
-    #     pass
 
 
 class MetaboliteListView(ListView):
