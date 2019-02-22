@@ -82,7 +82,7 @@
                 <tr>
                       {% for m in met_exp_data %}
                       {% if forloop.first %}
-                        <td>{{m}}</td>
+                        <td data-tissue='{{m}}'>{{m}}</td>
                       {% else %}
                         <td>{{m|stringformat:".2f"}}</td>
                       {% endif %}

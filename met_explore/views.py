@@ -83,7 +83,7 @@ def metabolite_search(request):
 
                 columns = ['F', 'M', 'L']
                 df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
-                gp_tissue_ls_dict=get_group_tissue_ls_dicts(samples)
+                gp_tissue_ls_dict=cmpd_selector.get_group_tissue_ls_dicts(samples)
 
                 #Fill in the DF with Tissue/Life stages and intensities.
                 for tissue in tissues:
@@ -215,7 +215,7 @@ def met_ex_tissues(request):
         column_headers.append(group_names[c])
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
-    df2 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=True)
+    df2 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=False)
 
     max_value = np.nanmax(df2)
     min_value = np.nanmin(df2)
@@ -240,37 +240,76 @@ def get_metabolite_names(request):
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
 
-def get_tissue_met_data(request, tissue):
+def met_search_highchart_data(request, tissue):
     """
        A method to return a list of tissue/intensity values for a given cmpd.
        :return: A list of dictionaries for the metabolite/tissue highcharts.
 
     """
-    if request.is_ajax():
+    group_ls_tissue_dict = cmpd_selector.group_ls_tissue_dict
 
-        pass
-
-    else:
-
-        pass
+    met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
+        {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
 
+    all_intensities = np.empty((3, 4))
+    all_intensities[:] = np.nan
+    # if request.is_ajax():
+    # metabolite = request.GET['metabolite_search']
+    metabolite = 'Histidine'
+    tissue = tissue
 
-def get_group_tissue_ls_dicts(samples):
-    # Given the name of the groups get dictionaries giving the lifestage and/or tissue type of the group.
+    gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
+    print(gp_intensities)
 
-    gp_tissue_ls_dict = {}
+    # AF = data[0]
+    # AM = data[1]
+    # L = data[2]
 
-    groups = set([s.group for s in samples])
+    for gp, v in gp_intensities.items():
+        print(gp, v)
+        if group_ls_tissue_dict[gp][1] == 'F':
+            met_series_data[0]['y'] = v
+            print (cmpd_selector.get_group_ints(metabolite, gp))
+            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp)
+            print("This is the female intensity")
 
-    # Get the first sample with of the given group and get the tissue type
+        elif group_ls_tissue_dict[gp][1] == 'M':
+            print("This is the male intensity")
+            met_series_data[1]['y'] = v
+            print (cmpd_selector.get_group_ints(metabolite, gp))
 
-    for gp in groups:
-        group_attributes = samples.filter(group=gp)[0]
-        gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
+            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp)
 
-    return gp_tissue_ls_dict
+        elif group_ls_tissue_dict[gp][1] == 'L':
+            print("This is the larvae intensity")
+            met_series_data[2]['y'] = v
+            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp)
 
+    print("series data", met_series_data)
+    print("all intensities for sample set", all_intensities)
+
+    # Return the interquartile range - q25 and q75 as the error bars.
+    error_data = []
+    # all_intensities = np.array()
+    for d in all_intensities:
+
+        q25, q75 = np.percentile(d, [25, 75])
+        error_series =[q25, q75]
+        error_data.append(error_series)
+
+
+    #Replacing the NaNs with zeros for highchart.
+    error_bar_data= (np.nan_to_num(error_data)).tolist()
+
+    print ("error_bar_data", error_bar_data)
+
+
+    return JsonResponse({'series_data': met_series_data, 'error_bar_data': error_bar_data})
+
+    # else:
+    #
+    #     pass
 
 
 class MetaboliteListView(ListView):

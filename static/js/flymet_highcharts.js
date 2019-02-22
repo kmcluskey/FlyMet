@@ -27,7 +27,7 @@ function singleMet_intensity_chart(container, series_data, drilldown_data){
 
     xAxis: [{
       id: 0,
-      categories:['Whole', 'Male', 'Female', 'Larvae'], //Static x-axis required for error bars.
+      categories:['Female', 'Male', 'Larvae'], //Static x-axis required for error bars.
 
     }, {
       id: 1,

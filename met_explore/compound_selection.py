@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 ## A class that contains various methods for selecting compounds from the peak object
 
+
 class CompoundSelector(object):
 
     def __init__(self):
@@ -17,7 +18,8 @@ class CompoundSelector(object):
         self.int_df = self.get_cmpd_intensity_df()
         self.single_cmpds_df = self.get_single_cmpd_df()
 
-
+        samples = Sample.objects.all()
+        self.group_ls_tissue_dict = self.get_group_tissue_ls_dicts(samples)
 
     def get_cmpd_intensity_df(self):
         """
@@ -147,3 +149,62 @@ class CompoundSelector(object):
                             'rt': peak.rt, 'formula': peak.cmpd_formula, 'adduct': peak.adduct, 'name': peak.cmpd_name }
 
         return compound_details
+
+    def get_groups(self, tissue):
+        """
+        :param tissue: The tissue of interest
+        :return: The groups that this tissue is found in
+        """
+        filtered_sps = Sample.objects.filter(tissue=tissue)
+        groups = set([f.group for f in filtered_sps])
+
+        return groups
+
+    def get_gp_intensity(self, metabolite, tissue):
+
+        """
+        Given a metabolite and tissue, this method returns the group name and the intensity.
+
+        :param metabolite:
+        :param tissue:
+        :return: The group name of the tissue and metabolite and
+        """
+        groups = self.get_groups(tissue)
+        met_search_df = self.single_cmpds_df[self.single_cmpds_df['Metabolite'] == metabolite]
+        gp_int_dict = {}
+        for g in groups:
+            ave_intensity = met_search_df[g].values[0]
+            gp_int_dict[g] = ave_intensity
+
+        return gp_int_dict
+
+    def get_group_tissue_ls_dicts(self, samples):
+        # Given the name of the samples get dictionaries giving the groups: lifestage and/or tissue type of the group.
+
+        gp_tissue_ls_dict = {}
+
+        groups = set([s.group for s in samples])
+
+        # Get the first sample with of the given group and get the tissue type
+
+        for gp in groups:
+            group_attributes = samples.filter(group=gp)[0]
+            gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
+
+        return gp_tissue_ls_dict
+
+    def get_group_ints(self, metabolite, group):
+
+        # Given a group and metabolite get back all of the intensities in that group as a list
+
+        met_search_df = self.single_cmpds_df[self.single_cmpds_df['Metabolite'] == metabolite]
+        peak_id = met_search_df.index
+
+        met_int_df = self.int_df.loc[peak_id]
+
+        sample_group = Sample.objects.filter(group=group)
+        sample_names = [s.name for s in sample_group]
+
+        sample_ints = met_int_df[sample_names].values[0]
+
+        return list(sample_ints)

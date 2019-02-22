@@ -17,43 +17,11 @@ function updateMetSidePanel(obj){
 
     console.log(tissue_name)
 
-    // find all the paragraphs with id peak in the side panel
-
-    $("fieldset[id='click_info']").hide();
-    $("fieldset[class^='peak_details']").show();
-    $("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
-
-    const series_data = [ {
-      xAxis: 0,
-      name: "Life Stages",
-      id: "master_1",
-      data: [
-        {
-          name: "Adult Male",
-          y: 856364306,
-          drilldown: "1"
-        },
-        {
-          name: "Adult Female",
-          y: 1118386000,
-          drilldown: "2"
-        },
-        {
-          name: "Larvae",
-          y: 409009818,
-          drilldown: "3"
-        }
-      ]
-    },
-    {
-
-      name: 'Standard Deviation',
+    const series_data = [ { xAxis: 0, name: "Life Stages", id: "master_1", data: null},
+    { name: 'IQR',
       type: 'errorbar',
       linkedTo: "master_1",
-
-
-      data:[[723223855, 1100098987],[850003341, 1384887665],[45000456, 670881112]],
-
+      data: null,
       marker: {
         enabled: false
       },
@@ -131,7 +99,29 @@ function updateMetSidePanel(obj){
 
    ];
 
-    singleMet_intensity_chart('highchart', series_data, drilldown_data);
+
+   const handleUpdate = function(returned_data) {
+     console.log(returned_data);
+     series_data[1].data = returned_data.error_bar_data
+     series_data[0].data = returned_data.series_data
+     console.log(series_data);
+     singleMet_intensity_chart('highchart', series_data, drilldown_data);
+   };
+
+    fetch('http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name)
+    .then(res => res.json())//response type
+    .then(handleUpdate); //log the data;
+
+
+
+    // find all the paragraphs with id peak in the side panel
+
+    $("fieldset[id='click_info']").hide();
+    $("fieldset[class^='peak_details']").show();
+    $("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
+
+
+
 
     // Add table header tooltips --these are temporary.
     //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
@@ -171,6 +161,8 @@ $(document).ready(function() {
 
     $("fieldset[class^='peak_details']").hide();
 
+    //let tissue_name = $(obj).children().first().text();
+
     let met_table = initialise_table("tissue_met_table", min, mid, max);
     add_met_tooltips(met_table, metabolite);
 
@@ -178,9 +170,10 @@ $(document).ready(function() {
         updateMetSidePanel(this);
     } )
 
-    console.log('metabolite_passed', metabolite)
+    console.log('metabolite_passed', metabolite);
     //Method to add an autocomplete search function to the DB
     loadData(('http://127.0.0.1:8000/met_explore/get_metabolite_names')).then(function(data) {
         new Awesomplete(metabolite_search, {list: data.metaboliteNames});
-});
+      });
+
 });

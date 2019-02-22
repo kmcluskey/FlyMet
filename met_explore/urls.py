@@ -21,6 +21,6 @@ urlpatterns = [
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
     path('peak_explorer', views.peak_explorer, name='peak_explorer'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
-    path('get_tissue_met_into', views.get_tissue_met_data, name='get_tissue_met_data'),
+    path('met_search_highchart_data/<str:tissue>', views.met_search_highchart_data, name='met_search_highchart_data'),
 
 ]
