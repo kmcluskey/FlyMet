@@ -13,6 +13,7 @@ from met_explore.models import Peak, SamplePeak, Sample
 import pandas as pd
 import logging
 import numpy as np
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -246,18 +247,23 @@ def met_search_highchart_data(request, tissue, metabolite):
        :return: A list of dictionaries for the metabolite/tissue highcharts.
 
     """
+    # relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
     group_ls_tissue_dict = cmpd_selector.group_ls_tissue_dict
 
     met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
         {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
+
     all_intensities = np.empty((3, 4), dtype=float)
     all_intensities[:] = np.nan
     gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
 
+    print ("This is the group intensites ", gp_intensities)
+
     # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
     # AF = data[0], AM = data[1], L = data[2]
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
+    # The group intensities just have the group name so have to work out the LS from this.
     for gp, v in gp_intensities.items():
         if group_ls_tissue_dict[gp][1] == 'F':
             met_series_data[0]['y'] = v
@@ -274,6 +280,21 @@ def met_search_highchart_data(request, tissue, metabolite):
     logger.info("Passing the series data %s", met_series_data)
     logger.info("all intensities F, M and Larvae are %s", all_intensities)
 
+    # Return all the intensities as drilldown data to highcharts
+    # The all_intensities data is a list of lists as 4 replicates for the LS: F, M and L
+
+    drilldown_data = [[["F1", None], ["F2", None], ["F3", None], ["F4", None]],
+                      [["M1", None], ["M2", None], ["M3", None], ["M4", None]],
+                      [["L1", None], ["L2", None], ["L3", None], ["L4", None]]]
+
+    int_data = np.nan_to_num(all_intensities).tolist()
+
+    #Replace the None in the drilldown data with the data from all_intensities.
+    for drill, intensity in zip(drilldown_data, int_data):
+        for d, i in zip(drill, intensity):
+            d[1] = i
+
+
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
     for d in all_intensities:
@@ -285,9 +306,19 @@ def met_search_highchart_data(request, tissue, metabolite):
     #Replacing the NaNs with zeros for highchart.
     error_bar_data= (np.nan_to_num(error_data)).tolist()
 
+    logger.info("Passing the series data %s", drilldown_data)
     logger.info("Passing the error bar data %s", error_bar_data)
+    logger.info("Passing the drilldown data %s", drilldown_data)
 
-    return JsonResponse({'series_data': met_series_data, 'error_bar_data': error_bar_data})
+    peak_id = cmpd_selector.get_peak_id(metabolite)
+    cmpd_details = cmpd_selector.get_compound_details(peak_id)
+    frank_annots = json.loads(cmpd_details['frank_annots'])
+    probability = None
+
+    if frank_annots is not None:
+        probability = round(float(frank_annots['probability']),1)
+
+    return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data, 'drilldown_data': drilldown_data})
 
 
 class MetaboliteListView(ListView):

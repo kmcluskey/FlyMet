@@ -132,7 +132,6 @@
                       <ul class="molecule_list pl-2">
                         <li class="pb-2"><u>Formula:</u> {{references.formula}}</li>
                         <li class="pb-2"><u>Neutral Mass:</u> {{references.mass|stringformat:".2f"}}</li>
-                        <li class="pb-2"><u>m/z:</u> {{references.mz|stringformat:".2f"}}</li>
                       </ul>
 
                     </div>
@@ -148,15 +147,23 @@
 
               <!-- </divs> for the peak data and graphs-->
               <fieldset class="peak_details fieldset-details">
-                <legend class="sidebar">Peak 1</legend>
+                <legend class="sidebar">Peak Info</legend>
                 <div class="p-2">
+                  {% if references.identified == 'True' %}
                   <span id="I" class="badge badge-pill badge-success">I</span>
+                  {% elif references.frank_annots %}
                   <span id ="F" class="badge badge-pill badge-primary">F</span>
+                  {{references.frank_annots.probability}}
+                  {% else %}
                   <span id="A" class="badge badge-pill badge-warning">A15</span>
+                  {% endif %}
                   <hr>
                   <div class="row">
-                    <div class="col-sm-4 peak_data"><u>Ion:</u> {{adduct}}</div><div class="col-sm-4 peak_data"><u>Neutral Mass:</u>{{mass}}</div>
-                    <div class="col-sm-4 peak_data"><u>RT:</u>{{rt}}</div>
+                    <div class="col-sm-6 peak_data"><b>Ion: </b>{{references.adduct}}</div><div class="col-sm-6 peak_data"><b>RT: </b>{{references.rt|stringformat:".2f"}}</div>
+                    <br>
+                  </div>
+                  <div class ="row">
+                    <div class="col-sm-6 peak_data"><b>m/z: </b>{{references.mz|stringformat:".2f"}}</div><div class="col-sm-6 peak_data"><b>Neutral Mass: </b>{{references.mass|stringformat:".2f"}}</div>
                   </div>
                 </div>
                 <div class="p-2">
@@ -165,44 +172,6 @@
                 <div id="highchart" class="p-4">
                 </div>
               </fieldset>
-
-              <fieldset class="peak_details fieldset-details">
-                <legend class="sidebar">Peak 2</legend>
-                <div class="p-2">
-                  <span id="I2" class="badge badge-pill badge-success">I</span>
-                  <span id ="F1" class="badge badge-pill badge-primary">F</span>
-                  <span id="A1" class="badge badge-pill badge-warning">A4</span>
-                  <hr>
-                  <div class="row">
-                    <div class="col-sm-4 peak_data"><u>Ion:</u> M-H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 154.0623</div>
-                    <div class="col-sm-4 peak_data"><u>RT:</u> 704.74 </div>
-                  </div>
-                </div>
-                <div class="p-2">
-                  <p id="tissue_type2"></p>
-                </div>
-                <div id="highchart1" class="p-4">
-                </div>
-              </fieldset>
-
-              <fieldset class="peak_details fieldset-details ">
-                <legend class="sidebar">Peak 3</legend>
-                <div class="p-2">
-                  <span id ="F0" class="badge badge-pill badge-danger">F</span>
-                  <span id="A2" class="badge badge-pill badge-warning">A47</span>
-                  <hr>
-                  <div class="row">
-                    <div class="col-sm-4 peak_data"><u>Ion:</u> M-H</div><div class="col-sm-4 peak_data"><u>Mass:</u> 154.0623</div>
-                    <div class="col-sm-4 peak_data"><u>RT:</u> 1055.4 </div>
-                  </div>
-                </div>
-                <div class="p-2">
-                  <p id="tissue_type3"></p>
-                </div>
-                <div id="highchart2" class="p-4">
-                </div>
-              </fieldset>
-
             </div>
             <!-- End of side bar divs -->
           </div>
@@ -216,26 +185,26 @@
     <!--Footer end-->
 
     <!-- The Modal -->
-<div class="modal" id="cmpd_Modal">
-  <div class="modal-dialog">
-    <div class="modal-content">
+    <div class="modal" id="cmpd_Modal">
+      <div class="modal-dialog">
+        <div class="modal-content">
 
-      <!-- Modal Header -->
-      <div class="modal-header">
-        <h5 class="modal-title">{{metabolite}} Cross References:</h5>
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-      </div>
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h5 class="modal-title">{{metabolite}} Cross References:</h5>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
 
-      <!-- Modal body -->
-      <div class="modal-body row">
-        <div class="col-sm-12">
-          <h6> DB Identifiers: </h6>
-          <ul>
-            <li> <span class= "modal_list_items">ChEBI:</span>Awaiting details</li>
-            <li><span class= "modal_list_items">Kegg:</span> <a href="https://www.genome.jp/dbget-bin/www_bget?{{references.kegg_id}}" class="tab" >{{references.kegg_id}}</a></li>
-            <li><span class= "modal_list_items">ChemSpider:</span> Awaiting info </li>
-            <li><span class= "modal_list_items">HMDB:</span> <a href="http://www.hmdb.ca/metabolites/{{references.hmdb_id}}" class="tab" >{{references.hmdb_id}}</a></li>
-          </ul>
+          <!-- Modal body -->
+          <div class="modal-body row">
+            <div class="col-sm-12">
+              <h6> DB Identifiers: </h6>
+              <ul>
+                <li> <span class= "modal_list_items">ChEBI:</span>Awaiting details</li>
+                <li><span class= "modal_list_items">Kegg:</span> <a href="https://www.genome.jp/dbget-bin/www_bget?{{references.kegg_id}}" class="tab" >{{references.kegg_id}}</a></li>
+                <li><span class= "modal_list_items">ChemSpider:</span> Awaiting info </li>
+                <li><span class= "modal_list_items">HMDB:</span> <a href="http://www.hmdb.ca/metabolites/{{references.hmdb_id}}" class="tab" >{{references.hmdb_id}}</a></li>
+              </ul>
         <!-- </div> -->
         <!-- <div class="col-md-6"> -->
 

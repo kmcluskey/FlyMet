@@ -146,7 +146,8 @@ class CompoundSelector(object):
         peak = Peak.objects.get(psec_id=peak_id)
 
         compound_details = {'hmdb_id':peak.get_hmdb_id(), 'kegg_id':peak.get_kegg_id(),'mz':peak.m_z, 'mass': peak.neutral_mass,
-                            'rt': peak.rt, 'formula': peak.cmpd_formula, 'adduct': peak.adduct, 'name': peak.cmpd_name }
+                            'rt': peak.rt, 'formula': peak.cmpd_formula, 'adduct': peak.adduct, 'name': peak.cmpd_name,
+                            'identified': peak.identified, 'frank_annots': peak.frank_anno}
 
         return compound_details
 
@@ -191,6 +192,7 @@ class CompoundSelector(object):
             group_attributes = samples.filter(group=gp)[0]
             gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
 
+        logger.info("The group tissue dictionary is %s ", gp_tissue_ls_dict)
         return gp_tissue_ls_dict
 
     def get_group_ints(self, metabolite, group):
@@ -208,3 +210,13 @@ class CompoundSelector(object):
         sample_ints = met_int_df[sample_names].values[0]
 
         return list(sample_ints)
+
+    def get_peak_id(self, metabolite):
+
+        # Given a metabolite name get the peak ID from the single_cmpds_df
+
+        met_search_df = self.single_cmpds_df[self.single_cmpds_df['Metabolite'] == metabolite]
+        peak_id = met_search_df.index.values[0]
+
+        return peak_id
+
