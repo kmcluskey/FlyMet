@@ -80,7 +80,7 @@ const handleUpdate = function(returned_data) {
 
 
 //const url = 'http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name+'/'+ metabolite;
-const url = `http://127.0.0.1:8000/met_explore/met_search_highchart_data/${tissue_name}/${metabolite}`
+const url = `/met_explore/met_search_highchart_data/${tissue_name}/${metabolite}`
 fetch(url)
 .then(res => res.json())//response type
 .then(handleUpdate);
