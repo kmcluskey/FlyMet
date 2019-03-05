@@ -93,7 +93,6 @@ $("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
 // Add table header tooltips --these are temporary.
 //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
 function add_highchart_tooltips(probability){
-  console.log ("WHAAAA", probability)
   $('#I').tooltip({title: "MS peak has been Identified as " + metabolite + " using a library standard", placement: "top"});
   $('#F').tooltip({title: "MS/MS Fragmentation data suggests that a peak is "+ probability + "% likely to be "+ metabolite, placement: "top"});
   $('#A').tooltip({title: "This peak, annotated as Histidine, also annotates 15 other compounds", placement: "top"});
@@ -132,8 +131,9 @@ $(document).ready(function() {
   } )
 
   console.log('metabolite_passed', metabolite);
+  console.log('url', url)
   //Method to add an autocomplete search function to the DB
-  loadData(('http://127.0.0.1:8000/met_explore/get_metabolite_names')).then(function(data) {
+  loadData((url)).then(function(data) {
     new Awesomplete(metabolite_search, {list: data.metaboliteNames});
   });
 

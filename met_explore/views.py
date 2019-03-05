@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
-
+from django.urls import reverse
 
 from django.utils import timezone
 from django.views.generic.list import ListView
@@ -125,7 +125,8 @@ def metabolite_search(request):
             'min': min,
             'max': max,
             'mean': mean,
-            'references': references
+            'references': references,
+            'json_url': reverse('get_metabolite_names')
             }
 
         return render(request, 'met_explore/metabolite_search.html', context)
