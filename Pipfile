@@ -27,6 +27,7 @@ tzlocal = "*"
 django-webpack-loader = "*"
 rest-framework = "*"
 djangorestframework = "*"
+cobra = {extras = ["all"]}
 
 [dev-packages]
 

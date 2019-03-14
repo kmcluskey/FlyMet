@@ -84,7 +84,11 @@
                       {% if forloop.first %}
                         <td data-tissue='{{m}}'>{{m}}</td>
                       {% else %}
-                        <td>{{m|stringformat:".2f"}}</td>
+                        {% if m > 0 %}
+                          <td>{{m|stringformat:".2f"}}</td>
+                        {% else %}
+                          <td>-</td>
+                        {% endif%}
                       {% endif %}
                   {% endfor %}
                 </tr>

@@ -26,11 +26,10 @@ class PeakSelector(object):
 
         peak_details_df = pd.read_json(peak_json_file)
         self.intensity_json_file = intensity_json_file
-        # Taking the RT from the Stds_ALL.csv file and multipling by 60 - hopefully can
+        # Taking the expected RT from the Stds_ALL.csv file and multipling by 60 - hopefully can
         # read this directly from a CSV file in the future
 
-        self.std_temp_dict = {"D-Fructose 6-phosphate": 783.6, "D-glucose 6-phosphate": 754.8,
-                         "trans-4-Hydroxy-L-proline": 720.6, "5-Aminolevulinate": 696.0}
+        self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2}
 
         # Filter on adduct types
         selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H')

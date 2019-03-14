@@ -50,7 +50,7 @@
   </div>
 
   <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+  <table id="met_list" class="table-sm table-bordered table-hover table-striped" style="width:100%">
     <thead class="thead-light">
       <tr id = "columns">
         {% for column_name in columns %}
@@ -63,9 +63,13 @@
       <tr>
             {% for m in met_exp_data %}
             {% if forloop.first %}
-              <td>{{m}}</td>
+              <td style="width: 5%">{{m}}</td>
             {% else %}
-              <td>{{m|stringformat:".2e"}}</td>
+              {% if m > 0 %}
+                <td>{{m|stringformat:".2e"}}</td>
+                {% else %}
+                <td>-</td>
+              {% endif %}
             {% endif %}
         {% endfor %}
       </tr>

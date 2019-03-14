@@ -6,11 +6,12 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
     const MIN_VAL = 3000;
     let table = $(tName).DataTable({
-        responsive: true,
-
+        // responsive: true,
         "scrollY": "100vh",
         "scrollCollapse": true,
         "scrollX": true,
+        fixedheader: true,
+
         select: {
             style: 'single'
         },
