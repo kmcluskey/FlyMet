@@ -57,7 +57,8 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                 }
             }
         ]
-    });
+    }).columns.adjust().draw();
+
 //Return the table so that the it is resuable.
     return table;
 }

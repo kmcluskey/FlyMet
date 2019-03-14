@@ -18,7 +18,9 @@ import json
 logger = logging.getLogger(__name__)
 
 cmpd_selector = CompoundSelector()
-single_cmpds_df = cmpd_selector.single_cmpds_df
+s_cmpds_df = cmpd_selector.single_cmpds_df
+single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
+single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
 
 
 def index(request):
@@ -118,7 +120,7 @@ def metabolite_search(request):
                     mean = actual_mean
 
                 references = cmpd_selector.get_compound_details(peak_id)
-
+        print (met_table_data)
         context = {
             'metabolite': search_query,
             'met_table_data': met_table_data,
@@ -207,8 +209,9 @@ def met_ex_tissues(request):
     """
 
     met_ex_list = single_cmpds_df.values.tolist()
-    print ("met_ex_list", met_ex_list)
     column_names = single_cmpds_df.columns.tolist()
+
+    print ("column_names ", column_names)
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
@@ -224,7 +227,7 @@ def met_ex_tissues(request):
     mean_value = np.nanmean(df2)
 
     ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
-
+    print ("Column headers ", column_headers)
     response = {'columns': column_headers, 'data': met_ex_list, 'max_value':max_value, 'min_value':min_value, 'mean_value':mean_value}
 
     return render(request, 'met_explore/met_ex_tissues.html', response)
