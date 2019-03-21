@@ -1,5 +1,7 @@
 require('./init_datatables.js');
 const d3 = require('d3');
+require('bootstrap/js/dist/tooltip');
+
 
 
 function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
@@ -11,13 +13,12 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
         "scrollCollapse": true,
         "scrollX": true,
         fixedheader: true,
-
         select: {
             style: 'single'
         },
         dom: //code to override bootstrap and keep buttons on one line.
         "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
-        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<tr>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
         buttons: [ 'copy',
             {
@@ -57,14 +58,19 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                 }
             }
         ]
-    }).columns.adjust().draw();
+    })
 
 //Return the table so that the it is resuable.
     return table;
 }
 
+function add_tooltips(obj){
+  $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+}
+
 $(document).ready(function() {
     // let met_table = initialise_list_table("met_list", 2000000, 672500000, 1340000000);
     let met_table = initialise_list_table("met_list", min_value, mean_value, max_value);
+    add_tooltips(met_table);
 
 });

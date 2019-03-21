@@ -63,12 +63,12 @@
       <tr>
             {% for m in met_exp_data %}
             {% if forloop.first %}
-              <td style="width: 5%">{{m}}</td>
+              <td>{{m}}</td>
             {% else %}
               {% if m > 0 %}
                 <td>{{m|stringformat:".2e"}}</td>
                 {% else %}
-                <td>-</td>
+                <td class="NotDetected">-</td>
               {% endif %}
             {% endif %}
         {% endfor %}
