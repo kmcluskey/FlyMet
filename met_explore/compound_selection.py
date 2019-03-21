@@ -4,6 +4,7 @@ import collections
 import pandas as pd
 import numpy as np
 import operator
+import math
 
 import logging
 logger = logging.getLogger(__name__)
@@ -60,7 +61,11 @@ class CompoundSelector(object):
                     sample_name = g.name
                     intensity = int_df.loc[i, sample_name]
                     int_list.append(intensity)
-                average_int = sum(int_list) / len(int_list)
+
+                if (np.isnan(int_list).all()): #If all the values are NaN keep the value as NaN
+                    average_int = sum(int_list) / len(int_list)
+                else: #Take the avaerage of the non-Nan numbers
+                    average_int = np.nansum(int_list) / len(int_list)
                 group_df.loc[i, group] = average_int
                 # group_df.loc[i, group] = '%.2E' % Decimal(average_int)
 
@@ -98,9 +103,6 @@ class CompoundSelector(object):
         :return:
         """
         logger.info("Getting a DF of peaks containing with no duplicate compounds")
-        self.int_df.replace(0, np.nan, inplace=True)
-
-        # KMcL: TEMP: Change zero values to Nan here as a temporary measure - should be done upstream in PiMP.
 
         group_df = self.get_group_df(self.int_df)
 
@@ -165,6 +167,7 @@ class CompoundSelector(object):
 
         """
         Given a metabolite and tissue, this method returns the group name and the intensity.
+        The average intensity has already been calculated in the single_cmpds_df
 
         :param metabolite:
         :param tissue:

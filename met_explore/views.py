@@ -17,11 +17,20 @@ import json
 
 logger = logging.getLogger(__name__)
 
-cmpd_selector = CompoundSelector()
-s_cmpds_df = cmpd_selector.single_cmpds_df
-single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
-single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
+#If the Db exists and has been initialised:
+try:
+    cmpd_selector = CompoundSelector()
+    s_cmpds_df = cmpd_selector.single_cmpds_df
+    single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
+    single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
 
+    print (single_cmpds_df.head())
+
+except Exception as e:
+
+    logger.warning("DB not ready, start server once populated")
+    logger.warning("The exception is", e)
+    pass
 
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
@@ -98,8 +107,9 @@ def metabolite_search(request):
 
 
                 #Standardise the DF by dividing by the Whole cell/Lifestage
-                standardised_df = df.div(df.loc['Whole'])
-                log_df = np.log2(standardised_df)
+                whole_row = df.loc['Whole']
+                sdf = df.divide(whole_row) #Standardised df - divided by the row with the whole data.
+                log_df = np.log2(sdf)
                 view_df = log_df.drop(index='Whole').round(2)
                 log_values = view_df.values.tolist()
                 index = view_df.index.tolist()
@@ -120,7 +130,8 @@ def metabolite_search(request):
                     mean = actual_mean
 
                 references = cmpd_selector.get_compound_details(peak_id)
-        print (met_table_data)
+
+        print ("met_table_data", met_table_data)
         context = {
             'metabolite': search_query,
             'met_table_data': met_table_data,
@@ -211,7 +222,6 @@ def met_ex_tissues(request):
     met_ex_list = single_cmpds_df.values.tolist()
     column_names = single_cmpds_df.columns.tolist()
 
-    print ("column_names ", column_names)
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
@@ -227,7 +237,6 @@ def met_ex_tissues(request):
     mean_value = np.nanmean(df2)
 
     ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
-    print ("Column headers ", column_headers)
     response = {'columns': column_headers, 'data': met_ex_list, 'max_value':max_value, 'min_value':min_value, 'mean_value':mean_value}
 
     return render(request, 'met_explore/met_ex_tissues.html', response)
@@ -257,7 +266,6 @@ def met_search_highchart_data(request, tissue, metabolite):
     met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
         {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
-
     all_intensities = np.empty((3, 4), dtype=float)
     all_intensities[:] = np.nan
     gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
@@ -269,6 +277,8 @@ def met_search_highchart_data(request, tissue, metabolite):
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
     # The group intensities just have the group name so have to work out the LS from this.
     for gp, v in gp_intensities.items():
+        if math.isnan(v):
+            v =  np.nan_to_num(v) #Can't pass NaN to JSON so return a zero to the highchart.
         if group_ls_tissue_dict[gp][1] == 'F':
             met_series_data[0]['y'] = v
             all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp)
@@ -301,16 +311,15 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
-    for d in all_intensities:
-
+    for d in np.nan_to_num(all_intensities): # for error bar calcs Nans are used as zeros.
         q25, q75 = np.percentile(d, [25, 75])
         error_series =[q25, q75]
         error_data.append(error_series)
 
     #Replacing the NaNs with zeros for highchart.
-    error_bar_data= (np.nan_to_num(error_data)).tolist()
+    error_bar_data = (np.nan_to_num(error_data)).tolist()
 
-    logger.info("Passing the series data %s", drilldown_data)
+    logger.info("Passing the series data %s", met_series_data)
     logger.info("Passing the error bar data %s", error_bar_data)
     logger.info("Passing the drilldown data %s", drilldown_data)
 
