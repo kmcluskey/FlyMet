@@ -84,7 +84,13 @@
                       {% if forloop.first %}
                         <td data-tissue='{{m}}'>{{m}}</td>
                       {% else %}
-                          <td>{{m|stringformat:".2f"}}</td>
+                      {% if m == "NM" %}
+                        <td data-order="-192892739724">nm</td>
+                      {% elif m == "-" %}
+                          <td data-order="-192892739">{{m}}</td>
+                      {% else %}
+                            <td data-order={{m}}>{{m}}</td>
+                      {% endif %}
                       {% endif %}
                   {% endfor %}
                 </tr>

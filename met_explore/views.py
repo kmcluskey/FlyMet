@@ -95,6 +95,7 @@ def metabolite_search(request):
 
                 columns = ['F', 'M', 'L']
                 df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
+                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM") #Not measured samples
                 gp_tissue_ls_dict=cmpd_selector.get_group_tissue_ls_dicts(samples)
 
                 #Fill in the DF with Tissue/Life stages and intensities.
@@ -104,14 +105,26 @@ def metabolite_search(request):
                             if gp_tissue_ls_dict[g] == [tissue, ls]:
                                 value = met_search_df.iloc[0][g]
                                 df.loc[tissue, ls] = value
+                                nm_samples_df.loc[tissue, ls] = value
 
-
+                print("NOT read samples", nm_samples_df)
                 #Standardise the DF by dividing by the Whole cell/Lifestage
                 whole_row = df.loc['Whole']
                 sdf = df.divide(whole_row) #Standardised df - divided by the row with the whole data.
                 log_df = np.log2(sdf)
                 view_df = log_df.drop(index='Whole').round(2)
-                log_values = view_df.values.tolist()
+
+                nm_df = nm_samples_df.drop(index='Whole')
+
+                nm2 = nm_df[nm_df == 'NM']
+                log_nm_df = nm2.combine_first(view_df)#Replace NM values for not measured samples in final df
+
+                print(log_nm_df)
+
+                log_nm = log_nm_df.fillna("-")
+
+                log_values = log_nm.values.tolist() #This is what we are sending to the user.
+
                 index = view_df.index.tolist()
                 # Get a list to return to the view
                 met_table_data = []

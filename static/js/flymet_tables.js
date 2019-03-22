@@ -10,7 +10,7 @@ function initialise_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
     console.log(tName)
     let table = $(tName).DataTable({
-        responsive: true,
+        //responsive: true,
 
         "scrollY": "40vh",
         "scrollCollapse": true,
@@ -33,6 +33,8 @@ function initialise_table(tableName, lowpoint, midpoint, highpoint){
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
+            {type: "num", "targets":[1,2,3]},
+
             {
                 "targets": '_all',
                 "createdCell": function (td, cellData, rowData, row, col) {
