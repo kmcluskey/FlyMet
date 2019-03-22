@@ -392,3 +392,8 @@ padding-left:0;
   border-style: solid;
   border-color: black;
 }
+
+table.dataTable .px300 {
+  min-width: 20vw;
+  word-wrap: break-word;
+}
