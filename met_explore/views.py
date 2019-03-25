@@ -24,13 +24,13 @@ try:
     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
     single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
 
-    print (single_cmpds_df.head())
+except django.db.utils.OperationalError as e:
 
-except Exception as e:
+    logger.warning("I'm catching this error %s ", e)
 
-    logger.warning("DB not ready, start server once populated")
-    logger.warning("The exception is", e)
-    pass
+    logger.warning("DB not ready, start server again once populated")
+    cmpd_selector = None
+
 
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")

@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import operator
 import math
+import django
 
 import logging
 logger = logging.getLogger(__name__)
@@ -16,11 +17,19 @@ class CompoundSelector(object):
 
     def __init__(self):
 
-        self.int_df = self.get_cmpd_intensity_df()
-        self.single_cmpds_df = self.get_single_cmpd_df()
+        try:
 
-        samples = Sample.objects.all()
-        self.group_ls_tissue_dict = self.get_group_tissue_ls_dicts(samples)
+            self.int_df = self.get_cmpd_intensity_df()
+            self.single_cmpds_df = self.get_single_cmpd_df()
+
+            samples = Sample.objects.all()
+            self.group_ls_tissue_dict = self.get_group_tissue_ls_dicts(samples)
+
+        except django.db.utils.OperationalError as e:
+
+            logger.warning("I'm raising this error %s", e)
+
+            raise e
 
     def get_cmpd_intensity_df(self):
         """
@@ -195,7 +204,6 @@ class CompoundSelector(object):
             group_attributes = samples.filter(group=gp)[0]
             gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
 
-        logger.info("The group tissue dictionary is %s ", gp_tissue_ls_dict)
         return gp_tissue_ls_dict
 
     def get_group_ints(self, metabolite, group):

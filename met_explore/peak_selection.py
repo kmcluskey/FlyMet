@@ -29,7 +29,7 @@ class PeakSelector(object):
         # Taking the expected RT from the Stds_ALL.csv file and multipling by 60 - hopefully can
         # read this directly from a CSV file in the future
 
-        self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2}
+        self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline":720.6, "5-Aminolevulinate":696.0}
 
         # Filter on adduct types
         selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H')
@@ -325,10 +325,10 @@ class PeakSelector(object):
 
     def remove_duplicates_on_rt(self, peak_df):
         """
-        For a peak with duplicate compounds - keep the one with the cloests RT to the STD DB expected value.
+        For a peak with duplicate compounds - keep the one with the closest RT to the STD DB expected value.
         Delete the others.
         """
-        duplicate_df =peak_df[peak_df['sec_id'].duplicated(keep=False)]
+        duplicate_df = peak_df[peak_df['sec_id'].duplicated(keep=False)]
         print ("the duplicates at this stage are: ")
         display(duplicate_df)
         dup_ids = set(duplicate_df['sec_id'].values)
@@ -336,6 +336,7 @@ class PeakSelector(object):
 
         for dupid in dup_ids:
 
+            name_rt_dict = {}
             dup_indexes = []
             dup_peaks = peak_df[peak_df.sec_id == dupid]
 
@@ -365,7 +366,7 @@ class PeakSelector(object):
                     abs_value = abs(dup_rt - rt)
                     abs_dic[index] = abs_value
 
-        print(abs_dic)
+        logger.info("The abs dict is, %s ", abs_dic)
         keep_index = min(abs_dic, key=lambda x: abs_dic.get(x))
         print("The keep_index is", keep_index)  # Return this and then use it as below.
 
