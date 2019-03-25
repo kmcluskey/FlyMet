@@ -100,6 +100,12 @@ function add_highchart_tooltips(probability){
 
 }
 
+function add_table_tooltips(obj){
+  $('.notDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+  $('.notMeasured').tooltip({title: "A sample has not been measured for this tissue/life stage combination", placement: "top"})
+
+}
+
 function add_met_tooltips(obj, metabolite){
 
   $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Female: Whole Fly vs Tissue", placement: "top"});
@@ -125,6 +131,7 @@ $(document).ready(function() {
 
   let met_table = initialise_table("tissue_met_table", min, mid, max);
   add_met_tooltips(met_table, metabolite);
+  add_table_tooltips(tissue_met_table);
 
   met_table.on( 'click', 'tr', function () {
     updateMetSidePanel(this, metabolite);
