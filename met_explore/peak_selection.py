@@ -1,6 +1,7 @@
 from IPython.display import display
 from difflib import SequenceMatcher
 from collections import OrderedDict
+from met_explore.models import Peak, Compound
 
 import pandas as pd
 import numpy as np
@@ -46,7 +47,7 @@ class PeakSelector(object):
         #This is the new df to store the chosen peaks.
 
 
-        logger.info("PeakSelector initialised with ", len(self.unique_sec_ids),"peaks/unique ids")
+        logger.info("PeakSelector initialised with %s peaks/unique ids", str(len(self.unique_sec_ids)))
 
 
     def construct_peak_df(self):

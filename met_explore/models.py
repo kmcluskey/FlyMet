@@ -19,25 +19,17 @@ class Sample(models.Model):
 
         return "Sample " + self.name
 
-
 class Peak(models.Model):
     """
     Model class representing a basic peak including the compound as a simple string.
     One peak per secondary peak ID in PiMP
     """
 
-    psec_id =  models.IntegerField(unique= True) #The secondary peak ID from PiMP
+    psec_id = models.IntegerField(unique= True) #The secondary peak ID from PiMP
     m_z = models.DecimalField(max_digits=20, decimal_places=10)
-    neutral_mass =  models.DecimalField(max_digits=20, decimal_places=10)
+    neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
     rt = models.DecimalField(max_digits=20, decimal_places=10)
     polarity = models.CharField(max_length=8)
-    cmpd_name = models.CharField(max_length=600)  # At this stage just a name for the metabolite
-    cmpd_formula = models.CharField(max_length=100)
-    cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak
-    identified = models.CharField(max_length=100) #Should be set at True or False
-    frank_anno = models.CharField(max_length=600, null=True)
-    adduct = models.CharField(max_length=100)
-    db = models.CharField(max_length=20)
 
 
     def  __str__(self):
@@ -46,7 +38,22 @@ class Peak(models.Model):
         :return: String:
         """
 
-        return "Peak " + str(self.id) + " " + self.cmpd_name
+        return "Peak" + str(self.id)+ " of m/z " + str(self.m_z)
+
+class Compound(models.Model):
+
+    cmpd_name = models.CharField(max_length=600)  # At this stage just a name for the metabolite
+    cmpd_formula = models.CharField(max_length=100)
+    cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak
+    peak = models.ManyToManyField('Peak', through='Annotation')
+
+    def  __str__(self):
+        """
+        Method to return a representation of the Compound name
+        :return: String:
+        """
+
+        return "Compound " + str(self.id) +" "+self.cmpd_name
 
     def get_kegg_id(self):
 
@@ -73,6 +80,24 @@ class Peak(models.Model):
                 hmdb_id = hmdb_ids[0]
 
         return hmdb_id
+
+class Annotation(models.Model):
+
+    identified = models.CharField(max_length=100)  # Should be set at True or False
+    frank_anno = models.CharField(max_length=600, null=True)
+    db = models.CharField(max_length=20)
+    adduct = models.CharField(max_length=100)
+    compound = models.ForeignKey('Compound', on_delete=models.SET_NULL, related_name ="annotations", null=True)
+    peak = models.ForeignKey('Peak', on_delete=models.SET_NULL, related_name ="annotations", null=True)
+
+    def __str__(self):
+        """
+        Method to return a representation of the Annotation ID and compound name
+        :return: String:
+        """
+
+        return "Annotation of peak " + str(self.peak.id) + " and compound " + self.compound.cmpd_name
+
 
 
 

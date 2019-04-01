@@ -27,24 +27,63 @@ def populate_samples(sample_csv):
 # This requires the input taken from the construct_peak_df method/
 # It requires all secondary_ids to be unique and reports any errors (throw?)
 # To get the list and dict back from the json.dumps just use json.loads
+# This has been refactored to populate Peak, Annotation and Compound models.
 
-def populate_peaks(peak_df):
+
+#This population script currently only takes a single peak DB (one peak for one ID) and each ID has a compound associated with it
+#These compounds will have duplicate entries.
+
+def populate_peaks_cmpds(peak_df):
     peak_array = peak_df.values
     for peak in peak_array:
-        print(peak)
-        cmpd_id = json.dumps(peak[12])
-        frank_annot = json.dumps(peak[13])
 
+        print("The row we are working on is", peak)
+
+        # Populating the peak fron the row
         peak_serializer = PeakSerializer(
             data={"psec_id": peak[1], "m_z": format(peak[2], '.9f'), "neutral_mass": format(peak[14], '.9f'),
-                  "rt": peak[3], "polarity": peak[4],
-                  "cmpd_name": peak[10], "cmpd_formula": peak[6], "cmpd_identifiers": cmpd_id, "identified": peak[8],
-                  "frank_anno": frank_annot, "adduct": peak[7], "db": peak[11]})
+                  "rt": peak[3], "polarity": peak[4]})
+
         if peak_serializer.is_valid():
             db_peak = peak_serializer.save()
             print ("peak saved ", db_peak.psec_id)
         else:
-            print (peak_serializer.errors)
+            print ("peak errors", peak_serializer.errors)
+
+        # # At this stage we have just added all of the compounds so the compound DB is full of duplicates
+        # for peak in peak_array:
+
+        # Populating the compound from the row.
+
+        cmpd_id = json.dumps(peak[12])
+
+        cmpd_serializer = CompoundSerializer(data={"cmpd_name": peak[10], "cmpd_formula": peak[6],
+                                                   "cmpd_identifiers": cmpd_id})
+        if cmpd_serializer.is_valid():
+            db_cmpd = cmpd_serializer.save()
+            print("cmpd saved ", db_cmpd.cmpd_name)
+        else:
+            db_cmpd = None
+            print("CMPD errors, returning compound as None", cmpd_serializer.errors)
+
+        frank_annot = json.dumps(peak[13])
+        store_peak = Peak.objects.get(psec_id=peak[1])
+        store_cmpd = db_cmpd
+
+        # Populating the annotations from the row and the Peaks and Compounds
+        annot_serializer = AnnotationSerializer(
+            data={ "compound":store_cmpd.id, "peak":store_peak.id, "identified": peak[8],
+               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7]})
+        if annot_serializer.is_valid():
+            db_annot = annot_serializer.save()
+            print("annotation saved for compound ", db_annot.compound.cmpd_name)
+        else:
+            print("annot_errors", annot_serializer.errors)
+
+    logger.info("The Peaks, compounds and annotations have been populated")
+
+
+
 
 #Takes a peak intensity DF and a pimp peak id / secondary id dictionary to populate the PeakSamples.
 #The dictionary is passed in as the Peak model only stores the psec id and not the pid from PiMP.
