@@ -1,4 +1,4 @@
-from met_explore.models import Peak, SamplePeak, Sample
+from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation
 
 import collections
 import pandas as pd
@@ -38,9 +38,15 @@ class CompoundSelector(object):
         """
         samples = Sample.objects.all()
         peaks = Peak.objects.all()
-
         df_index = [p.psec_id for p in peaks]
-        cmpds = [p.cmpd_name for p in peaks]
+
+        cmpds =[]
+
+        for p in peaks:
+            cmpd_set = p.compound_set.all()
+            for c in cmpd_set:
+                cmpds.append(c.cmpd_name)
+
         columns = [s.name for s in samples]
         int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
 
@@ -124,7 +130,7 @@ class CompoundSelector(object):
         sec_ids_to_delete = []
 
         for dc in duplicate_compounds:
-            dup_peaks = Peak.objects.filter(cmpd_name=dc)
+            dup_peaks = Peak.objects.filter(compound__cmpd_name=dc)
             max_values_dict = {}
             for dp in dup_peaks:
                 max_value = group_df.loc[dp.psec_id]['max_value']
@@ -154,12 +160,19 @@ class CompoundSelector(object):
         :param peak_id: Id of the peak that you want the compound details for
         :return: A dictionary with compound details of the peak
         """
+
+        ##KMCL: Current 1:1 for peak-compound so take the first - need to change to iterate through.
+
         peak = Peak.objects.get(psec_id=peak_id)
+        cmpd = peak.compound_set.all()[0]
+        annot = Annotation.objects.get(peak=peak)
 
-        compound_details = {'hmdb_id':peak.get_hmdb_id(), 'kegg_id':peak.get_kegg_id(),'mz':peak.m_z, 'mass': peak.neutral_mass,
-                            'rt': peak.rt, 'formula': peak.cmpd_formula, 'adduct': peak.adduct, 'name': peak.cmpd_name,
-                            'identified': peak.identified, 'frank_annots': peak.frank_anno}
+        compound_details = {'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),'mz':peak.m_z, 'mass': peak.neutral_mass,
+                            'rt': peak.rt, 'formula': cmpd.cmpd_formula, 'adduct': annot.adduct, 'name': cmpd.cmpd_name,
+                            'identified': annot.identified, 'frank_annots': annot.frank_anno}
 
+
+        print ("These are the new and shiny compound details ", compound_details)
         return compound_details
 
     def get_groups(self, tissue):
