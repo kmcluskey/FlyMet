@@ -33,9 +33,19 @@ def populate_samples(sample_csv):
 #This population script currently only takes a single peak DB (one peak for one ID) and each ID has a compound associated with it
 #These compounds will have duplicate entries.
 
-def populate_peaks_cmpds(peak_df):
+def populate_filtered_peaks_cmpds(peak_df):
+    """
+
+    :param peak_df: A dataframe of filtered peaks from the peak_selector based on adducts, identification, fragmentation
+    -it also ony returns a single peak (single sec_id from PiMP)
+    :return: Populates the peaks, compounds and annotations for the filtered peaks.
+    """
     peak_array = peak_df.values
+
+    # For each row of the DF grab the peak, compound and annotation that relates them.
     for peak in peak_array:
+
+        confidence_level = 1 #The annotations from the peak DF have a confidence level of 1
 
         print("The row we are working on is", peak)
 
@@ -46,41 +56,40 @@ def populate_peaks_cmpds(peak_df):
 
         if peak_serializer.is_valid():
             db_peak = peak_serializer.save()
-            print ("peak saved ", db_peak.psec_id)
+            logger.info("peak saved %s", db_peak.psec_id)
         else:
-            print ("peak errors", peak_serializer.errors)
-
-        # # At this stage we have just added all of the compounds so the compound DB is full of duplicates
-        # for peak in peak_array:
+            logger.warning("peak errors %s", peak_serializer.errors)
 
         # Populating the compound from the row.
-
         cmpd_id = json.dumps(peak[12])
 
-        cmpd_serializer = CompoundSerializer(data={"cmpd_name": peak[10], "cmpd_formula": peak[6],
-                                                   "cmpd_identifiers": cmpd_id})
-        if cmpd_serializer.is_valid():
-            db_cmpd = cmpd_serializer.save()
-            print("cmpd saved ", db_cmpd.cmpd_name)
-        else:
-            db_cmpd = None
-            print("CMPD errors, returning compound as None", cmpd_serializer.errors)
+        store_cmpd, created = Compound.objects.get_or_create(cmpd_name = peak[10], cmpd_formula= peak[6],
+                                                   cmpd_identifiers= cmpd_id)
+        logger.info("A new compound %s was created %s", store_cmpd.cmpd_name, created)
+
+        # Populating the Annotation to relate the peak to the annotation and vice-versa
 
         frank_annot = json.dumps(peak[13])
         store_peak = Peak.objects.get(psec_id=peak[1])
-        store_cmpd = db_cmpd
 
-        # Populating the annotations from the row and the Peaks and Compounds
         annot_serializer = AnnotationSerializer(
             data={ "compound":store_cmpd.id, "peak":store_peak.id, "identified": peak[8],
-               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7]})
+               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7], "confidence": confidence_level})
         if annot_serializer.is_valid():
             db_annot = annot_serializer.save()
-            print("annotation saved for compound ", db_annot.compound.cmpd_name)
+            logger.info("annotation saved for compound %s and peak %s", db_annot.compound.cmpd_name, db_annot.peak.psec_id)
         else:
-            print("annot_errors", annot_serializer.errors)
+            db_annot = None
+            logger.warning("annot_errors with no annotation %s", annot_serializer.errors)
 
-    logger.info("The Peaks, compounds and annotations have been populated")
+        # Set the preferred candidate annotation and a reason
+
+        store_peak.preferred_annotation = db_annot
+        store_peak.preferred_annotation_reason = "Auto generated as this is a high confidence annotation"
+
+
+
+    logger.info("The filtered peaks, compounds and annotations have been populated")
 
 
 

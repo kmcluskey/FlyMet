@@ -55,10 +55,8 @@ class PeakSelector(object):
         peak_df = pd.DataFrame(columns=headers)
 
         print ("Constructing the peak DF")
-        unique_sec_ids = self.selected_df['sec_id'].unique()
-        # unique_sec_ids = [3722]
 
-        for sid in unique_sec_ids:
+        for sid in self.unique_sec_ids:
             # Collect a single sec_id into a DF
             sid_df = self.selected_df[self.selected_df.sec_id == sid]
             print("The single SID DF is")
@@ -91,7 +89,7 @@ class PeakSelector(object):
                 if new_row is not None:
 
                     print("we are adding the row for sid", sid)
-                    display(pd.DataFrame(new_row).T)
+                    print(pd.DataFrame(new_row).T)
                     peak_df = peak_df.append(new_row)
 
                     # If the new_row has not been determined for this SID
@@ -103,7 +101,7 @@ class PeakSelector(object):
                     for ucid in unique_cmpd_ids:
                         new_row = self.get_peak_by_cmpd_id(sid_df, ucid)
                         print("we are adding the row: for sid", sid)
-                        display(pd.DataFrame(new_row).T)
+                        print(pd.DataFrame(new_row).T)
                         peak_df = peak_df.append(new_row)
 
                         # Else nothing identified so look at the fragmentation data.
@@ -112,11 +110,11 @@ class PeakSelector(object):
                 print("nothing identified here so get best match FrAnk compound")
                 new_row = self.select_on_frank(sid_df)
                 print("we are adding the row: for sid", sid)
-                display(pd.DataFrame(new_row).T)
+                print(pd.DataFrame(new_row).T)
                 peak_df = peak_df.append(new_row)
 
 
-        # Quite a few duplicates stiff exist from the Standard compound identification.
+        # Quite a few duplicates still exist from the Standard compound identification.
         # These methods attempt to tackle this in a sensible manner.
 
         peak_df = self.remove_duplicates_on_mass_rt(peak_df)

@@ -25,11 +25,13 @@ class Peak(models.Model):
     One peak per secondary peak ID in PiMP
     """
 
-    psec_id = models.IntegerField(unique= True) #The secondary peak ID from PiMP
+    psec_id = models.IntegerField(unique=True) #The secondary peak ID from PiMP
     m_z = models.DecimalField(max_digits=20, decimal_places=10)
     neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
     rt = models.DecimalField(max_digits=20, decimal_places=10)
     polarity = models.CharField(max_length=8)
+    preferred_annotation =  models.ForeignKey('Annotation', on_delete=models.SET_NULL, null=True, related_name='preferred_annotation')
+    preferred_annotation_reason = models.CharField(max_length=600)
 
 
     def  __str__(self):
@@ -44,6 +46,7 @@ class Compound(models.Model):
 
     cmpd_name = models.CharField(max_length=600)  # At this stage just a name for the metabolite
     cmpd_formula = models.CharField(max_length=100)
+    #KMCL: Currently if the list of identifiers matches another list we assume it's the same compound.
     cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak
     peak = models.ManyToManyField('Peak', through='Annotation')
 
@@ -87,8 +90,11 @@ class Annotation(models.Model):
     frank_anno = models.CharField(max_length=600, null=True)
     db = models.CharField(max_length=20)
     adduct = models.CharField(max_length=100)
-    compound = models.ForeignKey('Compound', on_delete=models.SET_NULL, related_name ="annotations", null=True)
-    peak = models.ForeignKey('Peak', on_delete=models.SET_NULL, related_name ="annotations", null=True)
+    confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 1 is the top, zero means not set.
+    compound = models.ForeignKey('Compound', on_delete=models.CASCADE, related_name ="annotations")
+    peak = models.ForeignKey('Peak', on_delete=models.CASCADE, related_name ="annotations")
+    # preferred_annotation = models.BooleanField()
+    # preferred_annotation_reason = models.CharField(max_length=600)
 
     def __str__(self):
         """
