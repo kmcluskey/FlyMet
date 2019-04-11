@@ -25,7 +25,7 @@ class PeakSelector(object):
     # and an intensity json file from Pimp (samples [col], peaks [rows], intensities [cells]
     def __init__(self, peak_json_file, intensity_json_file):
 
-        peak_details_df = pd.read_json(peak_json_file)
+        self.peak_details_df = pd.read_json(peak_json_file)
         self.intensity_json_file = intensity_json_file
         # Taking the expected RT from the Stds_ALL.csv file and multipling by 60 - hopefully can
         # read this directly from a CSV file in the future
@@ -33,8 +33,8 @@ class PeakSelector(object):
         self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline":720.6, "5-Aminolevulinate":696.0}
 
         # Filter on adduct types
-        selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H')
-        f_adducts = peak_details_df[selected_adducts].copy()
+        selected_adducts = (self.peak_details_df['adduct'] == 'M+H') | (self.peak_details_df['adduct'] == 'M-H')
+        f_adducts = self.peak_details_df[selected_adducts].copy()
 
         # Select peaks that have been identified and/or has a FrAnk annotation associated with them
         with_annot = (f_adducts['frank_annot'].notnull()) | (f_adducts['identified'] == 'True')
@@ -50,21 +50,50 @@ class PeakSelector(object):
         logger.info("PeakSelector initialised with %s peaks/unique ids", str(len(self.unique_sec_ids)))
 
 
-    def construct_peak_df(self):
+    ### KMcL: This works well but we want it integrated with the code below and perhaps a new column for the
+    ### highly confident peaks so that they can be set as preferred annotations with high confidence.
+    ### Possibly by comparing this df to the other and removing/highlighting matching rows??
+    ### Add a column HC, merge DF and drop duplicates???
+    def construct_all_peak_df(self):
+
+        headers = list(self.selected_df.columns.values)
+        all_peak_df = pd.DataFrame(columns=headers)
+
+        print ("Constructing the all peak DF")
+
+        for sid in self.unique_sec_ids:
+
+            sid_df = self.selected_df[self.selected_df.sec_id == sid]
+            logger.debug("The single SID DF is %S", sid_df)
+            unique_cmpd_ids = sid_df['cmpd_id'].unique()
+
+            #For each of the unique compounds add a row to the DF
+            for cmpd_id in unique_cmpd_ids:
+
+                new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
+                all_peak_df = all_peak_df.append(new_row)
+
+
+        print("There are", all_peak_df['sec_id'].nunique(), "unique peaks out of", all_peak_df.shape[0], "rows added to the all_peak_df")
+
+
+        return all_peak_df
+
+
+    def construct_high_confidence_peak_df(self):
+
         headers = list(self.selected_df.columns.values)
         peak_df = pd.DataFrame(columns=headers)
 
-        print ("Constructing the peak DF")
+        print ("Constructing the High Conf peak DF")
 
         for sid in self.unique_sec_ids:
             # Collect a single sec_id into a DF
             sid_df = self.selected_df[self.selected_df.sec_id == sid]
-            print("The single SID DF is")
-            display(sid_df)
+            logger.debug("The single SID DF is %S", sid_df)
             # If the peak has an identified compound then keep that
             identified_df = sid_df[sid_df.identified == 'True']
-            print("The identified df is: ")
-            display(identified_df)
+            logger.debug("The identified df is: %S ", identified_df)
             new_row = None
             # If some of the rows have compounds that have identified=True
             if not identified_df.empty:
@@ -110,7 +139,7 @@ class PeakSelector(object):
                 print("nothing identified here so get best match FrAnk compound")
                 new_row = self.select_on_frank(sid_df)
                 print("we are adding the row: for sid", sid)
-                print(pd.DataFrame(new_row).T)
+                display(pd.DataFrame(new_row).T)
                 peak_df = peak_df.append(new_row)
 
 
@@ -511,8 +540,13 @@ class PeakSelector(object):
         cmpd_id = cmpd_rows_df['cmpd_id'] == ucid
 
         # Take the row with std_db just to remember this compound was identified.
-        db = cmpd_rows_df['db'] == 'stds_db'
-        new_row = cmpd_rows_df[cmpd_id & db].iloc[0]
+        db = cmpd_rows_df['db'] == 'stds_db' #If the compound was identified
+        print ("DB", db)
+        if db.any():
+            new_row = cmpd_rows_df[cmpd_id & db].iloc[0]
+        else:
+            new_row = cmpd_rows_df[cmpd_id].iloc[0]
+
         new_row.at['identifier'] = identifiers
 
         print('Returning new_row by cmpd_id')

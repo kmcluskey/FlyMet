@@ -27,7 +27,7 @@ class CompoundSelector(object):
 
         except django.db.utils.OperationalError as e:
 
-            logger.warning("I'm raising this error %s", e)
+            logger.warning("I'm raising this error: %s", e)
 
             raise e
 

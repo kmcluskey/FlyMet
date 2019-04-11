@@ -59,7 +59,7 @@ def links(request):
 
 def metabolite_search(request):
     """
-    View to return the metabolite serach page
+    View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.

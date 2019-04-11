@@ -45,7 +45,8 @@ def populate_filtered_peaks_cmpds(peak_df):
     # For each row of the DF grab the peak, compound and annotation that relates them.
     for peak in peak_array:
 
-        confidence_level = 1 #The annotations from the peak DF have a confidence level of 1
+        # CONF_LEVEL = 1 #The annotations from the peak DF have a confidence level of 1
+
 
         print("The row we are working on is", peak)
 
@@ -74,7 +75,7 @@ def populate_filtered_peaks_cmpds(peak_df):
 
         annot_serializer = AnnotationSerializer(
             data={ "compound":store_cmpd.id, "peak":store_peak.id, "identified": peak[8],
-               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7], "confidence": confidence_level})
+               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7]})
         if annot_serializer.is_valid():
             db_annot = annot_serializer.save()
             logger.info("annotation saved for compound %s and peak %s", db_annot.compound.cmpd_name, db_annot.peak.psec_id)
@@ -84,8 +85,8 @@ def populate_filtered_peaks_cmpds(peak_df):
 
         # Set the preferred candidate annotation and a reason
 
-        store_peak.preferred_annotation = db_annot
-        store_peak.preferred_annotation_reason = "Auto generated as this is a high confidence annotation"
+        # store_peak.preferred_annotation = db_annot
+        # store_peak.preferred_annotation_reason = "Auto generated, high confidence annotation"
 
 
 

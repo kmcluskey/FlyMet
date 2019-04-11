@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
             populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
-            peak_df = peak_select.construct_peak_df()
+            peak_df = peak_select.construct_high_confidence_peak_df()
             populate_filtered_peaks_cmpds(peak_df)
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
             populate_peaksamples(int_df, ids_dict)
