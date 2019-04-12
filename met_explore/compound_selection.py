@@ -34,11 +34,11 @@ class CompoundSelector(object):
     def get_cmpd_intensity_df(self):
         """
         :return:  # A df with all of the samples and their intensities for all of the peaks
-        # Index is peak sec ids and Metabolite column has the compound name.
+        # Index is peak ids and Metabolite column has the compound name.
         """
         samples = Sample.objects.all()
         peaks = Peak.objects.all()
-        df_index = [p.psec_id for p in peaks]
+        df_index = [p.id for p in peaks]
 
         cmpds =[]
 
@@ -52,7 +52,7 @@ class CompoundSelector(object):
 
         for i in df_index:
             for c in columns:
-                sp = SamplePeak.objects.get(peak__psec_id=i, sample__name=c)
+                sp = SamplePeak.objects.get(peak__id=i, sample__name=c)
                 int_df.at[i, c] = sp.intensity
 
         int_df.insert(0, 'Metabolite', cmpds)
@@ -133,8 +133,8 @@ class CompoundSelector(object):
             dup_peaks = Peak.objects.filter(compound__cmpd_name=dc)
             max_values_dict = {}
             for dp in dup_peaks:
-                max_value = group_df.loc[dp.psec_id]['max_value']
-                max_values_dict[dp.psec_id] = max_value
+                max_value = group_df.loc[dp.id]['max_value']
+                max_values_dict[dp.id] = max_value
             # logger.debug(max_values_dict)
 
             # Get the key with the maximum value to keep
@@ -163,7 +163,7 @@ class CompoundSelector(object):
 
         ##KMCL: Current 1:1 for peak-compound so take the first - need to change to iterate through.
 
-        peak = Peak.objects.get(psec_id=peak_id)
+        peak = Peak.objects.get(id=peak_id)
         cmpd = peak.compound_set.all()[0]
         annot = Annotation.objects.get(peak=peak)
 
