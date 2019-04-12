@@ -48,7 +48,7 @@ class Compound(models.Model):
     cmpd_formula = models.CharField(max_length=100)
     #KMCL: Currently if the list of identifiers matches another list we assume it's the same compound.
     cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak
-    peak = models.ManyToManyField('Peak', through='Annotation')
+    peaks = models.ManyToManyField(Peak, through='Annotation')
 
     def  __str__(self):
         """
@@ -91,8 +91,8 @@ class Annotation(models.Model):
     db = models.CharField(max_length=20)
     adduct = models.CharField(max_length=100)
     confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 1 is the top, zero means not set.
-    compound = models.ForeignKey('Compound', on_delete=models.CASCADE, related_name ="annotations")
-    peak = models.ForeignKey('Peak', on_delete=models.CASCADE, related_name ="annotations")
+    compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
+    peak = models.ForeignKey(Peak, on_delete=models.CASCADE)
     # preferred_annotation = models.BooleanField()
     # preferred_annotation_reason = models.CharField(max_length=600)
 

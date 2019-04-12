@@ -45,12 +45,9 @@ def populate_filtered_peaks_cmpds(peak_df):
     # For each row of the DF grab the peak, compound and annotation that relates them.
     for peak in peak_array:
 
-        # CONF_LEVEL = 1 #The annotations from the peak DF have a confidence level of 1
+        logger.info("We are populating row %s", peak)
 
-
-        print("The row we are working on is", peak)
-
-        # Populating the peak fron the row
+        # Populating the peak from the row
         peak_serializer = PeakSerializer(
             data={"psec_id": peak[1], "m_z": format(peak[2], '.9f'), "neutral_mass": format(peak[14], '.9f'),
                   "rt": peak[3], "polarity": peak[4]})
@@ -59,40 +56,24 @@ def populate_filtered_peaks_cmpds(peak_df):
             db_peak = peak_serializer.save()
             logger.info("peak saved %s", db_peak.psec_id)
         else:
+            db_peak = None
             logger.warning("peak errors %s", peak_serializer.errors)
 
-        # Populating the compound from the row.
+        # Populating the compound from the row
         cmpd_id = json.dumps(peak[12])
-
         store_cmpd, created = Compound.objects.get_or_create(cmpd_name = peak[10], cmpd_formula= peak[6],
                                                    cmpd_identifiers= cmpd_id)
+        store_cmpd.save()
+
         logger.info("A new compound %s was created %s", store_cmpd.cmpd_name, created)
 
         # Populating the Annotation to relate the peak to the annotation and vice-versa
-
         frank_annot = json.dumps(peak[13])
-        store_peak = Peak.objects.get(psec_id=peak[1])
-
-        annot_serializer = AnnotationSerializer(
-            data={ "compound":store_cmpd.id, "peak":store_peak.id, "identified": peak[8],
-               "frank_anno": frank_annot, "db": peak[11], "adduct": peak[7]})
-        if annot_serializer.is_valid():
-            db_annot = annot_serializer.save()
-            logger.info("annotation saved for compound %s and peak %s", db_annot.compound.cmpd_name, db_annot.peak.psec_id)
-        else:
-            db_annot = None
-            logger.warning("annot_errors with no annotation %s", annot_serializer.errors)
-
-        # Set the preferred candidate annotation and a reason
-
-        # store_peak.preferred_annotation = db_annot
-        # store_peak.preferred_annotation_reason = "Auto generated, high confidence annotation"
-
-
+        stored_annot = Annotation.objects.create(compound=store_cmpd, peak=db_peak, identified=peak[8],
+                                                 frank_anno=frank_annot, db=peak[11], adduct= peak[7])
+        stored_annot.save()
 
     logger.info("The filtered peaks, compounds and annotations have been populated")
-
-
 
 
 #Takes a peak intensity DF and a pimp peak id / secondary id dictionary to populate the PeakSamples.

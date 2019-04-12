@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
 from met_explore.population_scripts import *
 from met_explore.peak_selection import PeakSelector
+from met_explore.compound_selection import CompoundSelector
+
 import argparse
 from sys import stdin
 
@@ -36,6 +38,10 @@ class Command(BaseCommand):
             populate_filtered_peaks_cmpds(peak_df)
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
             populate_peaksamples(int_df, ids_dict)
+
+            # Add preferred compounds to peaks
+            compound_select = CompoundSelector()
+            compound_select.add_preferred_annotations()
 
 
         except Exception as e:
