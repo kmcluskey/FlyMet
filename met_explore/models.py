@@ -27,7 +27,6 @@ class Peak(models.Model):
 
     psec_id = models.IntegerField(unique=True) #The secondary peak ID from PiMP
     m_z = models.DecimalField(max_digits=20, decimal_places=10)
-    neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
     rt = models.DecimalField(max_digits=20, decimal_places=10)
     polarity = models.CharField(max_length=8)
     preferred_annotation =  models.ForeignKey('Annotation', on_delete=models.SET_NULL, null=True, related_name='preferred_annotation')
@@ -93,6 +92,8 @@ class Annotation(models.Model):
     confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 1 is the top, zero means not set.
     compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
     peak = models.ForeignKey(Peak, on_delete=models.CASCADE)
+    neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
+
     # preferred_annotation = models.BooleanField()
     # preferred_annotation_reason = models.CharField(max_length=600)
 

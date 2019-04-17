@@ -44,28 +44,48 @@ class CompoundSelector(object):
         :return:  # A df with all of the samples and their intensities for all of the peaks
         # Index is peak ids, cmpd_id is stored and Metabolite column has the compound name.
         """
-        samples = Sample.objects.all()
-        peaks = Peak.objects.all()
-        df_index = [p.id for p in peaks]
 
-        # These two df are kept separately and concatenated at the end to preserve the datatype for the intensities
-        columns = [s.name for s in samples]
-        cmpd_columns=['cmpd_id', 'Metabolite']
+        try:
+            int_df_concat = pd.read_pickle("./data/int_df4.pkl")
 
-        int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
-        cmpd_df = pd.DataFrame(index=df_index, columns=cmpd_columns)
+            print ("WE have the DF", int_df_concat.head())
 
-        for p in peaks:
-            cmpd_set = p.compound_set.all()
-            for cmpd in cmpd_set:
-                cmpd_df.at[p.id, 'cmpd_id'] = cmpd.id
-                cmpd_df.at[p.id, 'Metabolite'] = cmpd.cmpd_name
+        except FileNotFoundError:
 
-            for c in columns[2:]:
-                sp = SamplePeak.objects.get(peak__id=p.id, sample__name=c)
-                int_df.at[p.id, c] = sp.intensity
 
-        int_df_concat =  pd.concat([cmpd_df,int_df], axis=1, sort=False)
+            print('constructing sample/intensity df')
+
+            logger.info("Generating a DF for a peak-compound and its intensities")
+            samples = Sample.objects.all()
+            peaks = Peak.objects.all()
+            df_index = [p.id for p in peaks]
+
+            # These two df are kept separately and concatenated at the end to preserve the datatype for the intensities
+            columns = [s.name for s in samples]
+            cmpd_columns=['cmpd_id', 'Metabolite']
+
+            int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
+            cmpd_df = pd.DataFrame(index=df_index, columns=cmpd_columns)
+
+            for p in peaks:
+                print ("working on peak: ", p)
+                cmpd_set = p.compound_set.all()
+                for cmpd in cmpd_set:
+                    cmpd_df.at[p.id, 'cmpd_id'] = cmpd.id
+                    cmpd_df.at[p.id, 'Metabolite'] = cmpd.cmpd_name
+                for c in columns:
+                    sp = SamplePeak.objects.get(peak__id=p.id, sample__name=c)
+                    int_df.at[p.id, c] = sp.intensity
+
+            int_df_concat =  pd.concat([cmpd_df,int_df], axis=1, sort=False)
+
+            logger.info("The returned dataframe is of the format: %s", int_df_concat.head())
+
+            try:
+                int_df_concat.to_pickle("./data/int_df4.pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
 
         logger.info("There are %d peaks and %d unique compounds",int_df_concat.shape[0], len(int_df_concat['cmpd_id'].unique()))
 
@@ -129,6 +149,8 @@ class CompoundSelector(object):
     def get_single_cmpd_df(self):
         """
         This method returns a dataframe of the grouped peaks (average values) without any duplicate compounds.
+        It just takes the max value of the groups and keeps this if M+H and M-H it discards this.
+        KMCL: We want to find the matching adduct and add give that the same preferred annotation.
         :return:
         """
         logger.info("Getting a DF of peaks containing with no duplicate compounds")

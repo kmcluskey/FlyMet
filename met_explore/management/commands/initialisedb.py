@@ -34,14 +34,14 @@ class Command(BaseCommand):
 
             populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
-            peak_df = peak_select.construct_high_confidence_peak_df()
-            populate_filtered_peaks_cmpds(peak_df)
+            peak_df = peak_select.construct_all_peak_df()
+            populate_peaks_cmpds_annots(peak_df)
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
             populate_peaksamples(int_df, ids_dict)
 
-            # Add preferred compounds to peaks
-            compound_select = CompoundSelector()
-            compound_select.add_preferred_annotations()
+            #Add preferred compounds to peaks
+            # compound_select = CompoundSelector()
+            # compound_select.add_preferred_annotations()
 
 
         except Exception as e:

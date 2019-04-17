@@ -11,6 +11,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 PROTON = 1.007276
+K = 39.0983
+Na = 22.98977
+ACN = 41.0524
 NAME_MATCH_SIG = 0.5
 MASS_TOL = 0.1
 RT_TOL = 5
@@ -40,39 +43,59 @@ class PeakSelector(object):
         with_annot = (f_adducts['frank_annot'].notnull()) | (f_adducts['identified'] == 'True')
         with_annots_df = f_adducts[with_annot].copy()
 
-        # This is the df to be used to select peaks/compounds
+        # This DF contains peaks that are (identified &| fannotated) & (M+H | M-H)
         self.selected_df = self.add_neutral_masses(with_annots_df)
         self.unique_sec_ids = self.selected_df['sec_id'].unique()
 
         #This is the new df to store the chosen peaks.
 
 
-        logger.info("PeakSelector initialised with %s peaks/unique ids", str(len(self.unique_sec_ids)))
+        logger.info("PeakSelector initialised with %s peaks that have been identified/annotated", str(len(self.unique_sec_ids)))
 
 
-    ### KMcL: This works well but we want it integrated with the code below and perhaps a new column for the
-    ### highly confident peaks so that they can be set as preferred annotations with high confidence.
-    ### Possibly by comparing this df to the other and removing/highlighting matching rows??
-    ### Add a column HC, merge DF and drop duplicates???
     def construct_all_peak_df(self):
 
-        headers = list(self.selected_df.columns.values)
-        all_peak_df = pd.DataFrame(columns=headers)
+        """
+        A method to return a DF similar to the one produced by PiMP but for each peak, each unique compound (cmpd_id) is
+        given a single row and the compound identifiers are collected.
 
-        print ("Constructing the all peak DF")
+        :return: all_peak_df- a DF consisting of all peaks with each compound represented by a single row.
+        """
 
-        for sid in self.unique_sec_ids:
+        try:
+            all_peak_df = pd.read_pickle("./data/all_peak_df.pkl") #KMCL - this file should be named after the input files so not to repeat.
 
-            sid_df = self.selected_df[self.selected_df.sec_id == sid]
-            logger.debug("The single SID DF is %S", sid_df)
-            unique_cmpd_ids = sid_df['cmpd_id'].unique()
+            print ("WE have the DF", all_peak_df.head())
+        except FileNotFoundError:
+            print('constructing all_peak_df')
 
-            #For each of the unique compounds add a row to the DF
-            for cmpd_id in unique_cmpd_ids:
+            all_peaks = self.add_neutral_masses(self.peak_details_df)
 
-                new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
-                all_peak_df = all_peak_df.append(new_row)
+            headers = list(all_peaks.columns.values)
+            all_peak_df = pd.DataFrame(columns=headers)
+            all_unique_sec_ids = all_peaks['sec_id'].unique()
 
+            print ("Constructing the all peak DF")
+
+            # For each unique peak just
+            for sid in all_unique_sec_ids:
+
+                sid_df = all_peaks[all_peaks.sec_id == sid]
+                # print("The single SID DF is", sid_df)
+                unique_cmpd_ids = sid_df['cmpd_id'].unique()
+
+                # For each of the unique compounds add a row to the DF
+                for cmpd_id in unique_cmpd_ids:
+                    new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
+                    all_peak_df = all_peak_df.append(new_row)
+
+            logger.info("Picking the DF to store at ./data/all_peak_df.pkl")
+
+            try:
+                all_peak_df.to_pickle("./data/all_peak_df.pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
 
         print("There are", all_peak_df['sec_id'].nunique(), "unique peaks out of", all_peak_df.shape[0], "rows added to the all_peak_df")
 
@@ -81,6 +104,13 @@ class PeakSelector(object):
 
 
     def construct_high_confidence_peak_df(self):
+        """
+        A method to return a DF of unique peaks - based on the reliability of the compound.
+        i.e a single row is chosen for each peak.
+        If the each compound/adduct combination is stored once so some unique peaks are possible removed.
+
+        :return: peak_df- a DF of unique peak IDs
+        """
 
         headers = list(self.selected_df.columns.values)
         peak_df = pd.DataFrame(columns=headers)
@@ -90,6 +120,7 @@ class PeakSelector(object):
         for sid in self.unique_sec_ids:
             # Collect a single sec_id into a DF
             sid_df = self.selected_df[self.selected_df.sec_id == sid]
+
             logger.debug("The single SID DF is %S", sid_df)
             # If the peak has an identified compound then keep that
             identified_df = sid_df[sid_df.identified == 'True']
@@ -129,7 +160,7 @@ class PeakSelector(object):
                     # For each unique compound id add a row to the peak df, this will produce duplicates for later
                     for ucid in unique_cmpd_ids:
                         new_row = self.get_peak_by_cmpd_id(sid_df, ucid)
-                        print("we are adding the row: for sid", sid)
+                        print("we are now adding the row: for sid", sid)
                         print(pd.DataFrame(new_row).T)
                         peak_df = peak_df.append(new_row)
 
@@ -151,7 +182,7 @@ class PeakSelector(object):
         peak_df = self.remove_duplicate_on_name_adduct(peak_df)
         peak_df = self.remove_duplicates_on_rt(peak_df)
 
-        print("There are", peak_df['sec_id'].nunique(), "unique compounds out of", peak_df.shape[0], "rows added")
+        logger.info("There are %d unique peaks out of %d highly selected rows added", peak_df['sec_id'].nunique(), peak_df.shape[0])
 
         return peak_df
 
@@ -159,8 +190,8 @@ class PeakSelector(object):
     def construct_int_df(self, peak_df):
 
         """
-        A method to return a intensity DF of peaks to match those
-        :param peak_df: All of the peaks we want to match intenisites to.
+        A method to return a sample/intensity DF for each peak in the peak_df
+        :param peak_df: All of the peaks we want tosample intensities for
         :return: int_details_df - a DF filtered to contain only the peaks in the peak_df
         :return: pids_sids_dict - a dictionary of the pimp ids / pimp sec_ids for the peaks used.
 
@@ -342,7 +373,7 @@ class PeakSelector(object):
                 matching_rows = peak_df[name_match & adduct_match & no_duplicates]
 
                 if matching_rows.index.any():
-                    print("we have aready strored this compound/adduct ratio so dropping this")
+                    print("we have aready stored this compound/adduct ratio so dropping this")
                     display(matching_rows)
                     peak_df = peak_df.drop(index)
                 else:
@@ -605,12 +636,25 @@ class PeakSelector(object):
         :param adduct: type of adduct - only M+H, M-H currently accepted
         :return: The neutral mass np.float
         """
+        neutral_mass = None
         if adduct == 'M+H':
             neutral_mass = mass - PROTON
         elif adduct == 'M-H':
             neutral_mass = mass + PROTON
+        elif adduct =='M+Na':
+            neutral_mass = mass + Na
+        elif adduct == 'M+ACN+Na':
+            neutral_mass = mass + ACN + Na
+        elif adduct == 'M+ACN+H':
+            neutral_mass = mass + ACN + PROTON
+        elif adduct == 'M+K':
+            neutral_mass = mass + K
+        elif adduct == 'M-K':
+            neutral_mass = mass - K
+        elif adduct == 'M-Na':
+            neutral_mass = mass - Na
         else:
-            logger.warning("This is not the correct type of adduct and therefor skipping")
+            logger.warning("This is not the correct type of adduct: %s and therefor skipping", adduct)
             return
 
         return neutral_mass
