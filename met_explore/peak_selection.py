@@ -642,17 +642,17 @@ class PeakSelector(object):
         elif adduct == 'M-H':
             neutral_mass = mass + PROTON
         elif adduct =='M+Na':
-            neutral_mass = mass + Na
-        elif adduct == 'M+ACN+Na':
-            neutral_mass = mass + ACN + Na
-        elif adduct == 'M+ACN+H':
-            neutral_mass = mass + ACN + PROTON
-        elif adduct == 'M+K':
-            neutral_mass = mass + K
-        elif adduct == 'M-K':
-            neutral_mass = mass - K
-        elif adduct == 'M-Na':
             neutral_mass = mass - Na
+        elif adduct == 'M+ACN+Na':
+            neutral_mass = mass - ACN - Na
+        elif adduct == 'M+ACN+H':
+            neutral_mass = mass - ACN - PROTON
+        elif adduct == 'M+K':
+            neutral_mass = mass - K
+        elif adduct == 'M-K':
+            neutral_mass = mass + K
+        elif adduct == 'M-Na':
+            neutral_mass = mass + Na
         else:
             logger.warning("This is not the correct type of adduct: %s and therefor skipping", adduct)
             return
