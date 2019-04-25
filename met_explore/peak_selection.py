@@ -1,11 +1,11 @@
 from IPython.display import display
 from difflib import SequenceMatcher
-from collections import OrderedDict
-from met_explore.models import Peak, Compound
+from met_explore.helpers import get_filename_from_string
 
 import pandas as pd
 import numpy as np
 import logging
+import json
 
 
 logger = logging.getLogger(__name__)
@@ -28,29 +28,37 @@ class PeakSelector(object):
     # and an intensity json file from Pimp (samples [col], peaks [rows], intensities [cells]
     def __init__(self, peak_json_file, intensity_json_file):
 
-        self.peak_details_df = pd.read_json(peak_json_file)
+        self.peak_json_file = peak_json_file
         self.intensity_json_file = intensity_json_file
         # Taking the expected RT from the Stds_ALL.csv file and multipling by 60 - hopefully can
         # read this directly from a CSV file in the future
 
         self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline":720.6, "5-Aminolevulinate":696.0}
 
+
+    def get_selected_df(self, peak_details_df):
+
+        """
+        :param peak_details_df:
+        :return: selected_df
+        :return: unique_sec_ids
+
+        """
+
         # Filter on adduct types
-        selected_adducts = (self.peak_details_df['adduct'] == 'M+H') | (self.peak_details_df['adduct'] == 'M-H')
-        f_adducts = self.peak_details_df[selected_adducts].copy()
+        selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H')
+        f_adducts = peak_details_df[selected_adducts].copy()
 
         # Select peaks that have been identified and/or has a FrAnk annotation associated with them
         with_annot = (f_adducts['frank_annot'].notnull()) | (f_adducts['identified'] == 'True')
         with_annots_df = f_adducts[with_annot].copy()
 
         # This DF contains peaks that are (identified &| fannotated) & (M+H | M-H)
-        self.selected_df = self.add_neutral_masses(with_annots_df)
-        self.unique_sec_ids = self.selected_df['sec_id'].unique()
+        selected_df = self.add_neutral_masses(with_annots_df)
+        unique_sec_ids = selected_df['sec_id'].unique()
 
-        #This is the new df to store the chosen peaks.
+        return selected_df, unique_sec_ids
 
-
-        logger.info("PeakSelector initialised with %s peaks that have been identified/annotated", str(len(self.unique_sec_ids)))
 
 
     def construct_all_peak_df(self):
@@ -62,14 +70,20 @@ class PeakSelector(object):
         :return: all_peak_df- a DF consisting of all peaks with each compound represented by a single row.
         """
 
+        peak_details_df = pd.read_json(self.peak_json_file)
+
+        file_name = get_filename_from_string(self.peak_json_file)
+
+        print ("The filename is:", file_name)
+
         try:
-            all_peak_df = pd.read_pickle("./data/all_peak_df.pkl") #KMCL - this file should be named after the input files so not to repeat.
+            all_peak_df = pd.read_pickle("./data/"+file_name+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
             print ("WE have the DF", all_peak_df.head())
+
         except FileNotFoundError:
             print('constructing all_peak_df')
-
-            all_peaks = self.add_neutral_masses(self.peak_details_df)
+            all_peaks = self.add_neutral_masses(peak_details_df)
 
             headers = list(all_peaks.columns.values)
             all_peak_df = pd.DataFrame(columns=headers)
@@ -92,7 +106,7 @@ class PeakSelector(object):
             logger.info("Picking the DF to store at ./data/all_peak_df.pkl")
 
             try:
-                all_peak_df.to_pickle("./data/all_peak_df.pkl")
+                all_peak_df.to_pickle("./data/+"+file_name+".pkl")
             except Exception as e:
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
@@ -103,7 +117,7 @@ class PeakSelector(object):
         return all_peak_df
 
 
-    def construct_high_confidence_peak_df(self):
+    def construct_high_confidence_peak_df(self, selected_df, unique_sec_ids):
         """
         A method to return a DF of unique peaks - based on the reliability of the compound.
         i.e a single row is chosen for each peak.
@@ -112,14 +126,14 @@ class PeakSelector(object):
         :return: peak_df- a DF of unique peak IDs
         """
 
-        headers = list(self.selected_df.columns.values)
+        headers = list(selected_df.columns.values)
         peak_df = pd.DataFrame(columns=headers)
 
         print ("Constructing the High Conf peak DF")
 
-        for sid in self.unique_sec_ids:
+        for sid in unique_sec_ids:
             # Collect a single sec_id into a DF
-            sid_df = self.selected_df[self.selected_df.sec_id == sid]
+            sid_df = selected_df[selected_df.sec_id == sid]
 
             logger.debug("The single SID DF is %S", sid_df)
             # If the peak has an identified compound then keep that
@@ -170,7 +184,7 @@ class PeakSelector(object):
                 print("nothing identified here so get best match FrAnk compound")
                 new_row = self.select_on_frank(sid_df)
                 print("we are adding the row: for sid", sid)
-                display(pd.DataFrame(new_row).T)
+                print(pd.DataFrame(new_row).T)
                 peak_df = peak_df.append(new_row)
 
 
@@ -191,7 +205,7 @@ class PeakSelector(object):
 
         """
         A method to return a sample/intensity DF for each peak in the peak_df
-        :param peak_df: All of the peaks we want tosample intensities for
+        :param peak_df: All of the peaks we want to sample intensities for
         :return: int_details_df - a DF filtered to contain only the peaks in the peak_df
         :return: pids_sids_dict - a dictionary of the pimp ids / pimp sec_ids for the peaks used.
 
@@ -462,8 +476,8 @@ class PeakSelector(object):
         display(standard_cmpds)
         name_match_dic = {}
         # For each of the standard compounds identified for the peak
-        for i in standard_cmpds['identifier'].unique():
-            pimp_cmpd_name = standard_cmpds[standard_cmpds.identifier == i]['compound'].iloc[0]
+        for i in standard_cmpds['cmpd_id'].unique():
+            pimp_cmpd_name = standard_cmpds[standard_cmpds.cmpd_id == i]['compound'].iloc[0]
             annotation = standard_cmpds['frank_annot'].values[0]  # Get the value in the cell
 
             # If there is a FrAnK annotation get the best name match
@@ -485,7 +499,7 @@ class PeakSelector(object):
                 cmpd_rows_df = sid_df[sid_df.cmpd_id == ucid]
                 identifiers = self.get_all_identifiers(cmpd_rows_df)
                 new_row.at['identifier'] = identifiers
-
+        print ("returning new row: ", new_row)
         return new_row
 
     # Choose a compound based on how closely it matches the name of the FrAnK annotation. If it is less than 50% return
@@ -513,20 +527,20 @@ class PeakSelector(object):
             max_keys = [k for k, v in name_match_dic.items() if v == max_value]
             max_key = max_keys[0]
 
-            if (max_value >= 0.5):
-                print("max_key to grab row", max_key)
+            # if (max_value >= 0.5):
+            print("max_key to grab row", max_key)
 
-                new_row = sid_df[sid_df['compound'] == max_key].iloc[0]
-                ucid = new_row['cmpd_id']
-                cmpd_rows_df = sid_df[sid_df.cmpd_id == ucid]
-                identifiers = self.get_all_identifiers(cmpd_rows_df)
-                new_row.at['identifier'] = identifiers
+            new_row = sid_df[sid_df['compound'] == max_key].iloc[0]
+            ucid = new_row['cmpd_id']
+            cmpd_rows_df = sid_df[sid_df.cmpd_id == ucid]
+            identifiers = self.get_all_identifiers(cmpd_rows_df)
+            new_row.at['identifier'] = identifiers
 
             # If the match is less than 50% just take the frank annotation instead.
-            if (max_value < 0.5):
-                print("max_value is < 0.5 (", max_value, ") and so taking frank annot")
-
-                new_row = self.get_frank_annot(sid_df)
+            # if (max_value < 0.5):
+            #     print("max_value is < 0.5 (", max_value, ") and so taking frank annot")
+            #
+                # new_row = self.get_frank_annot(sid_df)
 
         print("The FrAnK probability score is", single_annot['probability'])
 
@@ -597,7 +611,8 @@ class PeakSelector(object):
         identifiers = []
         for i in range(0, (num_rows)):
             new_id = cmpd_rows_df.iloc[i]['identifier']
-            identifiers.append(new_id)
+            for n in new_id:
+                identifiers.append(n) #So we don't end up with a list of lists
 
             # Take one of the rows for this compound, add identifiers and save in the final df.
 

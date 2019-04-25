@@ -65,13 +65,13 @@ def populate_peaks_cmpds_annots(peak_df):
         print("DATA: psec_id ", peak[1], "m_z ", format(peak[2], '.9f'),
               "rt ", peak[3], "polarity ", peak[4])
 
-        db_peak = Peak.objects.get_or_create(psec_id = peak[1], m_z = format(peak[2], '.9f'),
+        db_peak, created = Peak.objects.get_or_create(psec_id = peak[1], m_z = format(peak[2], '.9f'),
                   rt = format(peak[3], '.9f'), polarity = peak[4])
 
 
         db_peak.save()
 
-        logger.info("A new peak %s was created %s", db_peak)
+        logger.info("A new peak %s was created %s", db_peak, created)
 
 
 

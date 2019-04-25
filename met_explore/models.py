@@ -1,4 +1,7 @@
 from django.db import models
+from django_extensions.db.fields.json import JSONField
+
+
 import json
 
 class Sample(models.Model):
@@ -46,7 +49,7 @@ class Compound(models.Model):
     cmpd_name = models.CharField(max_length=600)  # At this stage just a name for the metabolite
     cmpd_formula = models.CharField(max_length=100)
     #KMCL: Currently if the list of identifiers matches another list we assume it's the same compound.
-    cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak
+    cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak stored as JSON
     peaks = models.ManyToManyField(Peak, through='Annotation')
 
     def  __str__(self):
@@ -86,16 +89,14 @@ class Compound(models.Model):
 class Annotation(models.Model):
 
     identified = models.CharField(max_length=100)  # Should be set at True or False
-    frank_anno = models.CharField(max_length=600, null=True)
+    frank_anno = models.CharField(max_length=600, null=True) #Stored as JSON
     db = models.CharField(max_length=20)
     adduct = models.CharField(max_length=100)
     confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 1 is the top, zero means not set.
     compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
     peak = models.ForeignKey(Peak, on_delete=models.CASCADE)
     neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
-
-    # preferred_annotation = models.BooleanField()
-    # preferred_annotation_reason = models.CharField(max_length=600)
+    annotation_group = models.IntegerField(null=True) #Group to store related peaks through annotations
 
     def __str__(self):
         """
@@ -121,7 +122,7 @@ class SamplePeak(models.Model):
         :return: String:
         """
 
-        return "Sample: " + self.sample.name + " Peak: " + str(self.peak.id) + " "+ self.peak.cmpd_name
+        return "Sample: " + self.sample.name + " Peak: " + str(self.peak.id)
 
 
 
