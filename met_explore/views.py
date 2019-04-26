@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from django.utils import timezone
 from django.views.generic.list import ListView
-from django.views.generic import TemplateView
 
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample
@@ -14,22 +13,38 @@ import pandas as pd
 import logging
 import numpy as np
 import json
+import django
 
 logger = logging.getLogger(__name__)
 
 #If the Db exists and has been initialised:
-# try:
-#     cmpd_selector = CompoundSelector()
-#     s_cmpds_df = cmpd_selector.single_cmpds_df
-#     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
-#     single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
-#
-# except django.db.utils.OperationalError as e:
-#
-#     logger.warning("I'm catching this error %s ", e)
-#
-#     logger.warning("DB not ready, start server again once populated")
-#     cmpd_selector = None
+try:
+    cmpd_selector = CompoundSelector()
+    hc_int_df = cmpd_selector.get_hc_int_df()
+    s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
+    single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
+    single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
+
+except django.db.utils.OperationalError as e:
+
+    logger.warning("I'm catching this error %s ", e)
+
+    logger.warning("DB not ready, start server again once populated")
+    cmpd_selector = None
+
+except FileNotFoundError as e:
+
+    logger.error("Please reinitialise DB and make sure the file %s exists ", "/data/" + HC_INTENSITY_FILE_NAME + ".pkl")
+    logger.info("Returning the DF as None")
+
+    cmpd_selector = None
+
+except Exception as e:
+    logger.warning("I'm catching this error %s ", e)
+    logger.warning("Hopefully just that the DB not ready, start server again once populated")
+
+    cmpd_selector = None
+
 
 
 def index(request):
@@ -83,6 +98,8 @@ def metabolite_search(request):
         if search_query is not None:
 
             met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
+
+            print (met_search_df)
 
             #If there is a row in the DF matching the searched for metabolite
             if met_search_df.shape[0] == 1:
@@ -142,6 +159,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
+                #Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id)
 
         print ("met_table_data", met_table_data)

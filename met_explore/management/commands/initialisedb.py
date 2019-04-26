@@ -32,14 +32,14 @@ class Command(BaseCommand):
         try:
             print("the files we are using are:", sample_csv, peak_json, int_json)
 
-            # populate_samples(sample_csv)
+            #populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
             #
             peak_df = peak_select.construct_all_peak_df()
-            # populate_peaks_cmpds_annots(peak_df)
-            # int_df, ids_dict = peak_select.construct_int_df(peak_df)
+            #populate_peaks_cmpds_annots(peak_df)
+            #int_df, ids_dict = peak_select.construct_int_df(peak_df)
             #
-            # populate_peaksamples(int_df, ids_dict)
+            #populate_peaksamples(int_df, ids_dict)
 
             selected_df, unique_sec_ids = peak_select.get_selected_df(peak_df)
 
@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
             compound_select = CompoundSelector()
 
-            hc_int_df = compound_select.get_hc_int_df(high_conf_peak_df)
+            hc_int_df = compound_select.construct_hc_int_df(high_conf_peak_df)
             single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
             compound_select.add_preferred_annotations(single_cmpds_df)
 

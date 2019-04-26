@@ -18,6 +18,8 @@ NAME_MATCH_SIG = 0.5
 MASS_TOL = 0.1
 RT_TOL = 5
 EXT_RT_TOL = 20 #Extended RT tolerance as the peak picking seemed odd
+PEAK_FILE_NAME = 'current_peak_df'
+
 
 
 # A class to select the peaks required to use in further analysis
@@ -34,6 +36,7 @@ class PeakSelector(object):
         # read this directly from a CSV file in the future
 
         self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline":720.6, "5-Aminolevulinate":696.0}
+
 
 
     def get_selected_df(self, peak_details_df):
@@ -72,16 +75,13 @@ class PeakSelector(object):
 
         peak_details_df = pd.read_json(self.peak_json_file)
 
-        file_name = get_filename_from_string(self.peak_json_file)
-
-        print ("The filename is:", file_name)
-
         try:
-            all_peak_df = pd.read_pickle("./data/"+file_name+".pkl") #KMCL - this file should be named after the input files so not to repeat.
+            all_peak_df = pd.read_pickle("./data/"+PEAK_FILE_NAME+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
             print ("WE have the DF", all_peak_df.head())
 
         except FileNotFoundError:
+
             print('constructing all_peak_df')
             all_peaks = self.add_neutral_masses(peak_details_df)
 
@@ -103,10 +103,10 @@ class PeakSelector(object):
                     new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
                     all_peak_df = all_peak_df.append(new_row)
 
-            logger.info("Picking the DF to store at ./data/all_peak_df.pkl")
+            logger.info("Pickling the DF to store at ./data/current_peak_df.pkl")
 
             try:
-                all_peak_df.to_pickle("./data/+"+file_name+".pkl")
+                all_peak_df.to_pickle("./data/"+PEAK_FILE_NAME+".pkl")
             except Exception as e:
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
