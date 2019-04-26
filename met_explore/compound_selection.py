@@ -6,6 +6,7 @@ import numpy as np
 import operator
 import json
 import django
+import math
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,8 +33,8 @@ class CompoundSelector(object):
         #     self.int_df = self.get_hc_int_df()
         #     self.single_cmpds_df = self.get_single_cmpd_df(self.int_df)
         #
-        #     samples = Sample.objects.all()
-        #     self.group_ls_tissue_dict = self.get_group_tissue_ls_dicts(samples)
+        # samples = Sample.objects.all()
+        # self.group_ls_tissue_dict = self.get_group_tissue_ls_dicts(samples)
         #
         # except django.db.utils.OperationalError as e:
         #
@@ -371,11 +372,11 @@ class CompoundSelector(object):
 
         return list(sample_ints)
 
-    def get_peak_id(self, metabolite, hc_int_df):
+    def get_peak_id(self, metabolite, single_cmpd_df):
 
         # Given a metabolite name get the peak ID from the single_cmpds_df
 
-        met_search_df = hc_int_df[hc_int_df['Metabolite'] == metabolite]
+        met_search_df = single_cmpd_df[single_cmpd_df['Metabolite'] == metabolite]
         peak_id = met_search_df.index.values[0]
 
         return peak_id

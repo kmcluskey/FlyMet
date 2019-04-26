@@ -295,14 +295,16 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     """
     # relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
-    group_ls_tissue_dict = cmpd_selector.group_ls_tissue_dict
+
+    samples = Sample.objects.all()
+    group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
 
     met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
         {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
     all_intensities = np.empty((3, 4), dtype=float)
     all_intensities[:] = np.nan
-    gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
+    gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue, single_cmpds_df)
 
     print ("This is the group intensites ", gp_intensities)
 
@@ -315,15 +317,15 @@ def met_search_highchart_data(request, tissue, metabolite):
             v =  np.nan_to_num(v) #Can't pass NaN to JSON so return a zero to the highchart.
         if group_ls_tissue_dict[gp][1] == 'F':
             met_series_data[0]['y'] = v
-            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
         elif group_ls_tissue_dict[gp][1] == 'M':
             met_series_data[1]['y'] = v
-            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
         elif group_ls_tissue_dict[gp][1] == 'L':
             met_series_data[2]['y'] = v
-            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
     logger.info("Passing the series data %s", met_series_data)
     logger.info("all intensities F, M and Larvae are %s", all_intensities)
@@ -357,8 +359,11 @@ def met_search_highchart_data(request, tissue, metabolite):
     logger.info("Passing the error bar data %s", error_bar_data)
     logger.info("Passing the drilldown data %s", drilldown_data)
 
-    peak_id = cmpd_selector.get_peak_id(metabolite)
-    cmpd_details = cmpd_selector.get_compound_details(peak_id)
+    peak_id = cmpd_selector.get_peak_id(metabolite, single_cmpds_df)
+
+    cmpd_id = single_cmpds_df['cmpd_id'].loc[peak_id]
+
+    cmpd_details = cmpd_selector.get_compound_details(peak_id, cmpd_id)
     frank_annots = json.loads(cmpd_details['frank_annots'])
     probability = None
 
