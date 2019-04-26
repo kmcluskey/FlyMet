@@ -105,6 +105,9 @@ def metabolite_search(request):
             if met_search_df.shape[0] == 1:
 
                 peak_id = met_search_df.index.values[0]
+                cmpd_id = met_search_df.cmpd_id.values[0]
+
+                print ("COMPOUND_ID ", cmpd_id)
 
                 logger.info("Getting the details for %s ", search_query)
 
@@ -160,7 +163,7 @@ def metabolite_search(request):
                     mean = actual_mean
 
                 #Here this no longer works a treat
-                references = cmpd_selector.get_compound_details(peak_id)
+                references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
 
         print ("met_table_data", met_table_data)
         context = {

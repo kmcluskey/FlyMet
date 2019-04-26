@@ -290,7 +290,7 @@ class CompoundSelector(object):
 
 
 
-    def get_compound_details(self, peak_id):
+    def get_compound_details(self, peak_id, cmpd_id):
         """
         Method to return the compound parameters associated with a peak.
         :param peak_id: Id of the peak that you want the compound details for
@@ -300,10 +300,10 @@ class CompoundSelector(object):
         ##KMCL: Current 1:1 for peak-compound so take the first - need to change to iterate through.
 
         peak = Peak.objects.get(id=peak_id)
-        cmpd = peak.compound_set.all()[0]
-        annot = Annotation.objects.get(peak=peak)
+        cmpd = Compound.objects.get(id=cmpd_id)
+        annot = Annotation.objects.get(peak=peak,compound=cmpd)
 
-        compound_details = {'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),'mz':peak.m_z, 'mass': peak.neutral_mass,
+        compound_details = {'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),'mz':peak.m_z, 'mass': annot.neutral_mass,
                             'rt': peak.rt, 'formula': cmpd.cmpd_formula, 'adduct': annot.adduct, 'name': cmpd.cmpd_name,
                             'identified': annot.identified, 'frank_annots': annot.frank_anno}
 
