@@ -47,21 +47,6 @@ def populate_peaks_cmpds_annots(peak_df):
 
         logger.info("We are populating row %s", peak)
 
-        # # Populating the peak from the row
-        # peak_serializer = PeakSerializer(
-        #     data={"psec_id": peak[1], "m_z": format(peak[2], '.9f'), "neutral_mass": format(peak[14], '.9f'),
-        #           "rt": peak[3], "polarity": peak[4]})
-        #
-        # if peak_serializer.is_valid():
-        #     db_peak = peak_serializer.save()
-        #     logger.info("peak saved %s", db_peak.psec_id)
-        # else:
-        #     db_peak = None
-        #     logger.warning("peak errors %s", peak_serializer.errors)
-
-        # print ("DATA: psec_id ", peak[1], "m_z ", format(peak[2], '.9f'), , '.9f'),
-        #           "rt ", peak[3], "polarity ", peak[4])
-
         print("DATA: psec_id ", peak[1], "m_z ", format(peak[2], '.9f'),
               "rt ", peak[3], "polarity ", peak[4])
 

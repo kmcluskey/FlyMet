@@ -14,12 +14,18 @@ import logging
 import numpy as np
 import json
 import django
+import math
 
 logger = logging.getLogger(__name__)
 
 #If the Db exists and has been initialised:
 try:
     cmpd_selector = CompoundSelector()
+    #DFs for all the peaks
+    int_df = cmpd_selector.construct_cmpd_intensity_df()
+    peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+
+    #DF for the Highly confident peaks
     hc_int_df = cmpd_selector.get_hc_int_df()
     s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
@@ -44,7 +50,6 @@ except Exception as e:
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
 
     cmpd_selector = None
-
 
 
 def index(request):

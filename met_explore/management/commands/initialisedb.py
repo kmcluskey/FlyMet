@@ -46,11 +46,11 @@ class Command(BaseCommand):
             #Add preferred compounds to peaks
             high_conf_peak_df = peak_select.construct_high_confidence_peak_df(selected_df, unique_sec_ids)
 
-            compound_select = CompoundSelector()
-
-            hc_int_df = compound_select.construct_hc_int_df(high_conf_peak_df)
-            single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
-            compound_select.add_preferred_annotations(single_cmpds_df)
+            # compound_select = CompoundSelector()
+            #
+            # hc_int_df = compound_select.construct_hc_int_df(high_conf_peak_df)
+            # single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
+            # compound_select.add_preferred_annotations(single_cmpds_df)
 
         except Exception as e:
             print (e)
