@@ -19,37 +19,37 @@ import math
 logger = logging.getLogger(__name__)
 
 #If the Db exists and has been initialised:
-# try:
-#     cmpd_selector = CompoundSelector()
-#     #DFs for all the peaks
-#     int_df = cmpd_selector.construct_cmpd_intensity_df()
-#     peak_group_int_df =  cmpd_selector.get_group_df(int_df)
-#
-#     #DF for the Highly confident peaks
-#     hc_int_df = cmpd_selector.get_hc_int_df()
-#     s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
-#     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
-#     single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
-#
-# except django.db.utils.OperationalError as e:
-#
-#     logger.warning("I'm catching this error %s ", e)
-#
-#     logger.warning("DB not ready, start server again once populated")
-#     cmpd_selector = None
-#
-# except FileNotFoundError as e:
-#
-#     logger.error("Please reinitialise DB and make sure the file %s exists ", "/data/" + HC_INTENSITY_FILE_NAME + ".pkl")
-#     logger.info("Returning the DF as None")
-#
-#     cmpd_selector = None
-#
-# except Exception as e:
-#     logger.warning("I'm catching this error %s ", e)
-#     logger.warning("Hopefully just that the DB not ready, start server again once populated")
-#
-#     cmpd_selector = None
+try:
+    cmpd_selector = CompoundSelector()
+    #DFs for all the peaks
+    int_df = cmpd_selector.construct_cmpd_intensity_df()
+    peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+
+    #DF for the Highly confident peaks
+    hc_int_df = cmpd_selector.get_hc_int_df()
+    s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
+    single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
+    single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
+
+except django.db.utils.OperationalError as e:
+
+    logger.warning("I'm catching this error %s ", e)
+
+    logger.warning("DB not ready, start server again once populated")
+    cmpd_selector = None
+
+except FileNotFoundError as e:
+
+    logger.error("Please reinitialise DB and make sure the file %s exists ", "/data/" + HC_INTENSITY_FILE_NAME + ".pkl")
+    logger.info("Returning the DF as None")
+
+    cmpd_selector = None
+
+except Exception as e:
+    logger.warning("I'm catching this error %s ", e)
+    logger.warning("Hopefully just that the DB not ready, start server again once populated")
+
+    cmpd_selector = None
 
 
 def index(request):

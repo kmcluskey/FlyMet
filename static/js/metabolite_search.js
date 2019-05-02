@@ -125,23 +125,32 @@ async function loadData(viewUrl) {
 
 $(document).ready(function() {
 
-  $("fieldset[class^='peak_details']").hide();
-
-  //let tissue_name = $(obj).children().first().text();
-
-  let met_table = initialise_table("tissue_met_table", min, mid, max);
-  add_met_tooltips(met_table, metabolite);
-  add_table_tooltips(tissue_met_table);
-
-  met_table.on( 'click', 'tr', function () {
-    updateMetSidePanel(this, metabolite);
-  } )
-
-  console.log('metabolite_passed', metabolite);
-  console.log('url', url)
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
     new Awesomplete(metabolite_search, {list: data.metaboliteNames});
   });
 
+  $("fieldset[class^='peak_details']").hide();
+
+  //Wait for the table to exist before we try to use it Try/Catch block.
+
+  try {
+    let met_table = initialise_table("tissue_met_table", min, mid, max);
+    add_met_tooltips(met_table, metabolite);
+    add_table_tooltips(tissue_met_table);
+
+    met_table.on( 'click', 'tr', function () {
+      updateMetSidePanel(this, metabolite);
+    } )
+  }
+  catch(e) {
+
+    if (e instanceof ReferenceError) {
+    // Handle error as necessary
+    console.log("waiting on table, caught", e);
+    }
+  }
+
+  console.log('metabolite_passed', metabolite);
+  console.log('url', url)
 });
