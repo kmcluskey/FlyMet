@@ -15,6 +15,7 @@ module.exports = {
         metabolite_search: './static/js/metabolite_search',
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
+        peak_explorer: './static/js/peak_explorer',
     },
 
     output: {

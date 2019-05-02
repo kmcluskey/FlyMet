@@ -1,6 +1,8 @@
 from django.core.management.base import BaseCommand, CommandError
 from met_explore.population_scripts import *
 from met_explore.peak_selection import PeakSelector
+from met_explore.compound_selection import CompoundSelector
+
 import argparse
 from sys import stdin
 
@@ -32,11 +34,23 @@ class Command(BaseCommand):
 
             populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
-            peak_df = peak_select.construct_peak_df()
-            populate_peaks(peak_df)
+            #
+            peak_df = peak_select.construct_all_peak_df()
+            populate_peaks_cmpds_annots(peak_df)
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
+            #
             populate_peaksamples(int_df, ids_dict)
 
+            selected_df, unique_sec_ids = peak_select.get_selected_df(peak_df)
+
+            #Add preferred compounds to peaks
+            high_conf_peak_df = peak_select.construct_high_confidence_peak_df(selected_df, unique_sec_ids)
+
+            compound_select = CompoundSelector()
+
+            hc_int_df = compound_select.construct_hc_int_df(high_conf_peak_df)
+            single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
+            compound_select.add_preferred_annotations(single_cmpds_df)
 
         except Exception as e:
             print (e)

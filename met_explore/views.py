@@ -5,7 +5,6 @@ from django.urls import reverse
 
 from django.utils import timezone
 from django.views.generic.list import ListView
-from django.views.generic import TemplateView
 
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample
@@ -14,22 +13,43 @@ import pandas as pd
 import logging
 import numpy as np
 import json
+import django
+import math
 
 logger = logging.getLogger(__name__)
 
 #If the Db exists and has been initialised:
-try:
-    cmpd_selector = CompoundSelector()
-    s_cmpds_df = cmpd_selector.single_cmpds_df
-    single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
-    single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
-
-except django.db.utils.OperationalError as e:
-
-    logger.warning("I'm catching this error %s ", e)
-
-    logger.warning("DB not ready, start server again once populated")
-    cmpd_selector = None
+# try:
+#     cmpd_selector = CompoundSelector()
+#     #DFs for all the peaks
+#     int_df = cmpd_selector.construct_cmpd_intensity_df()
+#     peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+#
+#     #DF for the Highly confident peaks
+#     hc_int_df = cmpd_selector.get_hc_int_df()
+#     s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
+#     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis =1)
+#     single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
+#
+# except django.db.utils.OperationalError as e:
+#
+#     logger.warning("I'm catching this error %s ", e)
+#
+#     logger.warning("DB not ready, start server again once populated")
+#     cmpd_selector = None
+#
+# except FileNotFoundError as e:
+#
+#     logger.error("Please reinitialise DB and make sure the file %s exists ", "/data/" + HC_INTENSITY_FILE_NAME + ".pkl")
+#     logger.info("Returning the DF as None")
+#
+#     cmpd_selector = None
+#
+# except Exception as e:
+#     logger.warning("I'm catching this error %s ", e)
+#     logger.warning("Hopefully just that the DB not ready, start server again once populated")
+#
+#     cmpd_selector = None
 
 
 def index(request):
@@ -59,7 +79,7 @@ def links(request):
 
 def metabolite_search(request):
     """
-    View to return the metabolite serach page
+    View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
@@ -84,10 +104,15 @@ def metabolite_search(request):
 
             met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
 
+            print (met_search_df)
+
             #If there is a row in the DF matching the searched for metabolite
             if met_search_df.shape[0] == 1:
 
                 peak_id = met_search_df.index.values[0]
+                cmpd_id = met_search_df.cmpd_id.values[0]
+
+                print ("COMPOUND_ID ", cmpd_id)
 
                 logger.info("Getting the details for %s ", search_query)
 
@@ -142,7 +167,8 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
-                references = cmpd_selector.get_compound_details(peak_id)
+                #Here this no longer works a treat
+                references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
 
         print ("met_table_data", met_table_data)
         context = {
@@ -274,14 +300,16 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     """
     # relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
-    group_ls_tissue_dict = cmpd_selector.group_ls_tissue_dict
+
+    samples = Sample.objects.all()
+    group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
 
     met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
         {'name': "Larvae",'y':None ,'drilldown': "3"}]
 
     all_intensities = np.empty((3, 4), dtype=float)
     all_intensities[:] = np.nan
-    gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue)
+    gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue, single_cmpds_df)
 
     print ("This is the group intensites ", gp_intensities)
 
@@ -294,15 +322,15 @@ def met_search_highchart_data(request, tissue, metabolite):
             v =  np.nan_to_num(v) #Can't pass NaN to JSON so return a zero to the highchart.
         if group_ls_tissue_dict[gp][1] == 'F':
             met_series_data[0]['y'] = v
-            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
         elif group_ls_tissue_dict[gp][1] == 'M':
             met_series_data[1]['y'] = v
-            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
         elif group_ls_tissue_dict[gp][1] == 'L':
             met_series_data[2]['y'] = v
-            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp)
+            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
     logger.info("Passing the series data %s", met_series_data)
     logger.info("all intensities F, M and Larvae are %s", all_intensities)
@@ -336,8 +364,11 @@ def met_search_highchart_data(request, tissue, metabolite):
     logger.info("Passing the error bar data %s", error_bar_data)
     logger.info("Passing the drilldown data %s", drilldown_data)
 
-    peak_id = cmpd_selector.get_peak_id(metabolite)
-    cmpd_details = cmpd_selector.get_compound_details(peak_id)
+    peak_id = cmpd_selector.get_peak_id(metabolite, single_cmpds_df)
+
+    cmpd_id = single_cmpds_df['cmpd_id'].loc[peak_id]
+
+    cmpd_details = cmpd_selector.get_compound_details(peak_id, cmpd_id)
     frank_annots = json.loads(cmpd_details['frank_annots'])
     probability = None
 
