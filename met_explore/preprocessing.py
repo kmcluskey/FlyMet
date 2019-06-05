@@ -2,33 +2,32 @@ import pandas as pd
 import re
 import numpy as np
 import logging
+# from met_explore.peak_selection import PeakSelector
+
 logger = logging.getLogger(__name__)
 
 # Names to pickle the files as we go along so canges can be made without running all of the methods again.
 CHEBI_DF_NAME = "chebi_ontology_df2"
-ADDED_CHEBI_NAME = "chebi_peak_df_1"
-CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_1"
-CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_2"
+ADDED_CHEBI_NAME = "chebi_peak_df_test_5june"
+CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_5june"
+CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_5june"
 
 class PreprocessCompounds(object):
     """
     This is a class to preproccess the compounds and give them unique Chebi IDS
     """
 
-    def __init__(self, peak_json_file):
+    def __init__(self, peak_df):
 
-        self.peak_json_file = peak_json_file
+        self.peak_df = peak_df
         self.chebi_df = self.get_chebi_ontology_df()
-        self.peak_df = pd.read_json(self.peak_json_file)
 
 
     def get_preprocessed_cmpds(self):
 
-
         self.add_chebi_ids()
         self.give_each_chebi_same_id()
         self.give_chebi_inchi_unique_id()
-
 
     def add_chebi_ids(self):
         """
@@ -36,9 +35,10 @@ class PreprocessCompounds(object):
         :return:
         """
         logger.info("Adding the chebi_ids")
+
         try:
             self.peak_df = pd.read_pickle("./data/" + ADDED_CHEBI_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the DF", self.peak_df.head())
+            print("WE have the added Chebis DF", self.peak_df.head())
 
         except FileNotFoundError:
 
@@ -53,24 +53,27 @@ class PreprocessCompounds(object):
                 formula = row.formula
 
                 if not set_chebi_id:
-                    logger.info("The identifier/inchi/formula are ", identifier, inchi, formula)
+                    print("The identifier/inchi/formula are ", identifier, inchi, formula)
 
                     chebi_id, chebi_id_inchi = self.get_chebi_id(identifier, inchi, formula)
 
+                    print ("ID and ID_INCHI", chebi_id, chebi_id_inchi)
+
                     # If both exist add the chebi_id (based on the DB identifier) to the DF
                     if chebi_id and chebi_id_inchi:
-                        logger.info("The ID and chebi_id are both found: ", chebi_id, chebi_id_inchi)
-                        logger.info("Adding the chebi_id", chebi_id)
-
+                        logger.info("The ID and chebi_id are both found: %s %s", chebi_id, chebi_id_inchi)
+                        logger.info("Adding the chebi_id %s", chebi_id)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
 
                         # Get the chebi inchi if it exists & If it's not null add it to the DF.
                         inchi = self.chebi_df[self.chebi_df.chebi_id == chebi_id].inchikey.values[0]
+                        print ("The inchi that we found is ", inchi)
                         if not pd.isnull(inchi):
+                            print ("in the wee setting bit")
                             self.peak_df.loc[index, 'inchikey'] = inchi
 
                     elif chebi_id and not chebi_id_inchi:
-                        logger.info('chebi_id and not chebi_id_inchi, adding ', chebi_id)
+                        logger.info('chebi_id and not chebi_id_inchi, adding %s', chebi_id)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
 
                         # Grab the inchi from the chebi_id if it exists.
@@ -137,6 +140,8 @@ class PreprocessCompounds(object):
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
 
+        return self.peak_df
+
     def give_chebi_inchi_unique_id(self):
         """
         A Method that makes sure that each unique chebi ID, Inchi and formula given individual cmpd_ids (at this stage).
@@ -156,29 +161,27 @@ class PreprocessCompounds(object):
             for cmpd in cmpd_ids:
 
                 single_cmpd_df = self.peak_df[self.peak_df['cmpd_id'] == cmpd]
-                indexes = single_cmpd_df.index.values
 
-                cmpd_ids = single_cmpd_df.cmpd_id.unique()
-                no_cmpd_ids = len(cmpd_ids)
                 inchi_keys = single_cmpd_df.inchikey.unique()
-                no_inchi_keys = len(inchi_keys)
                 # no_present_inchi = sum(1 for _ in filter(None.__ne__, inchi_keys))
                 present_inchis = inchi_keys[inchi_keys != np.array(None)]
+                no_inchi_keys = len(inchi_keys)
 
-                # identifiers = single_cmpd_df.identifier.unique()
-                # no_identifiers = len(identifiers)
                 chebi_ids = single_cmpd_df.chebi_id.unique()
-
                 present_chebi_ids = chebi_ids[chebi_ids != np.array(None)]
 
-
-                formulas = (single_cmpd_df.formula.unique())
+                formulas = single_cmpd_df.formula.unique()
                 no_formulas = len(formulas)
+
+                neutral_masses = (single_cmpd_df.neutral_mass.round(2).unique())
+                nm_diff = np.diff(neutral_masses)
+                h_diff = np.isclose([nm_diff], [1.01], atol=0.03)  # Diff is mass is about a proton
+                dbs = single_cmpd_df.db.unique()
 
                 # Same compound IDs, different CheBi_ids - give the row a new cmpd_id = Max cmpd_id +1
                 if len(present_chebi_ids) > 1:  # If the inchi keys are 1 and None just leave.
 
-                    logger.info("This compound id %S has more than one inchi_key %S",cmpd, chebi_ids )
+                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, chebi_ids )
 
                     if len(present_chebi_ids) == len(chebi_ids):  # There are no missing/None chebi_ids
 
@@ -197,9 +200,27 @@ class PreprocessCompounds(object):
                             change_indexes = scmpd_id_df.index.values
                             self.peak_df.loc[change_indexes, 'cmpd_id'] = max_cmpd_id
 
-                # Same compound IDs but different formulas
-                if no_formulas > 1 :
-                    logger.info("This compound id %S has more than one inchi_key %S",cmpd, formulas )
+                # If one of these is a standard compound and the difference in the formula is an H change the adduct to M and
+                # the formula to match the one of the non-standard cmpd.
+                if (no_formulas > 1) and ('stds_db' in dbs) and h_diff:
+
+                    stds_df = single_cmpd_df[single_cmpd_df.db == 'stds_db']
+                    change_indexes = stds_df.index.values
+                    neutral_mass = stds_df.mass.values[0]
+                    print(change_indexes)
+
+                    non_stds_df = single_cmpd_df[single_cmpd_df.db != 'stds_db']
+                    formula = non_stds_df.formula.values[0]
+                    chebi_id = non_stds_df.chebi_id.values[0]
+                    chebi_name = non_stds_df.chebi_name.values[0]
+                    adduct = 'M'
+
+                    self.peak_df.loc[change_indexes, ['formula', 'chebi_id', 'chebi_name', 'adduct',
+                                                        'neutral_mass']] = formula, chebi_id, chebi_name, adduct, neutral_mass
+
+                # Same compound IDs but different formulas and no std compound - change the cmpd id.
+                elif no_formulas > 1 :
+                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, formulas )
                     for f in formulas[1:]: #Keep the first formula, change the rest
                         max_cmpd_id +=1
                         scmpd_id_df = single_cmpd_df[single_cmpd_df.formula==f]
@@ -207,8 +228,9 @@ class PreprocessCompounds(object):
                         self.peak_df.loc[change_indexes,'cmpd_id']= max_cmpd_id
 
                 # Check for dulicate inchikeys
-                if len(present_inchis) > 1: # If the inchi keys are 1 and None just leave alone - more than one non null value
-                    logger.info("This compound id %S has more than one inchi_key %S",cmpd, inchi_keys )
+                # If the inchi keys are 1 and None just leave alone - more than one non null value and if one chebi_id leave as one cmpd
+                if len(present_inchis) > 1 and len(chebi_ids) !=1:
+                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, inchi_keys )
                     if len(present_inchis) == no_inchi_keys:  # There are no missing/None values for inchikeys
 
                         for i in present_inchis[1:]:
@@ -233,6 +255,7 @@ class PreprocessCompounds(object):
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
 
+        return self.peak_df
 
 
     def get_chebi_id(self, identifier, inchikey, formula):
@@ -247,14 +270,34 @@ class PreprocessCompounds(object):
         chebi_inchi_id = None
         chebi_id = None
 
+        # Get the chebi_id based on Inchi - hopefully when found it matches the one on ID.
+        if inchikey is not None:
+
+            logger.info("Trying to get Chebi on Inchi")
+            try:
+                chebi_match = self.chebi_df[self.chebi_df['inchikey'] == inchikey]
+                if not chebi_match.empty:
+                    chebi_inchi_id = self.get_formula_match(chebi_match, formula, None)
+
+            except KeyError as e:
+                logger.info("No match to chebi for this inchi %s ", inchikey)
+                chebi_inchi_id = None
+                # Return the value and not the array
+
+        if chebi_inchi_id:
+            chebi_inchi_id = chebi_inchi_id[0]
+
+
+
         if identifier.startswith('C'):  # Kegg identifier
             try:
                 chebi_match = self.chebi_df[self.chebi_df['kegg_id'] == identifier]
                 if not chebi_match.empty:
-                    chebi_id = self.get_formula_match(chebi_match, formula)
+                    chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id )
+                    print ("HERE2 ", chebi_id)
 
             except KeyError as e:
-                logger.info("No match to chebi for this kegg id ", identifier)
+                logger.info("No match to chebi for this kegg id %s", identifier)
                 chebi_id = None
 
         elif identifier.startswith('HMDB'):
@@ -262,18 +305,18 @@ class PreprocessCompounds(object):
             try:
                 chebi_match = self.chebi_df[self.chebi_df['hmdb_id'] == hmdb_no]
                 if not chebi_match.empty:
-                    chebi_id = self.get_formula_match(chebi_match, formula)
+                    chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id)
             except KeyError as e:
-                logger.info("No match to chebi for this hmdb id ", identifier)
+                logger.info("No match to chebi for this hmdb id %s", identifier)
                 chebi_id = None
 
         elif identifier.startswith('LM'):
             try:
                 chebi_match = self.chebi_df[self.chebi_df['lmaps_id'] == identifier]
                 if not chebi_match.empty:
-                    chebi_id = self.get_formula_match(chebi_match, formula)
+                    chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id)
             except KeyError as e:
-                logger.info("No match to chebi for this lmaps ", identifier)
+                logger.info("No match to chebi for this lmaps %s", identifier)
                 chebi_id = None
 
         elif identifier.startswith('Std'):
@@ -282,30 +325,15 @@ class PreprocessCompounds(object):
         else:
             logger.warning("We have a new and unusual identifier - do something!!")
 
-        # Get the chebi_id based on Inchi - hopefully when found it matches the one on ID.
-        if inchikey is not None:
-
-            logger.info("Trying to get Chebi on Inchi")
-            try:
-                chebi_match = self.chebi_df[self.chebi_df['inchikey'] == inchikey]
-                if not chebi_match.empty:
-                    chebi_inchi_id = self.get_formula_match(chebi_match, formula)
-
-            except KeyError as e:
-                logger.info("No match to chebi for this inchi ", inchikey)
-                chebi_inchi_id = None
-                # Return the value and not the array
 
         if chebi_id:
             chebi_id = chebi_id[0]
 
-        if chebi_inchi_id:
-            chebi_inchi_id = chebi_inchi_id[0]
 
-        logger.info("Returning chebi_id and chebi_inchi_id ", chebi_id, chebi_inchi_id)
+        print ("Returning chebi_id and chebi_inchi_id", chebi_id, chebi_inchi_id)
         return chebi_id, chebi_inchi_id
 
-    def get_formula_match(self, chebi_match, formula):
+    def get_formula_match(self, chebi_match, formula, chebi_inchi_id):
         """
         A method to check if the chebi_formula matches the formula that we have in our peak DF
         If a compound returned two different chebi IDS pick the one with the greatest number of identifiers.
@@ -322,14 +350,22 @@ class PreprocessCompounds(object):
             if not formula_match.empty:
                 chebi_id = formula_match.chebi_id.values
                 if len(chebi_id) > 1:
-                    chebi_db_ids = {}
-                    # For these chebi ids - count the number of db identifiers and use the chebi_id with the greatest no of identifiers.
-                    for c_id in chebi_id:
-                        c_id_df = formula_match[formula_match['chebi_id'] == c_id]
-                        id_lst = str(c_id_df[column_ids].values[0])
-                        no_db_ids = len(column_ids) - id_lst.count('nan')  # No identifiers that are not NaN
-                        chebi_db_ids[c_id] = no_db_ids
-                        chebi_id = max(chebi_db_ids, key=chebi_db_ids.get)  # Id with the most identifiers
+                    if chebi_inchi_id and (chebi_inchi_id in chebi_id):
+                        print ("Chebi_id_inchi and chebi_ids", chebi_inchi_id, chebi_id)
+                        # Check if this matches the one of the chebi_inchis
+                        chebi_id = [chebi_inchi_id]
+                    else:
+                        chebi_db_ids = {}
+                        # For these chebi ids - count the number of db identifiers and use the chebi_id with the greatest no of identifiers.
+                        for c_id in chebi_id:
+                            c_id_df = formula_match[formula_match['chebi_id'] == c_id]
+                            id_lst = str(c_id_df[column_ids].values[0])
+                            no_db_ids = len(column_ids) - id_lst.count('nan')  # No identifiers that are not NaN
+                            chebi_db_ids[c_id] = no_db_ids
+                        print (chebi_db_ids)
+                        chebi_id = [max(chebi_db_ids, key=chebi_db_ids.get)]  # Id with the most identifiers
+                        print ("HERE ", chebi_id)
+
 
         except KeyError as e:
             print("No match to chebi for this formula ", formula)
@@ -369,7 +405,7 @@ class PreprocessCompounds(object):
                         chebi_line = line.strip()
                         res = re.search('CHEBI_(.*)"', chebi_line)
                         chebi = res.group(1)
-                        logger.info("Adding details for the index and chebi code:", index, chebi)
+                        logger.info("Adding details for the index and chebi code: %s %s", index, chebi)
                         found_name = False  # There are more one line with rdfs_labe so add this to just grab the first one.
                         chebi_df.at[index, 'chebi_id'] = chebi
                         new_compound = True
