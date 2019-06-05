@@ -1,7 +1,6 @@
 from IPython.display import display
 from difflib import SequenceMatcher
-from decimal import *
-from met_explore.helpers import get_filename_from_string
+from met_explore.preprocessing import *
 
 import pandas as pd
 import numpy as np
@@ -22,7 +21,6 @@ EXT_RT_TOL = 20 #Extended RT tolerance as the peak picking seemed odd
 PEAK_FILE_NAME = 'current_peak_df'
 
 
-
 # A class to select the peaks required to use in further analysis
 
 class PeakSelector(object):
@@ -38,6 +36,27 @@ class PeakSelector(object):
 
         self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline":720.6, "5-Aminolevulinate":696.0}
 
+        # These are all stds_db compounds where the compound formulas don't match the inchi-keys so just updating them.
+        self.inchi_changers = {'Succinate': 'KDYFGRWQOYBRFD-UHFFFAOYSA-N',
+                          'Pyruvate': 'LCTONWCANYUPML-UHFFFAOYSA-N',
+                          'Malonate': 'OFOBLEOULBTSOW-UHFFFAOYSA-N',
+                          'Nicotinate': 'PVNIIMVLHYAWGP-UHFFFAOYSA-N'}
+
+    def pre_process_compounds(self):
+        """
+        A method to take the peak_json_file from PiMP and give all the same compound the same pimp secondary ID
+        :return: processed_df: the dataframe with unique compounds having a single ID.
+
+        """
+
+        original_peak_df = pd.read_json(self.peak_json_file)
+        neutral_mass_df = self.add_neutral_masses(original_peak_df)
+        nm_inchi_df = self.update_inchikeys(neutral_mass_df)
+        pre_processor = PreprocessCompounds(nm_inchi_df)
+        peak_chebi_df = pre_processor.get_preprocessed_cmpds()
+
+
+        return peak_chebi_df
 
 
     def get_selected_df(self, peak_details_df):
@@ -75,7 +94,11 @@ class PeakSelector(object):
         and matching compounds pointing to different peaks. Psec_id and cmpd_id should be unique.
         """
 
-        peak_details_df = pd.read_json(self.peak_json_file)
+        # peak_details_df = pd.read_json(self.peak_json_file)
+
+        # peak_details_df = pd.read_pickle("./data/chebi_peak_df.pkl")
+
+        peak_details_df = self.pre_process_compounds() #DF after the compounds have been processed
 
         try:
             all_peak_df = pd.read_pickle("./data/"+PEAK_FILE_NAME+".pkl") #KMCL - this file should be named after the input files so not to repeat.
@@ -581,6 +604,17 @@ class PeakSelector(object):
 
         return new_row
 
+    def update_inchikeys(self, peak_df):
+
+        for name, inchi in self.inchi_changers.items():
+
+            selected_rows = (peak_df['db'] == 'stds_db') & (peak_df['compound'] == name)
+            change_df = peak_df[selected_rows]
+            change_indexes = change_df.index.values
+            peak_df.loc[change_indexes, 'inchikey'] = inchi
+
+        return peak_df
+
 
     #####KMCL - work out where this is used and make sure we can use the std_db info for other means.
     ######ALso make sure we are using good compound for the High confidence DF.
@@ -681,11 +715,12 @@ class PeakSelector(object):
         :param adduct: type of adduct - only M+H, M-H currently accepted
         :return: The neutral mass np.float
         """
-        neutral_mass = None
         if adduct == 'M+H':
             neutral_mass = mass - PROTON
         elif adduct == 'M-H':
             neutral_mass = mass + PROTON
+        elif adduct =='M':
+            neutral_mass = mass
         elif adduct =='M+Na':
             neutral_mass = mass - Na
         elif adduct == 'M+ACN+Na':
