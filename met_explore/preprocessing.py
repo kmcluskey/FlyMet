@@ -11,7 +11,7 @@ CHEBI_DF_NAME = "chebi_ontology_df2"
 ADDED_CHEBI_NAME = "chebi_peak_df_test_5june"
 CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_5june"
 CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_5june"
-
+CMPDS_FINAL = "current_chebi_peak_df"
 class PreprocessCompounds(object):
     """
     This is a class to preproccess the compounds and give them unique Chebi IDS
@@ -28,6 +28,7 @@ class PreprocessCompounds(object):
         self.add_chebi_ids()
         self.give_each_chebi_same_id()
         self.give_chebi_inchi_unique_id()
+        self.collect_dup_cmpds_no_chebi()
 
     def add_chebi_ids(self):
         """
@@ -110,7 +111,6 @@ class PreprocessCompounds(object):
     def give_each_chebi_same_id(self):
         """
         # Give all rows with the same chebi_id the same cmpd ID in the peak_df
-
         """
         logger.info("Making sure each Chebi_ID has the same cmpd_id")
         try:
@@ -256,6 +256,52 @@ class PreprocessCompounds(object):
                 pass
 
         return self.peak_df
+
+    def collect_dup_cmpds_no_chebi(self):
+        """
+        Many compounds without chebi_ids are duplicated because they have no inchikeys - this method
+        collects the compounds that have the same name and same db identifier into a single compound
+        :return:
+        """
+
+
+        try:
+            self.peak_df = pd.read_pickle("./data/" + CMPDS_FINAL + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
+            print("WE have the added final peak DF", self.peak_df.head())
+
+        except FileNotFoundError:
+
+            no_chebis = self.peak_df[self.peak_df['chebi_id'].isnull()]
+            no_chebis_cmpd_names = no_chebis['compound'].unique()
+
+            for cmpd in no_chebis_cmpd_names:
+
+                single_name_df = no_chebis[no_chebis['compound'] == cmpd]
+                inchi_keys = single_name_df.inchikey.unique()
+                present_inchis = inchi_keys[inchi_keys != np.array(None)]
+                db_identifiers = single_name_df.identifier.unique()
+
+                cmpd_ids = single_name_df['cmpd_id'].unique()
+
+                # If we have more than one compound id and this is not a result of two different inchikeys
+                if (len(cmpd_ids) > 1) and (len(cmpd_ids) != len(present_inchis)):
+                    for db_id in db_identifiers:
+                        single_db_id_df = single_name_df[single_name_df['identifier'] == db_id]
+                        indexes = single_db_id_df.index.values
+                        single_id_cmpd_ids = single_db_id_df.cmpd_id.unique()
+                        no_cmpd_ids = len(single_id_cmpd_ids)
+                        # For each compound of the same identifier - make it a single cmpd.
+                        if no_cmpd_ids > 1:
+                            cmpd_id = cmpd_ids[0]  # Take the first cmpd_id and rename all the rows with the same chebi Id
+                            print("should be replacing all with this cmpd_id ", cmpd_id)
+                            self.peak_df.loc[indexes, 'cmpd_id'] = cmpd_id
+
+            try:
+                self.peak_df.to_pickle("./data/" + CMPDS_FINAL + ".pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
+
 
 
     def get_chebi_id(self, identifier, inchikey, formula):
