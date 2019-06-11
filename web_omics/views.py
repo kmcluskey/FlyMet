@@ -24,7 +24,7 @@ class LoginRequired(View):
 
 def index(request):
     # return HttpResponse("Hello, you have arrived at the FlyMet front page!.")
-    return render(request, 'index.html')
+    return render(request, 'met_explore/index.html')
 
 
 # class ExperimentListView(LoginRequired, ListView):
