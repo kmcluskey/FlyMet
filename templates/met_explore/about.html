@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Welcome to FlyMet {% endblock %}
+{% block title %}: About FlyMet {% endblock %}
 
 {% block head_block %}
 {% endblock %}
@@ -27,10 +27,13 @@
           <a class="nav-link active" href="{% url 'about' %}">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'importance' %}">Importance</a>
+          <a class="nav-link" href="{% url 'background' %}">Background</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'links' %}">Links</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
@@ -44,9 +47,9 @@
     <div class="card-header pb-0 table-card-header">
       FlyMet: A metabolomics atlas for <i> Drosophila </i>
     </div>
-    <p class = "p-4 text-justify">
-      All living organisms have a metabolism - a set of hundreds or thousands of chemical reactions that allows them to survive. Recent technologies have allowed us to take a chemical snapshot of hundreds of such chemicals - a 'metabolome' - that provides a sensitive indicator of what is going on inside the organism, its health and nutritional status. In our bodies, as in all multicellular organisms, the metabolomes of different tissues are likely to differ significantly, reflecting the different specialized jobs they perform. Obviously, this is hard to study in humans. However, the tiny fruit fly, Drosophila, has proved itself to be an ideal 'model' for many human processes. For example, much of our understanding of how humans develop, or of how our body clocks work, is based on research first performed in Drosophila. So this project is to generate metabolomes for the major tissues of Drosophila, and to place them online in the public domain, together with computer models of each tissue's metabolic 'map'. Such a dataset will be invaluable for the rapidly growing population of scientists studying metabolism in Drosophila - for example to model the natural ageing process or obesity and diabetes - and may provide modelling techniques and tools to let us understand more of human biology. Similarly, 70% of human genetic diseases are mutations in metabolic enzymes. They can either be directly harmful, or damage organs like the kidney by uncontrolled accumulation of metabolites. 80% of human genes have Drosophila homologues, and so it is possible to model many inborn errors of metabolism in the fruit fly, assess the impact of mutations by metabolomic approaches, and use such mutants in drug screens to alleviate these life-threatening conditions. The benefits of the project are not likely to be specific to biomedicine; for example, a million lives are still lost annually to insect-borne diseases such as malaria and dengue; and insects are also key vectors of animal disease, such as blue tongue virus. Drosophila, with its potent genetic tools, is an ideal model for insect pests. Understanding insect metabolism may help us understand how insects render insecticides harmless, or even identify new targets for novel, greener, insecticides.
-      This three-year project is funded by the UK’s BBSRC (https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1).
+    <div class = "p-4 text-justify">
+      <h5>About</h5><span class="bg-danger text-white">[Under construction]</span>
+      <p>A little bit about the different areas of FlyMet and how to use them.</p>
     </div>
 
   </div>
