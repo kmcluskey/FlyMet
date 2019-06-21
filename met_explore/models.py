@@ -81,21 +81,22 @@ class Compound(models.Model):
 
         return "Compound " + str(self.id) +" "+self.cmpd_name
 
+    # Currently this just returns one kegg_id even if there are more than one
     def get_kegg_id(self):
 
         kegg_id = None
 
         if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').exists():
-            kegg_id = CompoundDBDetails.objects.get(compound=self, db_name__db_name='kegg').identifier
+            kegg_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('identifier', flat=True)[0]
 
         return kegg_id
-
+    # Currently this just returns one hmbd_id even if there are more than one
     def get_hmdb_id(self):
 
         hmdb_id = None
 
         if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').exists():
-            hmdb_id = CompoundDBDetails.objects.get(compound=self, db_name__db_name='hmdb').identifier
+            hmdb_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('identifier', flat=True)[0]
 
         return hmdb_id
 
