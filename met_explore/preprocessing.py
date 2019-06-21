@@ -7,11 +7,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Names to pickle the files as we go along so canges can be made without running all of the methods again.
-CHEBI_DF_NAME = "chebi_ontology_df2"
-ADDED_CHEBI_NAME = "chebi_peak_df_test_5june"
-CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_5june"
-CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_5june"
+CHEBI_DF_NAME = "chebi_ontology_df"
+ADDED_CHEBI_NAME = "chebi_peak_df_current"
+CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_current"
+CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_current"
 CMPDS_FINAL = "current_chebi_peak_df"
+
+
 class PreprocessCompounds(object):
     """
     This is a class to preproccess the compounds and give them unique Chebi IDS
@@ -20,7 +22,7 @@ class PreprocessCompounds(object):
     def __init__(self, peak_df):
 
         self.peak_df = peak_df
-        self.chebi_df = self.get_chebi_ontology_df()
+        self.chebi_df = self.construct_chebi_ontology_df()
 
 
     def get_preprocessed_cmpds(self):
@@ -29,6 +31,18 @@ class PreprocessCompounds(object):
         self.give_each_chebi_same_id()
         self.give_chebi_inchi_unique_id()
         self.collect_dup_cmpds_no_chebi()
+
+        return self.peak_df
+
+    # def get_preprocessed_cmpds(self):
+    #
+    #     self.preprocess_cmpds()
+    #
+    #     return self.peak_df
+
+    def get_chebi_ontology_df(self):
+
+        return self.chebi_df
 
     def add_chebi_ids(self):
         """
@@ -92,14 +106,21 @@ class PreprocessCompounds(object):
                         logger.info("No chebi ID found so setting it to None")
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
 
-            ## Add Chebi names to the peak DF
+            ## Add Chebi names, smile and cas-codes to the peak DF
             for index, row in self.peak_df.iterrows():
                 if row.chebi_id:  # If not a null value
                     chebi_id = row.chebi_id
                     chebi_name = self.chebi_df[self.chebi_df.chebi_id == chebi_id].chebi_name.values[
                         0]
+                    smiles = self.chebi_df[self.chebi_df.chebi_id == chebi_id].smiles.values[
+                        0]
+                    cas_code = self.chebi_df[self.chebi_df.chebi_id == chebi_id].cas_code.values[
+                        0]
                     print(chebi_id, chebi_name)
                     self.peak_df.loc[index, 'chebi_name'] = chebi_name
+                    self.peak_df.loc[index, 'cas_code'] = cas_code
+                    self.peak_df.loc[index, 'smiles'] = smiles
+
 
             try:
                 self.peak_df.to_pickle("./data/"+ ADDED_CHEBI_NAME+".pkl")
@@ -140,7 +161,6 @@ class PreprocessCompounds(object):
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
 
-        return self.peak_df
 
     def give_chebi_inchi_unique_id(self):
         """
@@ -255,7 +275,6 @@ class PreprocessCompounds(object):
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
 
-        return self.peak_df
 
     def collect_dup_cmpds_no_chebi(self):
         """
@@ -422,7 +441,7 @@ class PreprocessCompounds(object):
 
 
 
-    def get_chebi_ontology_df(self):
+    def construct_chebi_ontology_df(self):
         """
         This menthod reads the chebi.owl file and produces a df to be used throughout preprocessing
         :return: A DF containing the Chebi ID and all of the matching compound information
@@ -430,7 +449,10 @@ class PreprocessCompounds(object):
         """
 
         try:
-            chebi_df = pd.read_pickle("./data/chebi_ontology_df2.pkl")
+            chebi_df = pd.read_pickle("./data/"+CHEBI_DF_NAME+".pkl")
+            print("Have the peak_chebi_df", chebi_df.head())
+
+
 
         except FileNotFoundError: #If the file is not found then it can be constructed using the code below.
 
@@ -447,11 +469,11 @@ class PreprocessCompounds(object):
                 for line in f:
                     # Get the chebi_id
                     if 'owl:Class' in line and 'rdf:about' in line:
+                        print (index)
                         index += 1
                         chebi_line = line.strip()
                         res = re.search('CHEBI_(.*)"', chebi_line)
                         chebi = res.group(1)
-                        logger.info("Adding details for the index and chebi code: %s %s", index, chebi)
                         found_name = False  # There are more one line with rdfs_labe so add this to just grab the first one.
                         chebi_df.at[index, 'chebi_id'] = chebi
                         new_compound = True
@@ -534,11 +556,11 @@ class PreprocessCompounds(object):
                         cas = res.group(1)
                         chebi_df.at[index, 'cas_code'] = cas
 
-                    try:
-                        chebi_df.to_pickle("./data/" + CHEBI_DF_NAME + ".pkl")
-                    except Exception as e:
-                        logger.error("Pickle didn't work because of %s ", e)
-                        pass
+            try:
+                chebi_df.to_pickle("./data/" + CHEBI_DF_NAME + ".pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
 
         return chebi_df
 

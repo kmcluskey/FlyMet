@@ -34,17 +34,24 @@ class Command(BaseCommand):
 
             populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
-            #
-            peak_df = peak_select.construct_all_peak_df()
+
+            pre_peak_df = peak_select.pre_process_compounds()
+
+            peak_df = peak_select.construct_all_peak_df(pre_peak_df)
             populate_peaks_cmpds_annots(peak_df)
+
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
-            #
+
             populate_peaksamples(int_df, ids_dict)
 
+            #
+            logger.info("Getting the selected DF")
             selected_df, unique_sec_ids = peak_select.get_selected_df(peak_df)
 
             #Add preferred compounds to peaks
+            logger.info(("Getting the high_confidence_peak_df"))
             high_conf_peak_df = peak_select.construct_high_confidence_peak_df(selected_df, unique_sec_ids)
+
 
             compound_select = CompoundSelector()
 
@@ -53,5 +60,4 @@ class Command(BaseCommand):
             compound_select.add_preferred_annotations(single_cmpds_df)
 
         except Exception as e:
-            print (e)
             raise CommandError(e, "Something went horribly wrong")

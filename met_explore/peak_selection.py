@@ -18,12 +18,14 @@ NAME_MATCH_SIG = 0.5
 MASS_TOL = 0.1
 RT_TOL = 5
 EXT_RT_TOL = 20 #Extended RT tolerance as the peak picking seemed odd
-PEAK_FILE_NAME = 'current_peak_df'
-
+PEAK_FILE_NAME = 'peak_prepared_df'
+PREPARED_DF = 'current_prepared_df'
+HIGH_CONF_DF = 'high_conf_peak_df'
 
 # A class to select the peaks required to use in further analysis
 
 class PeakSelector(object):
+
 
     # The constructor just in a peak_json file from PiMP
     # and an intensity json file from Pimp (samples [col], peaks [rows], intensities [cells]
@@ -50,14 +52,36 @@ class PeakSelector(object):
         """
 
         original_peak_df = pd.read_json(self.peak_json_file)
-        neutral_mass_df = self.add_neutral_masses(original_peak_df)
-        nm_inchi_df = self.update_inchikeys(neutral_mass_df)
+        nm_inchi_df = self.prepare_df(original_peak_df)
         pre_processor = PreprocessCompounds(nm_inchi_df)
         peak_chebi_df = pre_processor.get_preprocessed_cmpds()
 
-
         return peak_chebi_df
 
+    def prepare_df(self, original_peak_df):
+
+        """
+
+        :param original_peak_df: The dataframe as read straight from PiMP output
+        :return: nm_inchi_df: The above DF with neutral masses and several updated inchikeys.
+        """
+
+        try:
+            nm_inchi_df = pd.read_pickle(
+                "./data/" + PREPARED_DF + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
+            print("WE have the added prepared DF", nm_inchi_df.head())
+
+        except FileNotFoundError:
+            neutral_mass_df = self.add_neutral_masses(original_peak_df)
+            nm_inchi_df = self.update_inchikeys(neutral_mass_df)
+
+            try:
+                nm_inchi_df.to_pickle("./data/" + PREPARED_DF + ".pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
+
+        return nm_inchi_df
 
     def get_selected_df(self, peak_details_df):
 
@@ -74,17 +98,17 @@ class PeakSelector(object):
 
         # Select peaks that have been identified and/or has a FrAnk annotation associated with them
         with_annot = (f_adducts['frank_annot'].notnull()) | (f_adducts['identified'] == 'True')
-        with_annots_df = f_adducts[with_annot].copy()
+        selected_df = f_adducts[with_annot].copy()
 
         # This DF contains peaks that are (identified &| fannotated) & (M+H | M-H)
-        selected_df = self.add_neutral_masses(with_annots_df)
+        # selected_df = self.add_neutral_masses(with_annots_df)
         unique_sec_ids = selected_df['sec_id'].unique()
 
         return selected_df, unique_sec_ids
 
 
 
-    def construct_all_peak_df(self):
+    def construct_all_peak_df(self, all_peaks):
 
         """
         A method to return a DF similar to the one produced by PiMP but for each peak, each unique peak_id (sec_id) is
@@ -98,17 +122,17 @@ class PeakSelector(object):
 
         # peak_details_df = pd.read_pickle("./data/chebi_peak_df.pkl")
 
-        peak_details_df = self.pre_process_compounds() #DF after the compounds have been processed
+        # all_peaks = self.pre_process_compounds() #DF after the compounds have been processed
 
         try:
             all_peak_df = pd.read_pickle("./data/"+PEAK_FILE_NAME+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
-            print ("WE have the DF", all_peak_df.head())
+            print ("WE have the DF", all_peaks.head())
 
         except FileNotFoundError:
 
             print('constructing all_peak_df')
-            all_peaks = self.add_neutral_masses(peak_details_df)
+            # all_peaks = self.add_neutral_masses(peak_details_df) #KmcL this has now been added previously.
 
             headers = list(all_peaks.columns.values)
             all_peak_df = pd.DataFrame(columns=headers)
@@ -154,75 +178,90 @@ class PeakSelector(object):
         headers = list(selected_df.columns.values)
         peak_df = pd.DataFrame(columns=headers)
 
-        print ("Constructing the High Conf peak DF")
+        print("Constructing the High Conf peak DF")
 
-        for sid in unique_sec_ids:
-            # Collect a single sec_id into a DF
-            sid_df = selected_df[selected_df.sec_id == sid]
-            logger.debug("The single SID DF is %s", sid_df)
-            # If the peak has an identified compound then keep that
-            identified_df = sid_df[sid_df.identified == 'True']
-            logger.debug("The identified df is: %s ", identified_df)
-            new_row = None
-            # If some of the rows have compounds that have identified=True
-            if not identified_df.empty:
+        try:
+            peak_df = pd.read_pickle("./data/"+HIGH_CONF_DF+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
-                # Check if there are more than one standard compounds for this sid
-                #standard_cmpds = sid_df[sid_df.db == 'stds_db']
+            print ("WE have the high confidence peak df", peak_df.head())
 
-                standard_cmpds = sid_df[sid_df.db.apply(lambda x: 'stds_db' in x)]
+        except FileNotFoundError:
 
-                num_std_cmpds = standard_cmpds.shape[0]
+            for sid in unique_sec_ids:
+                # Collect a single sec_id into a DF
+                sid_df = selected_df[selected_df.sec_id == sid]
+                logger.debug("The single SID DF is %s", sid_df)
+                # If the peak has an identified compound then keep that
+                identified_df = sid_df[sid_df.identified == 'True']
+                logger.debug("The identified df is: %s ", identified_df)
+                new_row = None
+                # If some of the rows have compounds that have identified=True
+                if not identified_df.empty:
 
-                # If there is only one standard compound add this to the peak DF and collect identifiers.
-                if (num_std_cmpds == 1):
-                    print("we have only one standard compound")
-                    # cmpd_id = sid_df[sid_df.db == "stds_db"]['cmpd_id'].values[0]
-                    new_row = standard_cmpds
+                    # Check if there are more than one standard compounds for this sid
+                    #standard_cmpds = sid_df[sid_df.db == 'stds_db']
 
-                    # Here we have the senario that more that 1 standard compound has been identified and we
-                # want to select a standard compound if possible
-                if (num_std_cmpds > 1):
-                    print("the number of standard compounds for sid is", sid, "is", num_std_cmpds)
-                    new_row = self.select_standard_cmpd(standard_cmpds)
+                    standard_cmpds = sid_df[sid_df.db.apply(lambda x: 'stds_db' in x)]
 
-                # If a new_row has been returned for this SID - add it to the peak df
-                if new_row is not None:
+                    num_std_cmpds = standard_cmpds.shape[0]
 
-                    print("we are adding the row for sid", sid)
-                    print(pd.DataFrame(new_row).T)
-                    peak_df = peak_df.append(new_row)
+                    # If there is only one standard compound add this to the peak DF and collect identifiers.
+                    if (num_std_cmpds == 1):
+                        print("we have only one standard compound")
+                        # cmpd_id = sid_df[sid_df.db == "stds_db"]['cmpd_id'].values[0]
+                        new_row = standard_cmpds
 
-                    # If the new_row has not been determined for this SID
-                else:
+                        # Here we have the senario that more that 1 standard compound has been identified and we
+                    # want to select a standard compound if possible
+                    if (num_std_cmpds > 1):
+                        print("the number of standard compounds for sid is", sid, "is", num_std_cmpds)
+                        new_row = self.select_standard_cmpd(standard_cmpds)
 
-                    unique_cmpd_ids = sid_df['cmpd_id'].unique()
+                    # If a new_row has been returned for this SID - add it to the peak df
+                    if new_row is not None:
 
-                    # For each unique compound id add a row to the peak df, this will produce duplicates for later
-                    for ucid in unique_cmpd_ids:
-                        new_row = sid_df[sid_df.cmpd_id==ucid]
-                        # new_row = self.get_peak_by_cmpd_id(sid_df, ucid)
-                        print("we are now adding the row by ucid: for sid", sid)
+                        print("we are adding the row for sid", sid)
                         print(pd.DataFrame(new_row).T)
                         peak_df = peak_df.append(new_row)
 
-                        # Else nothing identified so look at the fragmentation data.
-            else:
-                # Get all the rows for this secondary ID
-                print("nothing identified here so get best match FrAnk compound")
-                new_row = self.select_on_frank(sid_df)
-                print("we are adding the row: for sid", sid)
-                print(pd.DataFrame(new_row).T)
-                peak_df = peak_df.append(new_row)
+                        # If the new_row has not been determined for this SID
+                    else:
+
+                        unique_cmpd_ids = sid_df['cmpd_id'].unique()
+
+                        # For each unique compound id add a row to the peak df, this will produce duplicates for later
+                        for ucid in unique_cmpd_ids:
+                            new_row = sid_df[sid_df.cmpd_id==ucid]
+                            # new_row = self.get_peak_by_cmpd_id(sid_df, ucid)
+                            print("we are now adding the row by ucid: for sid", sid)
+                            print(pd.DataFrame(new_row).T)
+                            peak_df = peak_df.append(new_row)
+
+                            # Else nothing identified so look at the fragmentation data.
+                else:
+                    # Get all the rows for this secondary ID
+                    print("nothing identified here so get best match FrAnk compound")
+                    new_row = self.select_on_frank(sid_df)
+                    print("we are adding the row: for sid", sid)
+                    print(pd.DataFrame(new_row).T)
+                    peak_df = peak_df.append(new_row)
 
 
-        # Quite a few duplicates still exist from the Standard compound identification.
-        # These methods attempt to tackle this in a sensible manner.
+            # Quite a few duplicates still exist from the Standard compound identification.
+            # These methods attempt to tackle this in a sensible manner.
 
-        peak_df = self.remove_duplicates_on_mass_rt(peak_df)
-        peak_df = self.remove_double_duplicates(peak_df)
-        peak_df = self.remove_duplicate_on_name_adduct(peak_df)
-        peak_df = self.remove_duplicates_on_rt(peak_df)
+            peak_df = self.remove_duplicates_on_mass_rt(peak_df)
+            peak_df = self.remove_double_duplicates(peak_df)
+            peak_df = self.remove_duplicate_on_name_adduct(peak_df)
+            peak_df = self.remove_duplicates_on_rt(peak_df)
+
+
+            try:
+                peak_df.to_pickle("./data/"+HIGH_CONF_DF+".pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
+
 
         logger.info("There are %d unique peaks out of %d highly selected rows added", peak_df['sec_id'].nunique(), peak_df.shape[0])
 

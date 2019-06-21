@@ -1,6 +1,5 @@
 from django.db import models
-from django_extensions.db.fields.json import JSONField
-import json
+
 
 
 class Sample(models.Model):
@@ -45,25 +44,30 @@ class Peak(models.Model):
 
 class Compound(models.Model):
 
-    # cmpd_name = models.CharField(max_length=600)  # At this stage just a general name for the metabolite
     cmpd_formula = models.CharField(max_length=100)
-    pc_sec_id = models.IntegerField(unique=True) #The pimp compound secondary ID
+    pc_sec_id = models.IntegerField(unique=False) #The pimp compound secondary ID - it's unique in the populating df,
     #KMCL: Currently if the list of identifiers matches another list we assume it's the same compound.
-    # cmpd_identifiers = models.CharField(max_length=600)  # Any identifiers we can associate with the peak stored as JSON
+    chebi_id = models.CharField(null=True,max_length=30)
+    chebi_name = models.CharField(null=True, max_length=250)
+    inchikey = models.CharField(null = True, max_length=27)
+    smiles =  models.CharField(null=True, max_length=250)
+    cas_code = models.CharField(null=True, max_length=30)
     peaks = models.ManyToManyField(Peak, through='Annotation')
-    inchikey = models.CharField(max_length=27, null=True, blank=True)
+
 
     @property
     def cmpd_name(self):
         """
 
         :return: A cmpd_name - primarily the KEGG name, then HMDB and then any/the first name in the list of compounds.
+        Values-list if used as some compounds have more than one kegg/HMDB ID - think some are historical codes and now point to the same compound
         """
-
-        if CompoundDBDetails.objects.filter(compound=self, db_name='kegg').exists():
-            cmpd_name = CompoundDBDetails.objects.get(compound=self, db_name='kegg').cmpd_name
-        elif CompoundDBDetails.objects.filter(compound=self, db_name='hmdb').exists():
-            cmpd_name = CompoundDBDetails.objects.get(compound=self, db_name='hmdb').cmpd_name
+        if self.chebi_name:
+            cmpd_name = self.chebi_name
+        elif CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').exists():
+            cmpd_name = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('cmpd_name',flat=True)[0]
+        elif CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').exists():
+            cmpd_name = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('cmpd_name',flat=True)[0]
         else: #Just grab any name
             cmpd_name = CompoundDBDetails.objects.filter(compound=self).values_list('cmpd_name', flat=True)[0]
 
@@ -81,8 +85,8 @@ class Compound(models.Model):
 
         kegg_id = None
 
-        if CompoundDBDetails.objects.filter(compound=self, db_name='kegg').exists():
-            kegg_id = CompoundDBDetails.objects.get(compound=self, db_name='kegg').identifier
+        if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').exists():
+            kegg_id = CompoundDBDetails.objects.get(compound=self, db_name__db_name='kegg').identifier
 
         return kegg_id
 
@@ -90,14 +94,23 @@ class Compound(models.Model):
 
         hmdb_id = None
 
-        if CompoundDBDetails.objects.filter(compound=self, db_name='hmdb').exists():
-            hmdb_id = CompoundDBDetails.objects.get(compound=self, db_name='hmdb').identifier
+        if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').exists():
+            hmdb_id = CompoundDBDetails.objects.get(compound=self, db_name__db_name='hmdb').identifier
 
         return hmdb_id
 
+
+class DBNames(models.Model):
+    db_name = models.CharField(unique=True, max_length=100)
+
+    def __str__(self):
+
+        return "This is the " + self.db_name + " DB"
+
+
 class CompoundDBDetails(models.Model):
 
-    db_name = models.CharField(max_length=100)
+    db_name = models.ForeignKey(DBNames, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=100)
     cmpd_name = models.CharField(max_length=250)
     compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
@@ -106,7 +119,8 @@ class CompoundDBDetails(models.Model):
         ordering = ['db_name']
 
     def __str__(self):
-        return self.cmpd_name + "found in " + self.db_name
+        return self.cmpd_name + " found in " + self.db_name.db_name
+
 
 
 
@@ -114,7 +128,6 @@ class Annotation(models.Model):
 
     identified = models.CharField(max_length=100)  # Should be set at True or False
     frank_anno = models.CharField(max_length=600, null=True) #Stored as JSON
-    db = models.CharField(max_length=20)
     adduct = models.CharField(max_length=100)
     confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 6 is the top, zero means not set.
     compound = models.ForeignKey(Compound, on_delete=models.CASCADE)

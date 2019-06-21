@@ -6,5 +6,7 @@ admin.site.register(Sample)
 admin.site.register(SamplePeak)
 admin.site.register(Compound)
 admin.site.register(Annotation)
+admin.site.register(CompoundDBDetails)
+admin.site.register(DBNames)
 
 # Register your models here.

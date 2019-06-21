@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.urls import reverse
+from met_explore.forms import ContactForm
 
 from django.utils import timezone
 from django.views.generic.list import ListView
@@ -22,8 +23,8 @@ logger = logging.getLogger(__name__)
 try:
     cmpd_selector = CompoundSelector()
     #DFs for all the peaks
-    int_df = cmpd_selector.construct_cmpd_intensity_df()
-    peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+    # int_df = cmpd_selector.construct_cmpd_intensity_df()
+    # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
 
     #DF for the Highly confident peaks
     hc_int_df = cmpd_selector.get_hc_int_df()
@@ -68,14 +69,27 @@ def temp_his_pw(request):
 def about(request):
     return render(request, 'met_explore/about.html')
 
-def importance(request):
-    return render(request, 'met_explore/importance.html')
+def background(request):
+    return render(request, 'met_explore/background.html')
 
 def feedback(request):
+    # add to the top
+
+    # add to your views
+    # def contact(request):
+    #     form_class = ContactForm
+    #
+    #     return render(request, 'met_explore/feedback.html', {
+    #         'form': form_class,
+    #     })
+
     return render(request, 'met_explore/feedback.html')
 
 def links(request):
     return render(request, 'met_explore/links.html')
+
+def credits(request):
+    return render(request, 'met_explore/credits.html')
 
 def metabolite_search(request):
     """
@@ -181,6 +195,7 @@ def metabolite_search(request):
             'json_url': reverse('get_metabolite_names')
             }
 
+        print ("The references are ", references)
         return render(request, 'met_explore/metabolite_search.html', context)
 
 
