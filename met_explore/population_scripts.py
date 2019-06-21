@@ -70,7 +70,7 @@ def populate_peaks_cmpds_annots(peak_df):
 
         # Populating the Annotation to relate the peak to the annotation and vice-versa
         frank_annot = json.dumps(peak[13])
-        stored_annot = Annotation.objects.create(compound=store_cmpd, peak=db_peak, identified=peak[8], neutral_mass = format(peak[14], '.9f'),
+        stored_annot = Annotation.objects.create(compound=store_cmpd, peak=db_peak, identified=peak[8], neutral_mass = format(peak[15], '.9f'),
                                                  frank_anno=frank_annot, db=peak[11], adduct= peak[7])
         stored_annot.save()
 
