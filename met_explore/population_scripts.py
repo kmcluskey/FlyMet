@@ -63,11 +63,31 @@ def populate_peaks_cmpds_annots(peak_df):
 
         # Populating the compound and it's DB entries from the row.
         #Get or create the compound associated with the peak
-        store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
+        try:
+            store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
                                         chebi_id=row.chebi_id, chebi_name=row.chebi_name, smiles=row.smiles, cas_code=row.cas_code, inchikey=row.inchikey)
+            if cmpd_created:
+                store_cmpd.save()
 
-        if cmpd_created:
-            store_cmpd.save()
+        #Special case when two different rows returned for the same compound.
+        except IntegrityError as e:
+            print ("different row same cmpd_id, chebi_id")
+
+            store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
+                                                                      chebi_id=row.chebi_id, chebi_name=row.chebi_name)
+
+            if not cmpd_created:
+                if store_cmpd.smiles == 'nan' and row.smiles:
+                    store_cmpd.smiles = row.smiles
+                    store_cmpd.save()
+                if store_cmpd.cas_code == 'nan' and row.cas_code:
+                    store_cmpd.cas_code = row.cas_code
+                    store_cmpd.save()
+                if not store_cmpd.inchikey and row.inchikey:
+                    store_cmpd.inchikey = row.inchikey
+                    store_cmpd.save()
+
+
 
         # For the lists if names, ids, and databases create the CompoundDBDetails objects.
         for db_name, dbid, name in zip(row.db, row.identifier, row['compound']):

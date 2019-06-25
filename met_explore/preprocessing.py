@@ -201,7 +201,7 @@ class PreprocessCompounds(object):
                 # Same compound IDs, different CheBi_ids - give the row a new cmpd_id = Max cmpd_id +1
                 if len(present_chebi_ids) > 1:  # If the inchi keys are 1 and None just leave.
 
-                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, chebi_ids )
+                    logger.info("This compound id %s has more than one chebi_id %s",cmpd, chebi_ids )
 
                     if len(present_chebi_ids) == len(chebi_ids):  # There are no missing/None chebi_ids
 

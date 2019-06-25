@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 ## A class that contains various methods for selecting compounds from the peak object
 
-INTENSITY_FILE_NAME = 'current_int_df_june20'
-HC_INTENSITY_FILE_NAME = 'current_hc_int_df_june20'
+INTENSITY_FILE_NAME = 'current_int_df'
+HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
 
 class CompoundSelector(object):
 

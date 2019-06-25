@@ -18,8 +18,8 @@ NAME_MATCH_SIG = 0.5
 MASS_TOL = 0.1
 RT_TOL = 5
 EXT_RT_TOL = 20 #Extended RT tolerance as the peak picking seemed odd
-PEAK_FILE_NAME = 'peak_prepared_df'
 PREPARED_DF = 'current_prepared_df'
+PEAK_FILE_NAME = 'peak_prepared_df'
 HIGH_CONF_DF = 'high_conf_peak_df'
 
 # A class to select the peaks required to use in further analysis
@@ -93,7 +93,7 @@ class PeakSelector(object):
         """
 
         # Filter on adduct types
-        selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H')
+        selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H') | (peak_details_df['adduct'] == 'M')
         f_adducts = peak_details_df[selected_adducts].copy()
 
         # Select peaks that have been identified and/or has a FrAnk annotation associated with them
@@ -151,8 +151,6 @@ class PeakSelector(object):
                 for cmpd_id in unique_cmpd_ids:
                     new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
                     all_peak_df = all_peak_df.append(new_row)
-            print (all_peak_df)
-            logger.info("Pickling the DF to store at ./data/current_peak_df.pkl")
 
             try:
                 all_peak_df.to_pickle("./data/"+PEAK_FILE_NAME+".pkl")
@@ -664,17 +662,26 @@ class PeakSelector(object):
         :param: A df containing a set of peaks with a single ID and the unique cmpd ID
         :returns: A new_row (peak) to be added to the peak df.
         """
-        # new_row = None  # Clear the new row at this stage
+        new_row = None  # Clear the new row at this stage
         cmpd_rows_df = sid_df[sid_df.cmpd_id == ucid]
         identifiers = self.get_all_identifiers(cmpd_rows_df)
-
+        print ("The identifiers are ", identifiers)
         names, dbs = self.get_all_names_dbs(cmpd_rows_df)
-        cmpd_id = cmpd_rows_df['cmpd_id'] == ucid
-        new_row = cmpd_rows_df[cmpd_id].iloc[0]
+        cmpd_id = cmpd_rows_df['cmpd_id'] == cmpd_rows_df.cmpd_id
 
+        # If a compound has been identified take this row
+        id_row = cmpd_rows_df[cmpd_rows_df.identified == 'True']
+        if not id_row.empty:
+            row_index = id_row.index[0]
+        else:
+            #Take the row with the least number of NaN values (min nans)
+            nan_count = cmpd_rows_df.isnull().sum(axis=1)
+            row_index = nan_count[nan_count == min(nan_count)].index[0]
+
+        new_row = cmpd_rows_df[cmpd_id].loc[row_index]
         new_row.at['identifier'] = identifiers
-        new_row.at['db'] =dbs
-        new_row.at['compound'] =names
+        new_row.at['db'] = dbs
+        new_row.at['compound'] = names
 
 
         print('Returning new_row by cmpd_id')
@@ -690,14 +697,20 @@ class PeakSelector(object):
         """
         names = []
         dbs = []
+
+        db_names_dict = {}
         num_rows = cmpd_rows_df.shape[0]
         # Get all the identifiers for a single PiMP compound (could be one but want this as list).
         identifiers = []
         for i in range(0, num_rows):
+            new_db = cmpd_rows_df.iloc[i]['db']
             new_name = cmpd_rows_df.iloc[i]['compound']
-            names.append(new_name)  # So we don't end up with a list of lists
-            new_db= cmpd_rows_df.iloc[i]['db']
-            dbs.append(new_db)
+
+            db_names_dict[new_db]=new_name
+
+        dbs = list(db_names_dict.keys())
+        names = list(db_names_dict.values())
+
 
         return names, dbs
 
@@ -708,14 +721,14 @@ class PeakSelector(object):
             :param A df containing a unique 'pimp' compound
             :returns: A list of identifiers relating to the compound
         """
-        print("Single peak id, single cmpd_id df")
-        display(cmpd_rows_df)
+        print("getting all identifers")
         num_rows = cmpd_rows_df.shape[0]
         # Get all the identifiers for a single PiMP compound (could be one but want this as list).
         identifiers = []
         for i in range(0, num_rows):
             new_id = cmpd_rows_df.iloc[i]['identifier']
-            identifiers.append(new_id) #So we don't end up with a list of lists
+            if new_id not in identifiers:
+                identifiers.append(new_id) #So we don't end up with a list of lists
 
             # Take one of the rows for this compound, add identifiers and save in the final df.
 
