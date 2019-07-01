@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Welcome to FlyMet {% endblock %}
+{% block title %}: Credits {% endblock %}
 
 {% block head_block %}
 {% endblock %}
@@ -31,10 +31,10 @@
           <a class="nav-link" href="{% url 'background' %}">Background</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'links' %}">Links</a>
+          <a class="nav-link" href="{% url 'links' %}">Links</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+          <a class="nav-link active" href="{% url 'credits' %}">Credits</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
@@ -50,42 +50,46 @@
 
   <div class="card mt-4 p-2 pb-0 border border-table rounded">
     <div class="card-header pb-0 table-card-header">
-      FlyMet: Links to useful resources
+      FlyMet: Credits
     </div>
     <div class = "p-4 text-justify">
-      <h6>A list of useful <i>Drosophila</i> and metabolite resources can be found on the pages linked below:</h6>
+      <h6>This <a href="https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1">project</a> is funded by the UK’s BBSRC.</h6>
 
-  <div class="p-4">
-  <h6><i>Drosophila</i> Resources:</h6>
+      <div class="p-4">
+  <h6>Co-Investigators:</h6>
   <ul>
-    <li><a href="http://flyatlas.org" target="_blank">FlyAtlas</a></li>
-    <li><a href="http://flyatlas.gla.ac.uk/FlyAtlas2/index.html" target="_blank">FlyAtlas 2</a></li>
-    <li><a href="https://flybase.org" target="_blank">FlyBase</a></li>
-    <li><a href="http://www.flymine.org" target="_blank">FlyMine</a></li>
+    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/juliandow/">Julian Dow</a></li>
+    <li><a href="https://www.research.ed.ac.uk/portal/en/persons/karl-burgess(f56b3bbe-d28c-4faf-bb40-a5b741e7bf6d).html">Karl Burgess</a></li>
+    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/shireendavies/">Shireen Davies</a></li>
+    <li><a href="https://www.polyomics.gla.ac.uk/biog-head-dataanalysis.html">Rónán Daly</a></li>
   </ul>
 
   <hr class="my-4">
-  <h6>Metabolomic Resources:</h6>
+  <h6>PDRAs:</h6>
   <ul>
-    <li><a href="http://www.hmdb.ca" target="_blank">Human Metabolome Database</a></li>
-    <li><a href="https://www.genome.jp/kegg/" target="_blank">KEGG</a></li>
-    <li><a href="https://www.lipidmaps.org/" target="_blank">Lipid Maps</a></li>
-    <li><a href="https://www.ebi.ac.uk/chembl/" target="_blank">Chembl</a></li>
-    <li><a href="https://www.ebi.ac.uk/chebi/" target="_blank">Chebi</a></li>
-    <li><a href="https://reactome.org/" target="_blank">Reactome</a></li>
-    <li><a href="https://metexplore.toulouse.inra.fr/index.html/" target="_blank">Metexplore</a></li>
-    <li><a href="https://www.polyomics.gla.ac.uk/" target="_blank">Glasgow Polyomics</a></li>
-
+    <li><a href="https://www.gla.ac.uk/researchinstitutes/iii/staff/karenmcluskey/">Karen McLuskey</a></li>
+    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/suekrause/">Sue-Anne Krause</a></li>
   </ul>
 
   <hr class="my-4">
-  <p>This list is by no means exhaustive and if you would like to see other resources listed feel free to <a href="{% url 'feedback' %}">contact us</a></p>
+  <h6>Scientific Advisory Board:</h6>
+  <ul>
+    <li><a href="https://www.sysbiol.cam.ac.uk/Investigators/steve-oliver">Steve Oliver</a>, University of Cambridge</li>
+    <li>Fergus Earley, Syngenta</li>
+    <li><a href="https://www.pdn.cam.ac.uk/directory/nick-brown">Nick Brown</a>, University of Cambridge</li>
+  </ul>
+
   <hr class="my-4">
 
+  <p class = "lead">With thanks to the University of Glasgow's <a href="https://www.polyomics.gla.ac.uk/">Polyomics Facility</a></p>
 
 </div>
 </div>
     </div>
+
+
+
+  </div>
   <!--end of main div-->
   <!--Spacer so that content is not hidden-->
   <div class="spacer">

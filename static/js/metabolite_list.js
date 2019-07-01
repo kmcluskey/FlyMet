@@ -69,6 +69,10 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
 
 function add_tooltips(obj){
   $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+  $('.Intensity').tooltip({title: "The MS peak intensity levels are in arbitrary signal intensity (SI) and are not indicative of the quantity of the metabolite. However, they can be used to compare levels between tissues.", placement:"top"})
+  $('.Identified').tooltip({title: "Where the chemical identity of an MS peak is obtained from a chemical standard using both RT and m/z", placement:"top"})
+  $('.FragA').tooltip({title: "Where the intact compound is dissociated into fragments which are used, along with the parent peak, to search against mass spectral databases.", placement:"top"})
+
 }
 
 $(document).ready(function() {

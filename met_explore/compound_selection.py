@@ -75,15 +75,19 @@ class CompoundSelector(object):
 
             #KMcL this has to be used with the peak ids for any sense.
             for p in peaks:
+
+
                 print("working on peak: ", p)
                 peak = high_conf_df[high_conf_df.sec_id == p.psec_id]
+                cmpd_id = peak['cmpd_id'].values[0]
+                chebi_id = peak['chebi_id'].values[0]
 
-                cmpd_name = peak['compound'].values[0]
-                cmpd_formula = peak.formula.values[0]
-                cmpd_ids = peak.identifier.values[0]
+                print ("The cmpd_id, chebi_id is ", cmpd_id, chebi_id)
+                # cmpd_name = peak['compound'].values[0]
+                # cmpd_formula = peak.formula.values[0]
+                # cmpd_ids = peak.identifier.values[0]
 
-                cmpd = Compound.objects.get(cmpd_name=cmpd_name, cmpd_formula=cmpd_formula,
-                                            cmpd_identifiers=json.dumps(cmpd_ids))
+                cmpd = Compound.objects.get(pc_sec_id=cmpd_id, chebi_id=chebi_id)
 
                 cmpd_df.at[p.id, 'cmpd_id'] = cmpd.id
                 cmpd_df.at[p.id, 'Metabolite'] = cmpd.cmpd_name
@@ -371,6 +375,7 @@ class CompoundSelector(object):
         cmpd_ids = single_cmpds_df.cmpd_id.values
 
         for pid, cid in zip(peaks_ids, cmpd_ids):
+            print ("PID, CMPD_ID ", pid, cid)
             peak = Peak.objects.get(id=pid)
             annot = Annotation.objects.get(peak=peak, compound__id=cid)
             peak.preferred_annotation = annot

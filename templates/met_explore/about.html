@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Welcome to FlyMet {% endblock %}
+{% block title %}: About FlyMet {% endblock %}
 
 {% block head_block %}
 {% endblock %}
@@ -16,9 +16,6 @@
             FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
           </p>
         </div>
-        <div class = "logo_side">
-          <img src="{% static 'images/FlyMet_about_logo.png'%}" class="img-fluid-logos" alt="Logo">
-        </div>
       </div>
 
   <!--Tabs to go to new pages-->
@@ -30,10 +27,16 @@
           <a class="nav-link active" href="{% url 'about' %}">About</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'importance' %}">Importance</a>
+          <a class="nav-link" href="{% url 'background' %}">Background</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'links' %}">Links</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
@@ -43,12 +46,15 @@
     </div>
   </div>
 
+  <div class="card mt-4 p-2 pb-0 border border-table rounded">
+    <div class="card-header pb-0 table-card-header">
+      FlyMet: A metabolomics atlas for <i> Drosophila </i>
+    </div>
+    <div class = "p-4 text-justify">
+      <h5>About</h5><span class="bg-danger text-white">[Under construction]</span>
+      <p>A little bit about the different areas of FlyMet and how to use them.</p>
+    </div>
 
-  <div>
-    <p class="mt-5 mb-5" >
-      Everything you ever wanted to know about the FlyMet project.
-    </p>
-  </div>
   </div>
   <!--end of main div-->
   <!--Spacer so that content is not hidden-->

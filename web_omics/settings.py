@@ -32,6 +32,15 @@ class Common(Configuration):
 
     ALLOWED_HOSTS = []
 
+    #Trying to set up email contact for the website
+    SENDGRID_API_KEY = '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'
+
+    EMAIL_HOST = 'smtp.sendgrid.net'
+    EMAIL_HOST_USER = 'apikey'
+    EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+
     # Application definition
     INSTALLED_APPS = [
         'django.contrib.admin',

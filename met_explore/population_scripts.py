@@ -1,4 +1,5 @@
 from met_explore.serializers import *
+from django.db import IntegrityError
 import numpy as np
 import logging
 import json
@@ -7,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 # Give the sample CSV file to populate the samples.
 # KMcL: Working but need to consider the filepath.
-
 def populate_samples(sample_csv):
 
     sample_details = np.genfromtxt(sample_csv, delimiter=',', dtype=str)[2:]
@@ -40,39 +40,85 @@ def populate_peaks_cmpds_annots(peak_df):
     -it also ony returns a single peak (single sec_id from PiMP)
     :return: Populates the peaks, compounds and annotations for the filtered peaks.
     """
-    peak_array = peak_df.values
+    # NEW_ID = peak_df['cmpd_id'].max()
+    # peak_array = peak_df.values
 
     # For each row of the DF grab the peak, compound and annotation that relates them.
-    for peak in peak_array:
 
-        logger.info("We are populating row %s", peak)
+    db_names = []
+    for index, row in peak_df.iterrows():
 
-        print("DATA: psec_id ", peak[1], "m_z ", format(peak[2], '.9f'),
-              "rt ", peak[3], "polarity ", peak[4])
+        # Populating the peak
 
-        db_peak, created = Peak.objects.get_or_create(psec_id = peak[1], m_z = format(peak[2], '.9f'),
-                  rt = format(peak[3], '.9f'), polarity = peak[4])
+        logger.info("We are populating row %s", index)
+        db_peak, peak_created = Peak.objects.get_or_create(psec_id = row.sec_id, m_z = format(row.mass, '.9f'),
+                  rt = format(row.rt, '.9f'), polarity = row.polarity)
+
+        if peak_created:
+            logger.info("A new peak %s was created %s", db_peak, peak_created)
+            db_peak.save()
+        else:
+            logger.info("Got1 %s", db_peak)
 
 
-        db_peak.save()
+        # Populating the compound and it's DB entries from the row.
+        #Get or create the compound associated with the peak
+        try:
+            store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
+                                        chebi_id=row.chebi_id, chebi_name=row.chebi_name, smiles=row.smiles, cas_code=row.cas_code, inchikey=row.inchikey)
+            if cmpd_created:
+                store_cmpd.save()
 
-        logger.info("A new peak %s was created %s", db_peak, created)
+        #Special case when two different rows returned for the same compound.
+        except IntegrityError as e:
+            print ("different row same cmpd_id, chebi_id")
+
+            store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
+                                                                      chebi_id=row.chebi_id, chebi_name=row.chebi_name)
+
+            if not cmpd_created:
+                if store_cmpd.smiles == 'nan' and row.smiles:
+                    store_cmpd.smiles = row.smiles
+                    store_cmpd.save()
+                if store_cmpd.cas_code == 'nan' and row.cas_code:
+                    store_cmpd.cas_code = row.cas_code
+                    store_cmpd.save()
+                if not store_cmpd.inchikey and row.inchikey:
+                    store_cmpd.inchikey = row.inchikey
+                    store_cmpd.save()
 
 
 
-        # Populating the compound from the row
-        cmpd_id = json.dumps(peak[12])
-        store_cmpd, created = Compound.objects.get_or_create(cmpd_name = peak[10], cmpd_formula= peak[6],
-                                                   cmpd_identifiers= cmpd_id)
-        store_cmpd.save()
+        # For the lists if names, ids, and databases create the CompoundDBDetails objects.
+        for db_name, dbid, name in zip(row.db, row.identifier, row['compound']):
 
-        logger.info("A new compound %s was created %s", store_cmpd.cmpd_name, created)
+            store_db_name, store_dbname_created = DBNames.objects.get_or_create(db_name=db_name)
 
-        # Populating the Annotation to relate the peak to the annotation and vice-versa
-        frank_annot = json.dumps(peak[13])
-        stored_annot = Annotation.objects.create(compound=store_cmpd, peak=db_peak, identified=peak[8], neutral_mass = format(peak[15], '.9f'),
-                                                 frank_anno=frank_annot, db=peak[11], adduct= peak[7])
-        stored_annot.save()
+            if store_dbname_created:
+                logger.info("Saving the DB name object %s ", store_db_name)
+                store_db_name.save()
+
+            # Assuming we just want to create a new compound DB details entry for each compound
+            store_cmpd_details, created_cmpd_details =  CompoundDBDetails.objects.get_or_create(db_name=store_db_name, identifier=dbid,
+                                                                cmpd_name=name, compound=store_cmpd)
+
+            if created_cmpd_details:
+                logger.info("New cmpd details were created %s", store_cmpd_details)
+                store_cmpd_details.save()
+
+
+        # Populating the Annotation to relate the peak to the compound and vice-versa
+        frank_annot = json.dumps(row.frank_annot)
+        stored_annot, created_annot = Annotation.objects.get_or_create(compound=store_cmpd, peak=db_peak, identified=row.identified,
+                                                 neutral_mass=format(row.neutral_mass, '.9f'),
+                                                 frank_anno=frank_annot, adduct=row.adduct)
+
+        if created_annot:
+            logger.info("Storing the annotation %s", stored_annot)
+            stored_annot.save()
+        else:
+            logger.info("Got4 %s",stored_annot)
+
 
     logger.info("The filtered peaks, compounds and annotations have been populated")
 

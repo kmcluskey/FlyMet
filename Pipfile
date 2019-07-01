@@ -25,12 +25,15 @@ jsonfield = "*"
 jsonpickle = "*"
 tzlocal = "*"
 django-webpack-loader = "*"
-rest-framework = "*"
 djangorestframework = "*"
 cobra = {extras = ["all"]}
+nbconvert = "*"
+nbstripout = "*"
+graphviz = "*"
+sendgrid = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.7.0"
+python_version = "3.7"
 # python_version = "3.6.7" #This is required for the server
