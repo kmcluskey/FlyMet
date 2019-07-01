@@ -72,6 +72,8 @@ def about(request):
 def background(request):
     return render(request, 'met_explore/background.html')
 
+def exp_protocols(request):
+    return render(request, 'met_explore/exp_protocols.html')
 def glossary(request):
     return render(request, 'met_explore/glossary.html')
 

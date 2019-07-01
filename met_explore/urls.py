@@ -16,6 +16,7 @@ urlpatterns = [
     path('background', views.background, name='background'),
     path('credits', views.credits, name='credits'),
     path('glossary', views.glossary, name='glossary'),
+    path('exp_protocols', views.exp_protocols, name='exp_protocols'),
     path('feedback', views.feedback, name='feedback'),
     path('links', views.links, name='links'),
     path('about', views.about, name='about'),
