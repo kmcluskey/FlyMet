@@ -15,6 +15,7 @@ urlpatterns = [
     path('temp_his_pw', views.temp_his_pw, name='temp_his_pw'),
     path('background', views.background, name='background'),
     path('credits', views.credits, name='credits'),
+    path('glossary', views.glossary, name='glossary'),
     path('feedback', views.feedback, name='feedback'),
     path('links', views.links, name='links'),
     path('about', views.about, name='about'),

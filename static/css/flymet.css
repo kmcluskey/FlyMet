@@ -432,3 +432,7 @@ table.dataTable .px300 {
   top: auto;
   right: 0;
 }
+
+.padded_list > li {
+  padding-top: 3px;
+}

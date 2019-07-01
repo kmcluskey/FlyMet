@@ -72,6 +72,10 @@ def about(request):
 def background(request):
     return render(request, 'met_explore/background.html')
 
+def glossary(request):
+    return render(request, 'met_explore/glossary.html')
+
+
 def feedback(request):
     # add to the top
 
