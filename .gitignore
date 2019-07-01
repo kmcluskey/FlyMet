@@ -117,3 +117,4 @@ notebooks
 data
 peak_explorer_old.html
 db.sqlite3.full
+webpack-stats.json
