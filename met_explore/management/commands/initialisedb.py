@@ -35,6 +35,7 @@ class Command(BaseCommand):
             populate_samples(sample_csv)
             peak_select = PeakSelector(peak_json, int_json)
 
+            #Add Chebi IDs and other identifiers. Additionally ensure Chebi IDs reperensent unique cmpds.
             pre_peak_df = peak_select.pre_process_compounds()
 
             peak_df = peak_select.construct_all_peak_df(pre_peak_df)

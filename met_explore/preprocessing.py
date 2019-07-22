@@ -16,7 +16,7 @@ CMPDS_FINAL = "current_chebi_peak_df"
 
 class PreprocessCompounds(object):
     """
-    This is a class to preproccess the compounds and give them unique Chebi IDS
+    This is a class to preprocess the compounds and give them unique Chebi IDS and add references e.g. smiles etc from the chebi DB.
     """
 
     def __init__(self, peak_df):

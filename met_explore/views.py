@@ -278,10 +278,9 @@ def met_ex_tissues(request):
         View to return the metabolite search page
         :returns: Render met_explore/met_ex_tissues and datatable
     """
-
+    single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=True)
     met_ex_list = single_cmpds_df.values.tolist()
     column_names = single_cmpds_df.columns.tolist()
-
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
