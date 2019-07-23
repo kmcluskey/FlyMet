@@ -65,11 +65,11 @@ class PeakSelector(object):
         :param original_peak_df: The dataframe as read straight from PiMP output
         :return: nm_inchi_df: The above DF with neutral masses and several updated inchikeys.
         """
-
+        logger.info("Preparing the DF")
         try:
             nm_inchi_df = pd.read_pickle(
                 "./data/" + PREPARED_DF + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the added prepared DF", nm_inchi_df.head())
+            logger.info("The file has been found: %s ", PREPARED_DF)
 
         except FileNotFoundError:
             neutral_mass_df = self.add_neutral_masses(original_peak_df)
@@ -112,37 +112,26 @@ class PeakSelector(object):
 
         """
         A method to return a DF similar to the one produced by PiMP but for each peak, each unique peak_id (sec_id) is
-        given a single row for each unique compound (compound identifiers are collected for unique compounds). Neutral masses are also added to this DF.
-
+        given a single row for each unique compound (compound identifiers are collected for unique compounds).
         :return: all_peak_df- a DF consisting of all peak:compound represented by a single row. We still have several rows per peak for all the compounds
-        and matching compounds pointing to different peaks. Psec_id and cmpd_id should be unique.
+        and matching compounds pointing to different peaks. Psec_id/cmpd_id  combinationshould be unique.
         """
 
-        # peak_details_df = pd.read_json(self.peak_json_file)
-
-        # peak_details_df = pd.read_pickle("./data/chebi_peak_df.pkl")
-
-        # all_peaks = self.pre_process_compounds() #DF after the compounds have been processed
+        logger.info("Constructing a DF where each compound for a unique peak is given a single row (collecting Identifiers and DBs")
 
         try:
             all_peak_df = pd.read_pickle("./data/"+PEAK_FILE_NAME+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
-            print ("WE have the DF", all_peaks.head())
+            logger.info("The file %s has been found: ", PEAK_FILE_NAME)
 
         except FileNotFoundError:
-
-            print('constructing all_peak_df')
-            # all_peaks = self.add_neutral_masses(peak_details_df) #KmcL this has now been added previously.
 
             headers = list(all_peaks.columns.values)
             all_peak_df = pd.DataFrame(columns=headers)
             all_unique_sec_ids = all_peaks['sec_id'].unique()
 
-            print ("Constructing the all peak DF")
-
             # For each unique peak based on pimp Sec_id
             for sid in all_unique_sec_ids:
-
 
                 sid_df = all_peaks[all_peaks.sec_id == sid]
                 unique_cmpd_ids = sid_df['cmpd_id'].unique()
@@ -181,7 +170,7 @@ class PeakSelector(object):
         try:
             peak_df = pd.read_pickle("./data/"+HIGH_CONF_DF+".pkl") #KMCL - this file should be named after the input files so not to repeat.
 
-            print ("WE have the high confidence peak df", peak_df.head())
+            logger.info("The file %s has been found: ", HIGH_CONF_DF)
 
         except FileNotFoundError:
 
@@ -275,7 +264,10 @@ class PeakSelector(object):
         :return: pids_sids_dict - a dictionary of the pimp ids / pimp sec_ids for the peaks used.
 
         """
-        int_details_df =  pd.read_json(self.intensity_json_file)
+
+        logger.info("Constructing the peak intensity DF")
+        int_details_df = pd.read_json(self.intensity_json_file)
+
 
         ### Get a dictionary pf pids:sec_id from the final peak df.
         pids_sids_dict = {}
@@ -643,6 +635,8 @@ class PeakSelector(object):
 
     def update_inchikeys(self, peak_df):
 
+        logger.info("Updating the inchikeys")
+
         for name, inchi in self.inchi_changers.items():
 
             selected_rows = (peak_df['db'] == 'stds_db') & (peak_df['compound'] == name)
@@ -786,7 +780,7 @@ class PeakSelector(object):
         elif adduct == 'M-Na':
             neutral_mass = mass + Na
         else:
-            logger.warning("This is not the correct type of adduct: %s and therefor skipping", adduct)
+            logger.warning("This is not the correct type of adduct: %s and therefore skipping", adduct)
             return
 
         return neutral_mass

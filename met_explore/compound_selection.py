@@ -49,7 +49,6 @@ class CompoundSelector(object):
             hc_int_df_concat = pd.read_pickle("./data/"+HC_INTENSITY_FILE_NAME+".pkl")
 
             logger.info("The file has been found: %s", HC_INTENSITY_FILE_NAME)
-            print("WE have the DF", hc_int_df_concat.head())
 
         except FileNotFoundError:
 
@@ -106,9 +105,6 @@ class CompoundSelector(object):
                 pass
 
 
-
-        logger.info("The returned dataframe is of the format: %s", hc_int_df_concat.head())
-
         logger.info("There are %d peaks and %d unique compounds", hc_int_df_concat.shape[0],
                      len(hc_int_df_concat['cmpd_id'].unique()))
 
@@ -125,7 +121,6 @@ class CompoundSelector(object):
             int_df = pd.read_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
 
             logger.info("The file has been found: %s", INTENSITY_FILE_NAME+".pkl")
-            print ("WE have the DF", int_df.head())
 
         except FileNotFoundError:
 

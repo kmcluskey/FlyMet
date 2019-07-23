@@ -30,9 +30,6 @@ def populate_samples(sample_csv):
 # This has been refactored to populate Peak, Annotation and Compound models.
 
 
-#This population script currently only takes a single peak DB (one peak for one ID) and each ID has a compound associated with it
-#These compounds will have duplicate entries.
-
 def populate_peaks_cmpds_annots(peak_df):
     """
 
@@ -40,12 +37,9 @@ def populate_peaks_cmpds_annots(peak_df):
     -it also ony returns a single peak (single sec_id from PiMP)
     :return: Populates the peaks, compounds and annotations for the filtered peaks.
     """
-    # NEW_ID = peak_df['cmpd_id'].max()
-    # peak_array = peak_df.values
 
     # For each row of the DF grab the peak, compound and annotation that relates them.
 
-    db_names = []
     for index, row in peak_df.iterrows():
 
         # Populating the peak

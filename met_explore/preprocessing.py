@@ -53,7 +53,7 @@ class PreprocessCompounds(object):
 
         try:
             self.peak_df = pd.read_pickle("./data/" + ADDED_CHEBI_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the added Chebis DF", self.peak_df.head())
+            logger.info("The file %s has been found: ", ADDED_CHEBI_NAME)
 
         except FileNotFoundError:
 
@@ -137,7 +137,7 @@ class PreprocessCompounds(object):
         try:
             self.peak_df = pd.read_pickle(
                 "./data/" + CHEBI_CMPD_MATCH + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the DF", self.peak_df.head())
+            logger.info("The file %s has been found: ", CHEBI_CMPD_MATCH)
 
         except FileNotFoundError:
 
@@ -172,7 +172,7 @@ class PreprocessCompounds(object):
         try:
             self.peak_df = pd.read_pickle(
                 "./data/" + CHEBI_UNIQUE_IDS + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the DF", self.peak_df.head())
+            logger.info("The file %s has been found: ", CHEBI_UNIQUE_IDS)
 
         except FileNotFoundError:
             max_cmpd_id = self.peak_df['cmpd_id'].max()
@@ -283,10 +283,11 @@ class PreprocessCompounds(object):
         :return:
         """
 
+        logger.info("Collecting compounds with same names/identifiers that have no chebi_id")
 
         try:
             self.peak_df = pd.read_pickle("./data/" + CMPDS_FINAL + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            print("WE have the added final peak DF", self.peak_df.head())
+            logger.info("The file %s has been found: ", CMPDS_FINAL)
 
         except FileNotFoundError:
 
@@ -447,10 +448,10 @@ class PreprocessCompounds(object):
         :return: A DF containing the Chebi ID and all of the matching compound information
 
         """
-
+        logger.info("Getting the chebi_ontology df")
         try:
             chebi_df = pd.read_pickle("./data/"+CHEBI_DF_NAME+".pkl")
-            print("Have the peak_chebi_df", chebi_df.head())
+            logger.info("The file %s has been found: ", ADDED_CHEBI_NAME)
 
 
 
