@@ -281,8 +281,10 @@ def met_ex_tissues(request):
         View to return the metabolite search page
         :returns: Render met_explore/met_ex_tissues and datatable
     """
-    met_ex_list = single_cmpds_df.values.tolist()
-    column_names = single_cmpds_df.columns.tolist()
+
+    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    met_ex_list = view_df.values.tolist()
+    column_names = view_df.columns.tolist()
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
@@ -291,9 +293,7 @@ def met_ex_tissues(request):
         column_headers.append(group_names[c])
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
-    df1 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=False)
-    df2 = df1.drop(['cmpd_id'], axis=1, inplace=False)
-
+    df2 = view_df.drop(['Metabolite'], axis=1, inplace=False)
 
     max_value = np.nanmax(df2)
     min_value = np.nanmin(df2)
