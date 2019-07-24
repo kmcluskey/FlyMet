@@ -259,6 +259,9 @@ def met_ex_lifestages(request):
 
 def peak_explorer(request):
 
+    all_peak_int_df = cmpd_selector.construct_cmpd_intensity_df()
+
+
 
     return render(request, 'met_explore/peak_explorer.html')
 
@@ -278,7 +281,6 @@ def met_ex_tissues(request):
         View to return the metabolite search page
         :returns: Render met_explore/met_ex_tissues and datatable
     """
-    single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=True)
     met_ex_list = single_cmpds_df.values.tolist()
     column_names = single_cmpds_df.columns.tolist()
 
@@ -289,7 +291,9 @@ def met_ex_tissues(request):
         column_headers.append(group_names[c])
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
-    df2 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=False)
+    df1 = single_cmpds_df.drop(['Metabolite'], axis=1, inplace=False)
+    df2 = df1.drop(['cmpd_id'], axis=1, inplace=False)
+
 
     max_value = np.nanmax(df2)
     min_value = np.nanmin(df2)
