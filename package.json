@@ -1,7 +1,7 @@
 {
   "name": "FlyMet",
   "version": "0.1.0",
-  "description": "FlyMet: Bringing metabolomics to Drosophila",
+  "description": "FlyMet: A metabolomics atlas for Drosophila",
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js --progress --colors --mode production",

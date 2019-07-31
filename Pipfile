@@ -29,7 +29,6 @@ djangorestframework = "*"
 cobra = {extras = ["all"]}
 nbconvert = "*"
 nbstripout = "*"
-graphviz = "*"
 sendgrid = "*"
 
 [dev-packages]

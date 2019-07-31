@@ -17,8 +17,6 @@
         <p class="lead">
           Investigate the the metabolite peaks found in <i> Drosophila </i>.
           </p>
-          <p class = "p-2"><span class="bg-danger text-white p-2">Coming soon</span></p>
-
         </div>
       </div>
 
@@ -51,28 +49,28 @@
   <div>
   <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
     <thead class="thead-light">
-      <!-- <tr id = "columns">
+      <tr id = "columns">
         {% for column_name in columns %}
         <th id = "col">{{column_name}}</th>
         {% endfor %}
-      </tr> -->
+      </tr>
     </thead>
     <tbody>
-      <!-- {% for met_exp_data in data %}
+      {% for peak_data in data %}
       <tr>
-            {% for m in met_exp_data %}
+            {% for p in peak_data %}
             {% if forloop.first %}
-              <td>{{m}}</td>
+              <td>{{p}}</td>
             {% else %}
-              {% if m > 0 %}
-                <td>{{m|stringformat:".2e"}}</td>
+              {% if p > 0 %}
+                <td>{{p|stringformat:".2e"}}</td>
                 {% else %}
                 <td class="NotDetected">-</td>
               {% endif %}
             {% endif %}
         {% endfor %}
       </tr>
-      {% endfor %} -->
+      {% endfor %}
     </tbody>
   </table>
   </div>
@@ -89,13 +87,13 @@
 
 
   {% block js_block %}
-  <!-- <script type='text/javascript'>
+  <script type='text/javascript'>
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
     console.log(min_value, max_value, mean_value)
 
-    </script> -->
+    </script>
 
   {% render_bundle 'peak_explorer' 'js' %}
   {% endblock %}

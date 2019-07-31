@@ -117,49 +117,94 @@ class CompoundSelector(object):
         :return:  # A df with all of the samples and their intensities for all of the peaks
         # Index is peak ids
         """
-        try:
-            int_df = pd.read_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
+        # try:
+        #     int_df = pd.read_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
+        #
+        #     logger.info("The file has been found: %s", INTENSITY_FILE_NAME+".pkl")
+        #
+        # except FileNotFoundError:
 
-            logger.info("The file has been found: %s", INTENSITY_FILE_NAME+".pkl")
+        print ('constructing sample/intensity df')
 
-        except FileNotFoundError:
+        logger.info("Generating a DF for a peak-compound and its intensities")
+        samples = Sample.objects.all()
+        peaks = Peak.objects.all()
+        df_index = [p.id for p in peaks]
 
-            print ('constructing sample/intensity df')
+        # These two df are kept separately and concatenated at the end to preserve the datatype for the intensities
+        columns = [s.name for s in samples]
+        int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
 
-            logger.info("Generating a DF for a peak-compound and its intensities")
-            samples = Sample.objects.all()
-            peaks = Peak.objects.all()
-            df_index = [p.id for p in peaks]
+        # For each column (sample_name) get all of the peak intensites
+        for c in columns:
+            print ("working on column", c)
+            peak_ints = SamplePeak.objects.filter(peak__id__in=df_index, sample__name=c).order_by(
+                'peak_id').values_list('intensity', flat=True)
+            int_df[c] = list(peak_ints)
 
-            # These two df are kept separately and concatenated at the end to preserve the datatype for the intensities
-            columns = [s.name for s in samples]
-            int_df = pd.DataFrame(index=df_index, columns=columns, dtype=float)
+        # display(int_df.head())
+        #
+        # for p in peaks:
+        #     print ("getting intensities for peak ", p)
+        #     for c in columns:
+        #         sp = SamplePeak.objects.get(peak__id=p.id, sample__name=c)
+        #         int_df.at[p.id, c] = sp.intensity
 
-            for p in peaks:
-                print ("working on peak: ", p)
-                for c in columns:
-                    sp = SamplePeak.objects.get(peak__id=p.id, sample__name=c)
-                    int_df.at[p.id, c] = sp.intensity
+        # int_df_concat =  pd.concat([cmpd_df,int_df], axis=1, sort=False)
 
-            # int_df_concat =  pd.concat([cmpd_df,int_df], axis=1, sort=False)
+        logger.info("The returned dataframe is of the format: %s", int_df.head())
 
-            logger.info("The returned dataframe is of the format: %s", int_df.head())
-
-            try:
-
-                int_df.to_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
-
-            except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
-                pass
+        # try:
+        #
+        #     int_df.to_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
+        #
+        # except Exception as e:
+        #     logger.error("Pickle didn't work because of %s ", e)
+        #     pass
 
         logger.info("There are %d peaks added to the intensity df",int_df.shape[0])
 
         return int_df
 
+    def get_group_df(self):
+
+        # This gets the group_df without any preprocessing and should be faster than what we had before.
+        logger.info("Getting the peak group DF")
+        peaks = Peak.objects.all()
+        samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
+                                                                                            'sample_id__name',
+                                                                                            'sample_id__group')
+        columns = ['peak', 'intensity', 'filename', 'group']
+        int_df = pd.DataFrame(samples, columns=columns)
+
+        group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
+        # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
+        gp_df = group_series.to_frame()
+        # Remove groups from the index and just keep peaks.
+        group_df = gp_df.unstack()
+        # Remove None from the column index and just keep the group
+        group_df.columns = group_df.columns.get_level_values('group')
+
+        return group_df
+
+
+    def get_average(self, group):
+        """
+        Takes in a df (in this case based on a group) and calculates the average intensity of the group.
+        This is different from just a mean as we have to consider the NaN values properly.
+        :return:
+        """
+        int_list = group.intensity.values
+        if (np.isnan(int_list).all()):  # If all the values are NaN keep the value as NaN
+            average_int = sum(int_list) / len(int_list)
+        else:  # Take the average of the non-Nan numbers
+            non_nan_length = (np.count_nonzero(~np.isnan(int_list)))
+            average_int = np.nansum(int_list) / non_nan_length
+
+        return average_int
 
     # This returns a DF with the groups/tissues and their average intensities and a maximum intensity for the row.
-    def get_group_df(self, int_df):
+    def get_group_df_old(self, int_df):
 
         logger.info("Getting the sample groups with average intensitites (group_df)")
 
@@ -169,6 +214,7 @@ class CompoundSelector(object):
         group_df = pd.DataFrame(index=df_index, columns=sample_groups, dtype=float)
 
         for group in sample_groups:
+            logger.info("Working on group %s", group)
             gp_samples = Sample.objects.filter(group=group)
             for i in df_index:
                 int_list = []
@@ -176,11 +222,11 @@ class CompoundSelector(object):
                     sample_name = g.name
                     intensity = int_df.loc[i, sample_name]
                     int_list.append(intensity)
-
                 if (np.isnan(int_list).all()): #If all the values are NaN keep the value as NaN
                     average_int = sum(int_list) / len(int_list)
                 else: #Take the average of the non-Nan numbers
-                    average_int = np.nansum(int_list) / len(int_list)
+                    non_nan_length = (np.count_nonzero(~np.isnan(int_list)))
+                    average_int = np.nansum(int_list) /non_nan_length
                 group_df.loc[i, group] = average_int
                 # group_df.loc[i, group] = '%.2E' % Decimal(average_int)
 
@@ -209,6 +255,12 @@ class CompoundSelector(object):
                 group_name_dict[g] = g
             elif g == 'cmpd_id':
                 group_name_dict[g] = g
+            elif g =='m_z':
+                group_name_dict[g] = "m/z"
+            elif g == 'rt':
+                group_name_dict[g] = "RT"
+            elif g =='id':
+                group_name_dict[g] = "ID"
             else:
                 sample = Sample.objects.filter(group=g)[0]  # Get the first sample of this group.
                 tissue = sample.tissue
@@ -229,7 +281,7 @@ class CompoundSelector(object):
 
         logger.info("Getting a DF of peaks containing with no duplicate compounds")
 
-        group_df = self.get_group_df(hc_int_df)
+        group_df = self.get_group_df_old(hc_int_df)
 
         peak_sids = list(hc_int_df.index.values)
         compound_names = hc_int_df['Metabolite'].tolist()

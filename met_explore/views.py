@@ -259,11 +259,41 @@ def met_ex_lifestages(request):
 
 def peak_explorer(request):
 
-    all_peak_int_df = cmpd_selector.construct_cmpd_intensity_df()
+    peaks = Peak.objects.all()
+    required_data = peaks.values('id', 'm_z', 'rt')
 
+    peak_df = pd.DataFrame.from_records(list(required_data))
 
+    # peak_df.set_index("id", inplace=True)
 
-    return render(request, 'met_explore/peak_explorer.html')
+    # Get all of the peaks and all of he intensities of the sample files
+    # all_peak_int_df = cmpd_selector.construct_cmpd_intensity_df()
+    group_df = cmpd_selector.get_group_df()
+
+    #Get the max, min and mean for the highcharts
+
+    max_value = np.nanmax(group_df)
+    min_value = np.nanmin(group_df)
+    mean_value = np.nanmean(group_df)
+
+    logger.info("Max, min, mean values are %S %S %S", max_value, max_value, mean_value)
+
+    view_df = pd.concat([peak_df, group_df], axis=1, sort=False)
+
+    peak_data = view_df.values.tolist()
+
+    column_names = view_df.columns.tolist()
+
+    group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+    column_headers = []
+    for c in column_names:
+        column_headers.append(group_names[c])
+
+    response = {'columns': column_headers, 'data': peak_data, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/peak_explorer.html', response)
 
 
 def path_ex_lifestages(request):
@@ -323,6 +353,16 @@ def met_search_highchart_data(request, tissue, metabolite):
        :return: A list of dictionaries for the metabolite/tissue highcharts.
 
     """
+
+    cmpd_selector = CompoundSelector()
+
+    hc_int_df = cmpd_selector.get_hc_int_df()
+
+    # DFs for all the peaks
+    # int_df = cmpd_selector.construct_cmpd_intensity_df()
+    # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+
+    # DF for the Highly confident peaks
     # relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
     samples = Sample.objects.all()
