@@ -49,7 +49,7 @@ except FileNotFoundError as e:
 except Exception as e:
     logger.warning("I'm catching this error %s ", e)
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
-
+    raise e
     cmpd_selector = None
 
 
@@ -259,26 +259,29 @@ def met_ex_lifestages(request):
 
 def peak_explorer(request):
 
+
+
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
 
+    peak_ids = [p.id for p in peaks]
+
     peak_df = pd.DataFrame.from_records(list(required_data))
 
-    # peak_df.set_index("id", inplace=True)
+    peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
-    # all_peak_int_df = cmpd_selector.construct_cmpd_intensity_df()
-    group_df = cmpd_selector.get_group_df()
-
-    #Get the max, min and mean for the highcharts
+    group_df = cmpd_selector.get_group_df(peak_ids)
 
     max_value = np.nanmax(group_df)
     min_value = np.nanmin(group_df)
     mean_value = np.nanmean(group_df)
 
-    logger.info("Max, min, mean values are %S %S %S", max_value, max_value, mean_value)
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak':'id'}, inplace=True)
 
-    view_df = pd.concat([peak_df, group_df], axis=1, sort=False)
+    view_df = pd.merge(peak_df, group_df, on='id')
+
 
     peak_data = view_df.values.tolist()
 
@@ -290,7 +293,15 @@ def peak_explorer(request):
     for c in column_names:
         column_headers.append(group_names[c])
 
-    response = {'columns': column_headers, 'data': peak_data, 'max_value': max_value, 'min_value': min_value,
+
+    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+
+    ignore_indexes = [column_headers.index('Peak ID'), column_headers.index('m/z'), column_headers.index('RT')]
+
+    print (peak_data)
+
+    print ("The ignore indexes are: ", ignore_indexes)
+    response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'data': peak_data, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
     return render(request, 'met_explore/peak_explorer.html', response)
@@ -313,6 +324,8 @@ def met_ex_tissues(request):
     """
 
     view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+
+    print (view_df.head())
     met_ex_list = view_df.values.tolist()
     column_names = view_df.columns.tolist()
 

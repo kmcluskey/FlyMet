@@ -39,10 +39,8 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                 "createdCell": function (td, cellData, rowData, row, col) {
 
                     let $td = $(td);
-                    //find the table headers with class=data
-                    let $th = $td.closest('table').find('th.data').eq($td.index());
 
-                    //console.log($th.text())
+                    let $th = $td.closest('table').find('th').eq($td.index());
 
                     const colorScale = d3.scaleLog()
                         .domain([MIN_VAL, midpoint, highpoint])

@@ -166,11 +166,11 @@ class CompoundSelector(object):
 
         return int_df
 
-    def get_group_df(self):
+    def get_group_df(self, peak_ids):
 
         # This gets the group_df without any preprocessing and should be faster than what we had before.
         logger.info("Getting the peak group DF")
-        peaks = Peak.objects.all()
+        peaks = Peak.objects.filter(id__in=peak_ids)
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
                                                                                             'sample_id__group')
@@ -260,7 +260,7 @@ class CompoundSelector(object):
             elif g == 'rt':
                 group_name_dict[g] = "RT"
             elif g =='id':
-                group_name_dict[g] = "ID"
+                group_name_dict[g] = "Peak ID"
             else:
                 sample = Sample.objects.filter(group=g)[0]  # Get the first sample of this group.
                 tissue = sample.tissue

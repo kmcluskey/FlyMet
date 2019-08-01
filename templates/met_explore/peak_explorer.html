@@ -47,7 +47,7 @@
   </div>
 
   <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+  <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
     <thead class="thead-light">
       <tr id = "columns">
         {% for column_name in columns %}
@@ -57,20 +57,37 @@
     </thead>
     <tbody>
       {% for peak_data in data %}
+      <!--Splicing the indexes so that we can format rows of the data differently  -->
       <tr>
-            {% for p in peak_data %}
-            {% if forloop.first %}
-              <td>{{p}}</td>
+      {% with  peakdataCount=ignore_indexes|stringformat:"s" %}
+        {% with  groupSlice=":"|add:peakdataCount %}
+        {% with  groupSliceend=peakdataCount|add:":" %}
+
+       {% for p in peak_data|slice:groupSlice %}
+
+       {% if forloop.first %}
+              <td class ="text-center">{{p}}</td>
             {% else %}
-              {% if p > 0 %}
-                <td>{{p|stringformat:".2e"}}</td>
-                {% else %}
-                <td class="NotDetected">-</td>
-              {% endif %}
+            <td>{{p|floatformat:"3"}}</td>
             {% endif %}
         {% endfor %}
-      </tr>
-      {% endfor %}
+
+        {% for p in peak_data|slice:groupSliceend %}
+
+          {% if p > 0 %}
+                <td class="data">{{p|stringformat:".2e"}}</td>
+          {% else %}
+                <td class="NotDetected">-</td>
+          {% endif %}
+
+         {% endfor %}
+        {% endwith %}
+
+    {% endwith %}
+    {% endwith %}
+    </tr>
+    {% endfor %}
+
     </tbody>
   </table>
   </div>
