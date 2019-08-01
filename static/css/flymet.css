@@ -165,6 +165,26 @@ card-header {
     /* z-index: 1; */
 }
 
+
+.myspan85 {
+    overflow-y: scroll;
+    width: 85%;
+    float: left;
+    margin-left:0px;
+    height: 100%;
+    /* z-index: 1; */
+}
+
+
+.myspan15 {
+    overflow-y: scroll;
+    float: right;
+    width: 15%;
+    background-color: #f5f5f5;
+    z-index: 1;
+    height: 100%;
+}
+
 .myspan25 {
     overflow-y: scroll;
     float: right;

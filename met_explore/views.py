@@ -261,7 +261,7 @@ def peak_explorer(request):
 
 
 
-    peaks = Peak.objects.all()
+    peaks = Peak.objects.filter(id__lte=20)
     required_data = peaks.values('id', 'm_z', 'rt')
 
     peak_ids = [p.id for p in peaks]
@@ -297,8 +297,6 @@ def peak_explorer(request):
     # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
     ignore_indexes = [column_headers.index('Peak ID'), column_headers.index('m/z'), column_headers.index('RT')]
-
-    print (peak_data)
 
     print ("The ignore indexes are: ", ignore_indexes)
     response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'data': peak_data, 'max_value': max_value, 'min_value': min_value,

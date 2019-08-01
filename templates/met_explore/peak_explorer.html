@@ -46,50 +46,86 @@
     </p>
   </div>
 
-  <div>
-  <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-    <thead class="thead-light">
-      <tr id = "columns">
-        {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for peak_data in data %}
-      <!--Splicing the indexes so that we can format rows of the data differently  -->
-      <tr>
-      {% with  peakdataCount=ignore_indexes|stringformat:"s" %}
-        {% with  groupSlice=":"|add:peakdataCount %}
-        {% with  groupSliceend=peakdataCount|add:":" %}
+  <div class="card mt-4 p-2 pb-2 border border-table rounded">
+    <div class="container-fluid pb-0" >
+      <div class="row pb-0">
+        <div class="myspan85 p-2 mt-2">
+          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <thead class="thead-light">
+              <tr id = "columns">
+                {% for column_name in columns %}
+                <th id = "col">{{column_name}}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for peak_data in data %}
+              <!--Splicing the indexes so that we can format rows of the data differently  -->
+              <tr>
+              {% with  peakdataCount=ignore_indexes|stringformat:"s" %}
+                {% with  groupSlice=":"|add:peakdataCount %}
+                {% with  groupSliceend=peakdataCount|add:":" %}
 
-       {% for p in peak_data|slice:groupSlice %}
+               {% for p in peak_data|slice:groupSlice %}
 
-       {% if forloop.first %}
-              <td class ="text-center">{{p}}</td>
-            {% else %}
-            <td>{{p|floatformat:"3"}}</td>
-            {% endif %}
-        {% endfor %}
+               {% if forloop.first %}
+                      <td class ="text-center">{{p}}</td>
+                    {% else %}
+                    <td>{{p|floatformat:"3"}}</td>
+                    {% endif %}
+                {% endfor %}
 
-        {% for p in peak_data|slice:groupSliceend %}
+                {% for p in peak_data|slice:groupSliceend %}
 
-          {% if p > 0 %}
-                <td class="data">{{p|stringformat:".2e"}}</td>
-          {% else %}
-                <td class="NotDetected">-</td>
-          {% endif %}
+                  {% if p > 0 %}
+                        <td class="data">{{p|stringformat:".2e"}}</td>
+                  {% else %}
+                        <td class="NotDetected">-</td>
+                  {% endif %}
 
-         {% endfor %}
-        {% endwith %}
+                 {% endfor %}
+                {% endwith %}
 
-    {% endwith %}
-    {% endwith %}
-    </tr>
-    {% endfor %}
+            {% endwith %}
+            {% endwith %}
+            </tr>
+            {% endfor %}
 
-    </tbody>
-  </table>
+            </tbody>
+          </table>
+        </div>
+
+
+        <div class="myspan15 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+
+          <fieldset id="click_info" class="fieldset-details">
+            <legend class="sidebar"><a data-toggle="modal" href="#cmpd_Modal">Pass the peak id here</a></legend>
+
+            <div class="p-2">
+              <p class="m-2">Click on a peak to see which metabolites are associated with it.</p>
+            </div>
+          </fieldset>
+          <fieldset class="fieldset-details">
+
+            <div class="container-fluid">
+              <div class="row">
+                <div class="mol_span50_L">
+
+                  </div>
+                  <div class = "mol_span50_R pl-2 molecule_div">
+                    <ul class="molecule_list pl-2">
+
+                        <li class="pb-2"><u>Annotation info and stuff like that.:</u> </li>
+                        <li class="pb-2"><u>Confidence values and lovely stuff</u> </li>
+                    </ul>
+
+                  </div>
+                </div>
+              </div>
+            </fieldset>
+
+        </div>
+        </div>
   </div>
 
   </div>
