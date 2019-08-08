@@ -50,7 +50,6 @@ except Exception as e:
     logger.warning("I'm catching this error %s ", e)
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
     raise e
-    cmpd_selector = None
 
 
 def index(request):
@@ -261,7 +260,7 @@ def peak_explorer(request):
 
 
 
-    peaks = Peak.objects.filter(id__lte=20)
+    peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
 
     peak_ids = [p.id for p in peaks]
