@@ -147,6 +147,7 @@ function updatePeakData(returned_data, radio_all_check){
         identified ="F";
         badge_info="F";
         success="warning";
+        frag_name=name;
       }
       else if (conf == 0){
         identified ="A";
@@ -163,11 +164,11 @@ function updatePeakData(returned_data, radio_all_check){
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
         console.log("here")
-        add_side_tooltips(id_name, frag_name, no_other_cmpds);
         peakDiv.innerHTML =  peak_info;
         sideDiv.appendChild(peakDiv);
 
       }
+      add_side_tooltips(id_name, frag_name, no_other_cmpds); //Add the tooltips after all divs created.
     }
 }
 
