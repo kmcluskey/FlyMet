@@ -358,6 +358,35 @@ def get_metabolite_names(request):
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
 
+def peak_explore_annotation_data(request, peak_id):
+    """
+
+    :param request:
+    :param peak_id: The ID of the peak for which we want the annotation information
+    :return: A list of compound names, adducts and confidence values for a given peak.
+    """
+
+    peak = Peak.objects.get(id=peak_id)
+
+    annots = Annotation.objects.filter(peak=peak)
+    cmpd_ids = Annotation.objects.filter(peak=peak).values_list('compound_id', flat=True)
+
+    adducts = annots.values_list('adduct', flat=True).order_by('compound_id')
+    neutral_mass = annots.values_list('neutral_mass', flat=True).order_by('compound_id')
+    conf_fact = annots.values_list('confidence', flat=True).order_by('compound_id')
+
+    cmpds = Compound.objects.filter(id__in=cmpd_ids).order_by('id')
+
+    cmpd_names = [c.cmpd_name for c in cmpds]
+
+    no_other_cmpds = len(cmpd_names)-1
+
+    return JsonResponse({'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
+
+
+
+
+
 def met_search_highchart_data(request, tissue, metabolite):
     """
        A method to return a list of tissue/intensity values for a given cmpd.

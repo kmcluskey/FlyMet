@@ -25,5 +25,6 @@ urlpatterns = [
     path('peak_explorer', views.peak_explorer, name='peak_explorer'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
+    path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
 
 ]
