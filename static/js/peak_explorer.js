@@ -10,6 +10,12 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     console.log("tablename ", tName)
     const MIN_VAL = 3000;
     let table = $(tName).DataTable({
+
+      drawCallback: function(settings){
+          /* Add some tooltips for demonstration purposes */
+          $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+      },
+
         // responsive: true,
         "scrollY": "100vh",
         "scrollCollapse": true,
@@ -56,7 +62,40 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
                     }
                 }
             }
-        ]
+        ],
+        // Add the tooltips to the dataTable header
+        "initComplete": function(settings){
+
+                    $(".col").each(function(){
+
+                      let $td = $(this);
+                      let header = $td.text();
+                      let head_split = header.split(" ");
+                      let string ="";
+                      let ls="";
+
+                      if (head_split[0]=="m/z")
+                        string = "mass-to-charge ratio";
+                      else if (head_split[0]=="Peak")
+                        string ="";
+                      else if (head_split[0]=="RT")
+                        string ="Retention Time";
+                      else
+                        string =`${head_split[0]} tissue from`;
+                        const header_words = head_split.length;
+                        const ls_check = header_words-1;
+                        ls = get_lifestage(head_split[ls_check])
+
+                      //Change the title attribute of the column to the string/tooltip info
+                      $td.attr({title: `${string} ${ls}`});
+                      $td.attr('data-toggle', "tooltip");
+                      $td.attr('data-placement', "top" );
+                  });
+                  /* Apply the tooltips */
+                  $('[data-toggle="tooltip"]').tooltip({
+                      container: 'body'
+                  });
+              },
     })
 
 //Return the table so that the it is resuable.
@@ -64,6 +103,19 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     return table;
 }
 
+
+function get_lifestage(ls_string){
+
+  let ls = "";
+  if (ls_string=="(F)")
+    ls ="Females";
+  else if (ls_string=="(M)")
+      ls ="Males";
+  else if (ls_string=="(L)")
+        ls ="Larvae";
+
+  return ls
+}
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updatePeakSidePanel(obj){
@@ -182,7 +234,9 @@ function add_side_tooltips(id_name, frag_name, no_other_cmpds){
 
 
 function add_tooltips(obj){
+  console.log("adding tooltips")
   $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+  $('.test').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
 
 }
 
@@ -190,10 +244,9 @@ $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
 
     let peak_table = initialise_peak_table("peak_list", min_value, mean_value, max_value);
-    add_tooltips(peak_table);
 
     peak_table.on( 'click', 'tr', function () {
       updatePeakSidePanel(this);
-    } )
+    } );
 
 });

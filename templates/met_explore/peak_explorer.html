@@ -53,7 +53,7 @@
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
-                <th id = "col">{{column_name}}</th>
+                <th class = "col" >{{column_name}}</th>
                 {% endfor %}
               </tr>
             </thead>
@@ -70,7 +70,7 @@
                {% if forloop.first %}
                       <td class ="text-center">{{p}}</td>
                     {% else %}
-                    <td>{{p|floatformat:"3"}}</td>
+                    <td>{{p|floatformat:"2"}}</td>
                     {% endif %}
                 {% endfor %}
 
