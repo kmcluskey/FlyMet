@@ -21,6 +21,7 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
         "scrollCollapse": true,
         "scrollX": true,
         fixedheader: true,
+        colReorder: true,
         select: {
             style: 'single'
         },
@@ -28,7 +29,8 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
-        buttons: [ 'copy',
+        buttons: [ 'colvis', 'copy',
+
             {
                 extend: 'collection',
                 text: 'Export',

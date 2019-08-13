@@ -11,6 +11,7 @@ require('pdfmake/build/pdfmake.js');
 require('pdfmake/build/vfs_fonts.js');
 require( 'datatables.net-bs4' );
 require( 'datatables.net-buttons-bs4');
+require( 'datatables.net-colreorder');
 require( 'datatables.net-buttons/js/buttons.colVis.js' );  // Column visibility
 require( 'datatables.net-buttons/js/buttons.html5.js');
 require( 'datatables.net-buttons/js/buttons.print.js' );

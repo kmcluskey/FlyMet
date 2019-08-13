@@ -456,3 +456,8 @@ table.dataTable .px300 {
 .padded_list > li {
   padding-top: 3px;
 }
+
+.dropdown-item.active, .dropdown-item:active {
+  color: #fff;
+  text-decoration: none;
+  background-color: #5D2627; }
