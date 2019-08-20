@@ -30,6 +30,7 @@ cobra = {extras = ["all"]}
 nbconvert = "*"
 nbstripout = "*"
 sendgrid = "*"
+django-datatables-view = "*"
 
 [dev-packages]
 

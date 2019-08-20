@@ -5,10 +5,15 @@ import {initialise_table} from './flymet_tables';
 
 
 
-function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
+function initialise_peak_table(tableName){
+    let t0 = performance.now();
     const tName = '#'+tableName;
     console.log("tablename ", tName)
     const MIN_VAL = 3000;
+    const peak_data = document.getElementById('peak_list').getAttribute('url');
+
+    console.log("Peak data ", peak_data)
+
     let table = $(tName).DataTable({
 
       drawCallback: function(settings){
@@ -22,6 +27,9 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
         "scrollX": true,
         fixedheader: true,
         colReorder: true,
+        processing: true,
+        serverSide: true,
+        ajax: peak_data,
         select: {
             style: 'single'
         },
@@ -38,33 +46,39 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
             }
         ],
         //Code to add the colours to the data - temporary numbers have been added.
+
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {
-                "targets": '_all',
-                "createdCell": function (td, cellData, rowData, row, col) {
-
-                    let $td = $(td);
-                    let $th = $td.closest('table').find('th').eq($td.index());
-
-                    const colorScale = d3.scaleLog()
-                        .domain([MIN_VAL, midpoint, highpoint])
-                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
-
-                    // If the column header doesn't include the string Tissue then colour the column.
-
-                    if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
-                        if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
-                            if (cellData==0.00){
-                              cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
-                            };
-                            const colour = colorScale(cellData);
-                            $(td).css('background-color', colour)
-                        }
-                    }
-                }
-            }
+            // {
+            //
+            //     "targets": '_all',
+            //     "createdCell": function (td, cellData, rowData, row, col) {
+            //
+            //         let $td = $(td);
+            //         let $th = $td.closest('table').find('th').eq($td.index());
+            //
+            //         const colorScale = d3.scaleLog()
+            //             .domain([MIN_VAL, midpoint, highpoint])
+            //             .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+            //
+            //         //If the column header doesn't include the string Tissue then colour the column.
+            //
+            //
+            //
+            //         if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
+            //             if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
+            //                 if (cellData==0.00){
+            //                   cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+            //                 };
+            //                 const colour = colorScale(cellData);
+            //                 $(td).css('background-color', colour)
+            //             }
+            //         }
+            //     }
+            // }
         ],
+
+
         // Add the tooltips to the dataTable header
         "initComplete": function(settings){
 
@@ -100,7 +114,12 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
               },
     })
 
+    // add data here
+
 //Return the table so that the it is resuable.
+
+    let t1 = performance.now();
+    console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
     console.log("returning table")
     return table;
 }
@@ -244,11 +263,30 @@ function add_tooltips(obj){
 
 $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
-
-    let peak_table = initialise_peak_table("peak_list", min_value, mean_value, max_value);
-
-    peak_table.on( 'click', 'tr', function () {
-      updatePeakSidePanel(this);
-    } );
-
+//
+//
+//     async function loadData(viewUrl, params) {
+//         try {
+//             const result = await $.getJSON(viewUrl, params);
+//             return result;
+//         } catch (e) {
+//             console.log(e);
+//         }
+//     }
+//
+//     (async () => {
+//
+//       const peakData = await loadData('/?????');
+  let peak_table = initialise_peak_table("peak_list");
+//
+      // peak_table.on( 'click', 'tr', function () {
+      //   updatePeakSidePanel(this);
+      // } );
+// //
+//
+//     })().catch(e => {
+//         console.error(e);
+//     });
+//
+//
 });

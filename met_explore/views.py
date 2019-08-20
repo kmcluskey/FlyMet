@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.urls import reverse
 from met_explore.forms import ContactForm
+from django.core.paginator import Paginator
 
 from django.utils import timezone
 from django.views.generic.list import ListView
@@ -16,6 +17,8 @@ import numpy as np
 import json
 import django
 import math
+import timeit
+
 
 logger = logging.getLogger(__name__)
 
@@ -257,51 +260,122 @@ def met_ex_lifestages(request):
     return render(request, 'met_explore/met_ex_lifestages.html')
 
 def peak_explorer(request):
+    # logger.info("Peak table requested")
+    # start = timeit.default_timer()
+    #
+    # peaks = Peak.objects.all()
+    # required_data = peaks.values('id', 'm_z', 'rt')
+    #
+    # peak_ids = [p.id for p in peaks]
+    #
+    # peak_df = pd.DataFrame.from_records(list(required_data))
+    #
+    # peak_df[['m_z', 'rt']].round(3).astype(str)
+    #
+    # # Get all of the peaks and all of he intensities of the sample files
+    # group_df = cmpd_selector.get_group_df(peak_ids)
+    #
+    # max_value = np.nanmax(group_df)
+    # min_value = np.nanmin(group_df)
+    # mean_value = np.nanmean(group_df)
+    #
+    # group_df.reset_index(inplace=True)
+    # group_df.rename(columns={'peak':'id'}, inplace=True)
+    #
+    # view_df = pd.merge(peak_df, group_df, on='id')
+    #
+    #
+    # # peak_data = view_df.values.tolist()
+    #
+    # column_names = view_df.columns.tolist()
+    #
+    # group_names = cmpd_selector.get_list_view_column_names(column_names)
+    #
+    # column_headers = []
+    # for c in column_names:
+    #     column_headers.append(group_names[c])
+    #
+    #
+    # # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    #
+    # ignore_indexes = [column_headers.index('Peak ID'), column_headers.index('m/z'), column_headers.index('RT')]
+    #
+    # print ("The ignore indexes are: ", ignore_indexes)
+    #
+    # stop = timeit.default_timer()
+    # logger.info("Returning the peak DF took: %s S", str(stop - start))
+    # response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'max_value': max_value, 'min_value': min_value,
+    #             'mean_value': mean_value}
+
+    return render(request, 'met_explore/peak_explorer.html')
 
 
+def peak_data(request):
 
-    peaks = Peak.objects.all()
-    required_data = peaks.values('id', 'm_z', 'rt')
+    no_entries = int(request.GET['length'])
+    start_entry = int(request.GET['start'])
+    draw = int(request.GET['draw'])
 
+    page_no = int((start_entry + no_entries) / no_entries)
+
+    logger.info ("Getting page starting at %s of length %s page %s", start_entry, no_entries, page_no)
+
+    all_peaks = Peak.objects.all().order_by('id')
+    paginator = Paginator(all_peaks, no_entries)
+    peaks_page = paginator.get_page(page_no)
+
+    peaks = peaks_page.object_list
+
+    required_data = [(p.id, p.m_z, p.rt) for p in peaks]
+
+    no_peaks = all_peaks.count()
+
+    print ("the number of peaks is ", no_peaks)
+    # print (required_data)
+    # print (type(required_data))
+    #
+    # temp_peak_data = required_data.tolist()
+    # required_data2 = temp_peak_data.values('id', 'm_z', 'rt')
+    #
+    # print (required_data2)
+    #
+    # print ("the draw is", draw)
+    #
+    # print ("the temp data is ", temp_peak_data)
+    #
     peak_ids = [p.id for p in peaks]
+    #
+    peak_df = pd.DataFrame.from_records(required_data)
+    #
 
-    peak_df = pd.DataFrame.from_records(list(required_data))
+    print ("peak_ids ", peak_ids)
+    print ("peak_df ", peak_df)
 
     peak_df[['m_z', 'rt']].round(3).astype(str)
+    #
+    # # Get all of the peaks and all of he intensities of the sample files
+    # group_df = cmpd_selector.get_group_df(peak_ids)
+    #
+    #
+    # group_df.reset_index(inplace=True)
+    # group_df.rename(columns={'peak':'id'}, inplace=True)
+    #
+    # view_df = pd.merge(peak_df, group_df, on='id')
+    # peak_data = view_df.values.tolist()
+    peak_data1 = peak_df.values.tolist()
 
-    # Get all of the peaks and all of he intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peak_ids)
+    print ("in the peak_data view")
 
-    max_value = np.nanmax(group_df)
-    min_value = np.nanmin(group_df)
-    mean_value = np.nanmean(group_df)
+    print (peak_data1)
 
-    group_df.reset_index(inplace=True)
-    group_df.rename(columns={'peak':'id'}, inplace=True)
+    peak_data = {
+        "draw": draw,
+        "recordsTotal": no_peaks,
+        "recordsFiltered":no_peaks,
+        "data": peak_data1
+    }
 
-    view_df = pd.merge(peak_df, group_df, on='id')
-
-
-    peak_data = view_df.values.tolist()
-
-    column_names = view_df.columns.tolist()
-
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
-
-    ignore_indexes = [column_headers.index('Peak ID'), column_headers.index('m/z'), column_headers.index('RT')]
-
-    print ("The ignore indexes are: ", ignore_indexes)
-    response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'data': peak_data, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
-
-    return render(request, 'met_explore/peak_explorer.html', response)
+    return JsonResponse(peak_data)
 
 
 def path_ex_lifestages(request):

@@ -50,48 +50,21 @@
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
           <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-            <thead class="thead-light">
+          <table id="peak_list" url="{% url 'peak_data' %}" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>mz</th>
+                <th>RT</th>
+            </tr>
+        </thead>
+            <!-- <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
                 <th class = "col" >{{column_name}}</th>
                 {% endfor %}
               </tr>
-            </thead>
-            <tbody>
-              {% for peak_data in data %}
-              <!--Splicing the indexes so that we can format rows of the data differently  -->
-              <tr>
-              {% with  peakdataCount=ignore_indexes|stringformat:"s" %}
-                {% with  groupSlice=":"|add:peakdataCount %}
-                {% with  groupSliceend=peakdataCount|add:":" %}
-
-               {% for p in peak_data|slice:groupSlice %}
-
-               {% if forloop.first %}
-                      <td class ="text-center">{{p}}</td>
-                    {% else %}
-                    <td>{{p|floatformat:"2"}}</td>
-                    {% endif %}
-                {% endfor %}
-
-                {% for p in peak_data|slice:groupSliceend %}
-
-                  {% if p > 0 %}
-                        <td class="data">{{p|stringformat:".2e"}}</td>
-                  {% else %}
-                        <td class="NotDetected">-</td>
-                  {% endif %}
-
-                 {% endfor %}
-                {% endwith %}
-
-            {% endwith %}
-            {% endwith %}
-            </tr>
-            {% endfor %}
-
-            </tbody>
+            </thead> -->
           </table>
         </div>
 
@@ -151,13 +124,13 @@
 
 
   {% block js_block %}
-  <script type='text/javascript'>
+  <!-- <script type='text/javascript'>
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
     console.log(min_value, max_value, mean_value)
 
-    </script>
+    </script> -->
 
   {% render_bundle 'peak_explorer' 'js' %}
   {% endblock %}

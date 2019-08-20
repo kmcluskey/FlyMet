@@ -6,6 +6,7 @@ import numpy as np
 import operator
 import json
 import logging
+import timeit
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +171,8 @@ class CompoundSelector(object):
 
         # This gets the group_df without any preprocessing and should be faster than what we had before.
         logger.info("Getting the peak group DF")
+        start = timeit.default_timer()
+
         peaks = Peak.objects.filter(id__in=peak_ids)
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
@@ -184,6 +187,10 @@ class CompoundSelector(object):
         group_df = gp_df.unstack()
         # Remove None from the column index and just keep the group
         group_df.columns = group_df.columns.get_level_values('group')
+        stop = timeit.default_timer()
+        logger.info("Generating the peak group dataframe took: %s ", str(stop - start))
+
+
 
         return group_df
 
