@@ -5,7 +5,7 @@ import {initialise_table} from './flymet_tables';
 
 
 
-function initialise_peak_table(tableName){
+function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     let t0 = performance.now();
     const tName = '#'+tableName;
     console.log("tablename ", tName)
@@ -49,33 +49,33 @@ function initialise_peak_table(tableName){
 
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            // {
-            //
-            //     "targets": '_all',
-            //     "createdCell": function (td, cellData, rowData, row, col) {
-            //
-            //         let $td = $(td);
-            //         let $th = $td.closest('table').find('th').eq($td.index());
-            //
-            //         const colorScale = d3.scaleLog()
-            //             .domain([MIN_VAL, midpoint, highpoint])
-            //             .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
-            //
-            //         //If the column header doesn't include the string Tissue then colour the column.
-            //
-            //
-            //
-            //         if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
-            //             if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
-            //                 if (cellData==0.00){
-            //                   cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
-            //                 };
-            //                 const colour = colorScale(cellData);
-            //                 $(td).css('background-color', colour)
-            //             }
-            //         }
-            //     }
-            // }
+            {
+
+                "targets": '_all',
+                "createdCell": function (td, cellData, rowData, row, col) {
+
+                    let $td = $(td);
+                    let $th = $td.closest('table').find('th').eq($td.index());
+
+                    const colorScale = d3.scaleLog()
+                        .domain([MIN_VAL, midpoint, highpoint])
+                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                    //If the column header doesn't include the string Tissue then colour the column.
+
+
+
+                    if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
+                        if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
+                            if (cellData==0.00){
+                              cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                            };
+                            const colour = colorScale(cellData);
+                            $(td).css('background-color', colour)
+                        }
+                    }
+                }
+            }
         ],
 
 
