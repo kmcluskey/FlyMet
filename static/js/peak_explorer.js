@@ -27,8 +27,9 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
         "scrollX": true,
         fixedheader: true,
         colReorder: true,
-        processing: true,
-        serverSide: true,
+        //processing: true,
+        //serverSide: true,
+        //deferLoading: 9369,
         ajax: peak_data,
         select: {
             style: 'single'
@@ -57,13 +58,13 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
                     let $td = $(td);
                     let $th = $td.closest('table').find('th').eq($td.index());
 
+                    console.log("HEADER STUFF", $th.text())
+
                     const colorScale = d3.scaleLog()
                         .domain([MIN_VAL, midpoint, highpoint])
                         .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
-
-
 
                     if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
@@ -277,12 +278,12 @@ $(document).ready(function() {
 //     (async () => {
 //
 //       const peakData = await loadData('/?????');
-  let peak_table = initialise_peak_table("peak_list");
+  let peak_table = initialise_peak_table("peak_list", min_value, max_value, mean_value);
+
+      peak_table.on( 'click', 'tr', function () {
+        updatePeakSidePanel(this);
+      } );
 //
-      // peak_table.on( 'click', 'tr', function () {
-      //   updatePeakSidePanel(this);
-      // } );
-// //
 //
 //     })().catch(e => {
 //         console.error(e);

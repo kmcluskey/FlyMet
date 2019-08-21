@@ -49,43 +49,15 @@
     <div class="container-fluid pb-0" >
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
-          <p>Columns can be dragged to reorganise the data as required.</p>
+          <p>Columns can be dragged to reorganise the data as required whooooooo.</p>
           <table id="peak_list" url="{% url 'peak_data' %}" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-            <thead>
-            <tr>
-                <th>1</th>
-                <th>2</th>
-                <th>3</th>
-                <th>4</th>
-                <th>5</th>
-                <th>6</th>
-                <th>7</th>
-                <th>8</th>
-                <th>9</th>
-                <th>10</th>
-                <th>11</th>
-                <th>12</th>
-                <th>13</th>
-                <th>14</th>
-                <th>15</th>
-                <th>16</th>
-                <th>17</th>
-                <th>18</th>
-                <th>19</th>
-                <th>20</th>
-                <th>21</th>
-                <th>22</th>
-                <th>23</th>
-                <th>24</th>
-            </tr>
-        </thead>
-            <!-- <thead class="thead-light">
+            <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
                 <th class = "col" >{{column_name}}</th>
                 {% endfor %}
               </tr>
-            </thead> -->
+            </thead>
           </table>
         </div>
 
@@ -145,13 +117,13 @@
 
 
   {% block js_block %}
-  <!-- <script type='text/javascript'>
+  <script type='text/javascript'>
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
     console.log(min_value, max_value, mean_value)
 
-    </script> -->
+    </script>
 
   {% render_bundle 'peak_explorer' 'js' %}
   {% endblock %}

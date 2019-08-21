@@ -17,10 +17,17 @@ import logging
 import sys
 
 
+def getString(name, default):
+    if name not in os.environ:
+        return default
+    return os.environ[name]
 
+CACHE_DURATION = int(getString('CACHE_DURATION', '604800')) # defaults to a week in seconds
 
 
 class Common(Configuration):
+
+
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -56,7 +63,7 @@ class Common(Configuration):
         'web_omics.users',
         'registration',
         'rest_framework',
-        'met_explore'
+        'met_explore',
     ]
 
     LOGGING = {
@@ -159,6 +166,15 @@ class Common(Configuration):
         STATIC_PATH,
     )
 
+
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': os.path.join(BASE_DIR,'django_cache'),
+            'TIMEOUT': CACHE_DURATION
+        }
+    }
+
     # For file upload
     # See https://simpleisbetterthancomplex.com/tutorial/2016/08/01/how-to-upload-files-with-django.html
     MEDIA_URL = '/media/'
@@ -166,7 +182,6 @@ class Common(Configuration):
 
     AUTH_USER_MODEL = 'users.User'
     LOGIN_URL = reverse_lazy('login')
-
 
 class Development(Common):
     """

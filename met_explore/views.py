@@ -4,12 +4,17 @@ from django.http import JsonResponse
 from django.urls import reverse
 from met_explore.forms import ContactForm
 from django.core.paginator import Paginator
+from web_omics.settings import CACHE_DURATION
 
 from django.utils import timezone
 from django.views.generic.list import ListView
 
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample
+
+from django.core.cache import cache, caches
+from django.views.decorators.cache import cache_page
+
 
 import pandas as pd
 import logging
@@ -259,12 +264,16 @@ def met_ex_lifestages(request):
 
     return render(request, 'met_explore/met_ex_lifestages.html')
 
+# @cache_page(600)
 def peak_explorer(request):
+
+    print ("PEAK EXPLORE REQUEST")
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
+    peaks = Peak.objects.filter(id__lte =100)
 
-    peaks = Peak.objects.all()
+    # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
 
     peak_ids = [p.id for p in peaks]
@@ -274,6 +283,7 @@ def peak_explorer(request):
     peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
+
     group_df = cmpd_selector.get_group_df(peak_ids)
 
     max_value = np.nanmax(group_df)
@@ -308,35 +318,40 @@ def peak_explorer(request):
     response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
+
     return render(request, 'met_explore/peak_explorer.html', response)
 
-
+@cache_page(600)
 def peak_data(request):
 
-    if 'length' in request.GET.keys():
-        no_entries = int(request.GET['length'])
-        start_entry = int(request.GET['start'])
-        draw = int(request.GET['draw'])
-    else:
-        no_entries = 10
-        start_entry = 0
-        draw = 1
+    print ("PEAK DATA REQUEST")
+    #
+    # if 'length' in request.GET.keys():
+    #     no_entries = int(request.GET['length'])
+    #     start_entry = int(request.GET['start'])
+    #     draw = int(request.GET['draw'])
+    # else:
+    #     no_entries = 10
+    #     start_entry = 0
+    #     draw = 1
+    #
+    # page_no = int((start_entry + no_entries) / no_entries)
+    #
+    # logger.info("Getting page starting at %s of length %s page %s", start_entry, no_entries, page_no)
 
-    page_no = int((start_entry + no_entries) / no_entries)
+    peaks = Peak.objects.filter(id__lte =100)
+    # paginator = Paginator(all_peaks, no_entries)
+    # peaks_page = paginator.get_page(page_no)
+    #
+    # peaks = peaks_page.object_list
 
-    logger.info("Getting page starting at %s of length %s page %s", start_entry, no_entries, page_no)
+    required_data = peaks.values('id', 'm_z', 'rt')
 
-    all_peaks = Peak.objects.all().order_by('id')
-    paginator = Paginator(all_peaks, no_entries)
-    peaks_page = paginator.get_page(page_no)
+    # required_data = [{'id': p.id, 'm_z': p.m_z, 'rt': p.rt} for p in peaks]
 
-    peaks = peaks_page.object_list
+    # no_peaks =peaks.count()
 
-    required_data = [{'id': p.id, 'm_z': p.m_z, 'rt': p.rt} for p in peaks]
-
-    no_peaks = all_peaks.count()
-
-    print ("the number of peaks is ", no_peaks)
+    # print ("the number of peaks is ", no_peaks)
     # print (required_data)
     # print (type(required_data))
     #
@@ -354,8 +369,8 @@ def peak_data(request):
     peak_df = pd.DataFrame.from_records(required_data)
     #
 
-    print ("peak_ids ", peak_ids)
-    print ("peak_df ", peak_df)
+    # print ("peak_ids ", peak_ids)
+    # print ("peak_df ", peak_df)
 
     peak_df[['m_z', 'rt']].round(3).astype(str)
     #
@@ -366,45 +381,15 @@ def peak_data(request):
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak':'id'}, inplace=True)
     #
-    view_df = pd.merge(peak_df, group_df, on='id')
+    view_df1 = pd.merge(peak_df, group_df, on='id')
+    view_df = view_df1.fillna("-")
     #
-    peak_data1 = view_df.values.tolist()
+    peak_data = view_df.values.tolist()
     # peak_data1 = peak_df.values.tolist()
 
-    print ("Peak data 1 ", peak_data1)
 
-    peak_data = {"draw": 1, "recordsTotal": 9369, "recordsFiltered": 9369, "data": [
-        [1, "116.0706018910", "658.5536565370", 54369697.0, 537302408.0, 93493853.0, 756088960.0, 90604547.0,
-         149944768.0, 387939768.0, 859245232.0, 920509056.0, 597336328.0, 335680136.0, 657747616.0, 219007672.0,
-         284732024.0, 315759392.0, 316359012.0, 303185832.0, 654114680.0, 1627231072.0, 2428565984.0, 1492144272.0],
-    [2, "116.0706279980", "676.9450929060", 553753.671875, 2811543.625, 748900.97265625, 9386100.78125, 866468.296875, 1313515.0625, 3231969.375, 7608046.875, 9932560.5, 4157299.40625, 2292834.75, 4294565.3125, 1806695.140625, 2252288.75, 1883994.09375, 2670836.3125, 1693181.1875, 5058461.375, 25270842.0, 55275073.5, 32035267.875],
-        [3, "116.0706323200", "486.5954699310", 294570.02734375, 250218.71484375, 278869.1640625, 429963.57421875,
-         390069.88671875, 291632.828125, 233753.703125, 348922.234375, 400411.15625, 390038.67578125, 336464.046875,
-         310656.12890625, 318560.671875, 270858.4453125, 229341.859375, 282628.6171875, 201686.44921875, 308926.2421875,
-         373537.69921875, 364179.16015625, 415320.376953125],
-        [4, "116.0706357500", "589.5708286450", 240549.55078125, 222684.16796875, 227829.7421875, 279476.33203125,
-         377092.9921875, 250444.80078125, 225508.94140625, 224249.4453125, 200021.578125, 331288.7734375,
-         179285.0703125, 237029.53515625, 229313.0, 182220.498046875, 227203.41015625, 193689.94921875, 198310.6015625,
-         308504.6875, 299647.419921875, 316572.70703125, 328462.12890625],
-        [5, "159.0776881770", "519.3999550230", 9670.0578613281, 9693.76953125, 6554.8857421875, 17577.1201171875,
-         15145.867513020834, 10316.8195800781, 9925.21728515625, 55760.735595703125, 7414.584716796875,
-         130048.8173828125, 16711.105102539073, 10987.4002685547, 24777.78759765625, 11605.845336914075,
-         10443.28649902345, "-", 14021.818115234375, 108038.138671875, 118351.3994140625, 47002.8359375,
-         48143.60607910156]
-    ]}
 
-    print ("in the peak_data view")
-
-    print (peak_data1)
-
-    # peak_data = {
-    #     "draw": draw,
-    #     "recordsTotal": no_peaks,
-    #     "recordsFiltered":no_peaks,
-    #     "data": peak_data1
-    # }
-
-    return JsonResponse(peak_data)
+    return JsonResponse({'data':peak_data})
 
 
 def path_ex_lifestages(request):

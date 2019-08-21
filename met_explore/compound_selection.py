@@ -7,6 +7,7 @@ import operator
 import json
 import logging
 import timeit
+from cache_memoize import cache_memoize
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +168,7 @@ class CompoundSelector(object):
 
         return int_df
 
+    @cache_memoize(100)
     def get_group_df(self, peak_ids):
 
         # This gets the group_df without any preprocessing and should be faster than what we had before.

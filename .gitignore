@@ -119,3 +119,4 @@ peak_explorer_old.html
 sendgrid.env
 db.sqlite3.full
 webpack-stats.json
+django_cache

@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.decorators.cache import cache_page
 
 urlpatterns = [
     path('', views.index, name='met_explore_index'),
@@ -26,5 +27,5 @@ urlpatterns = [
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
-    path('peak_data', views.peak_data, name='peak_data'),
+    path('peak_data', cache_page(60 * 15)(views.peak_data), name='peak_data'),
 ]
