@@ -56,9 +56,8 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
                 "createdCell": function (td, cellData, rowData, row, col) {
 
                     let $td = $(td);
-                    let $th = $td.closest('table').find('th').eq($td.index());
-
-                    console.log("HEADER STUFF", $th.text())
+                    // console.log($td.text())
+                    let $th = $(".col").eq($td.index());
 
                     const colorScale = d3.scaleLog()
                         .domain([MIN_VAL, midpoint, highpoint])
@@ -75,8 +74,46 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
                             $(td).css('background-color', colour)
                         }
                     }
-                }
-            }
+
+                    if ($th.text().includes('Peak ID')){
+                      $(td).addClass('"text-center"')
+                    }
+                    // If m_z or RT reformat the number to 2 dec places.
+                    else if (($th.text().includes('m/z') || $th.text().includes('RT'))){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(2)
+                      $td.empty();
+                      $td.append(num);
+                      console.log($td.text());
+                    }
+
+                    else {
+                      const value = $td.text()
+                      if (value > 1){
+                      const num = parseFloat(value).toExponential(2)
+                      $td.empty();
+                      $td.append(num);
+                      $(td).addClass("data");
+                      console.log($td.text());
+                    } else {$(td).addClass("NotDetected");}
+
+                    }
+
+                    // else {
+                    //   const value = $td.text();
+                    //   if (value > 0) {
+                    //   const num = parseFloat(value).toExponential(2);
+                    //   $td.empty();
+                    //   $td.append(num)
+                    //   $(td).addClass("data");
+                    //   console.log($td.text());
+                    // };
+                    // }
+                    }
+                  }
+
+
+
         ],
 
 
@@ -278,7 +315,7 @@ $(document).ready(function() {
 //     (async () => {
 //
 //       const peakData = await loadData('/?????');
-  let peak_table = initialise_peak_table("peak_list", min_value, max_value, mean_value);
+  let peak_table = initialise_peak_table("peak_list", min_value, mean_value, max_value);
 
       peak_table.on( 'click', 'tr', function () {
         updatePeakSidePanel(this);

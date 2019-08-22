@@ -271,7 +271,7 @@ def peak_explorer(request):
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
-    peaks = Peak.objects.filter(id__lte =100)
+    peaks = Peak.objects.all()
 
     # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
@@ -321,7 +321,7 @@ def peak_explorer(request):
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
-@cache_page(600)
+# @cache_page(600)
 def peak_data(request):
 
     print ("PEAK DATA REQUEST")
@@ -339,7 +339,7 @@ def peak_data(request):
     #
     # logger.info("Getting page starting at %s of length %s page %s", start_entry, no_entries, page_no)
 
-    peaks = Peak.objects.filter(id__lte =100)
+    peaks = Peak.objects.all()
     # paginator = Paginator(all_peaks, no_entries)
     # peaks_page = paginator.get_page(page_no)
     #
@@ -372,7 +372,12 @@ def peak_data(request):
     # print ("peak_ids ", peak_ids)
     # print ("peak_df ", peak_df)
 
-    peak_df[['m_z', 'rt']].round(3).astype(str)
+    blah = peak_df[['m_z', 'rt']].round(3).astype(float)
+
+
+    # test = peak_df.round({'m_z':2, 'rt':2}).astype(float)
+
+    print (blah)
     #
     # # Get all of the peaks and all of the intensities of the sample files
     group_df = cmpd_selector.get_group_df(peak_ids)
