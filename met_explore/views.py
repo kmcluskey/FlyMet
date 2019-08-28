@@ -277,7 +277,7 @@ def peak_explorer(request):
     :return: The template and required parameters for the peak explorer page.
     """
 
-    print ("PEAK EXPLORE REQUEST")
+    print ("PEAK EXPLORER REQUEST")
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
