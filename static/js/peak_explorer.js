@@ -79,12 +79,19 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
                       $(td).addClass('"text-center"')
                     }
                     // If m_z or RT reformat the number to 2 dec places.
-                    else if (($th.text().includes('m/z') || $th.text().includes('RT'))){
+                   else if ($th.text().includes('RT')){
                       const value = $td.text()
                       const num = parseFloat(value).toFixed(2)
                       $td.empty();
                       $td.append(num);
                     }
+                    else if ($th.text().includes('m/z')){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(4)
+                      $td.empty();
+                      $td.append(num);
+                    }
+
                     // If the number is some of the tissue data
                     else {
                       const value = $td.text()

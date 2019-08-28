@@ -62,7 +62,13 @@ except Exception as e:
 
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
-    return render(request, 'met_explore/index.html')
+
+    context = {
+        'json_url': reverse('get_metabolite_names')
+    }
+
+    return render(request, 'met_explore/index.html', context)
+
 
 def temp_his_pw(request):
     """
