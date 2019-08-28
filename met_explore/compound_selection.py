@@ -7,7 +7,6 @@ import operator
 import json
 import logging
 import timeit
-from cache_memoize import cache_memoize
 
 logger = logging.getLogger(__name__)
 
@@ -119,12 +118,6 @@ class CompoundSelector(object):
         :return:  # A df with all of the samples and their intensities for all of the peaks
         # Index is peak ids
         """
-        # try:
-        #     int_df = pd.read_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
-        #
-        #     logger.info("The file has been found: %s", INTENSITY_FILE_NAME+".pkl")
-        #
-        # except FileNotFoundError:
 
         print ('constructing sample/intensity df')
 
@@ -144,44 +137,22 @@ class CompoundSelector(object):
                 'peak_id').values_list('intensity', flat=True)
             int_df[c] = list(peak_ints)
 
-        # display(int_df.head())
-        #
-        # for p in peaks:
-        #     print ("getting intensities for peak ", p)
-        #     for c in columns:
-        #         sp = SamplePeak.objects.get(peak__id=p.id, sample__name=c)
-        #         int_df.at[p.id, c] = sp.intensity
-
-        # int_df_concat =  pd.concat([cmpd_df,int_df], axis=1, sort=False)
-
-        logger.info("The returned dataframe is of the format: %s", int_df.head())
-
-        # try:
-        #
-        #     int_df.to_pickle("./data/"+INTENSITY_FILE_NAME+".pkl")
-        #
-        # except Exception as e:
-        #     logger.error("Pickle didn't work because of %s ", e)
-        #     pass
 
         logger.info("There are %d peaks added to the intensity df",int_df.shape[0])
 
         return int_df
 
-    @cache_memoize(100)
-    def get_group_df(self, peak_ids):
 
-        # This gets the group_df without any preprocessing and should be faster than what we had before.
+    def get_group_df(self, peaks):
+
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
 
-        peaks = Peak.objects.filter(id__in=peak_ids)
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
-                                                                                            'sample_id__group')
+                                                                                              'sample_id__group')
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
-
         group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
         # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
         gp_df = group_series.to_frame()
@@ -189,10 +160,10 @@ class CompoundSelector(object):
         group_df = gp_df.unstack()
         # Remove None from the column index and just keep the group
         group_df.columns = group_df.columns.get_level_values('group')
+
+
         stop = timeit.default_timer()
         logger.info("Generating the peak group dataframe took: %s ", str(stop - start))
-
-
 
         return group_df
 

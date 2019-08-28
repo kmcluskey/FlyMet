@@ -49,8 +49,8 @@
     <div class="container-fluid pb-0" >
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
-          <p>Columns can be dragged to reorganise the data as required whooooooo.</p>
-          <table id="peak_list" url="{% url 'peak_data' %}" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+          <p>Columns can be dragged to reorganise the data as required.</p>
+          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
@@ -63,12 +63,10 @@
 
 
         <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
-
           <fieldset id="click_info" class="fieldset-details">
             <legend class="sidebar">Peak Annotations</legend>
-
             <div class="p-2">
-              <p class="m-2">Click on a peak to see which metabolites are associated with it.</p>
+              <p class="m-2">Click on a peak to see the metabolites are associated with it.</p>
             </div>
           </fieldset>
 

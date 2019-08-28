@@ -264,8 +264,12 @@ def met_ex_lifestages(request):
 
     return render(request, 'met_explore/met_ex_lifestages.html')
 
-# @cache_page(600)
 def peak_explorer(request):
+
+    """
+    :param request: The peak Explorer page
+    :return: The template and required parameters for the peak explorer page.
+    """
 
     print ("PEAK EXPLORE REQUEST")
 
@@ -276,7 +280,7 @@ def peak_explorer(request):
     # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
 
-    peak_ids = [p.id for p in peaks]
+    # peak_ids = [p.id for p in peaks]
 
     peak_df = pd.DataFrame.from_records(list(required_data))
 
@@ -284,7 +288,7 @@ def peak_explorer(request):
 
     # Get all of the peaks and all of he intensities of the sample files
 
-    group_df = cmpd_selector.get_group_df(peak_ids)
+    group_df = cmpd_selector.get_group_df(peaks)
 
     max_value = np.nanmax(group_df)
     min_value = np.nanmin(group_df)
@@ -294,9 +298,6 @@ def peak_explorer(request):
     group_df.rename(columns={'peak':'id'}, inplace=True)
 
     view_df = pd.merge(peak_df, group_df, on='id')
-
-
-    # peak_data = view_df.values.tolist()
 
     column_names = view_df.columns.tolist()
 
@@ -309,80 +310,34 @@ def peak_explorer(request):
 
     # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-    ignore_indexes = [column_headers.index('Peak ID'), column_headers.index('m/z'), column_headers.index('RT')]
-
-    print ("The ignore indexes are: ", ignore_indexes)
 
     stop = timeit.default_timer()
     logger.info("Returning the peak DF took: %s S", str(stop - start))
-    response = {'columns': column_headers, 'ignore_indexes': len(ignore_indexes), 'max_value': max_value, 'min_value': min_value,
+    response = {'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
-# @cache_page(600)
 def peak_data(request):
 
+    """
+    :param request: Request for the peak data for the Peak Explorer page
+    :return: The cached url of the ajax data for the peak data table.
+    """
+
     print ("PEAK DATA REQUEST")
-    #
-    # if 'length' in request.GET.keys():
-    #     no_entries = int(request.GET['length'])
-    #     start_entry = int(request.GET['start'])
-    #     draw = int(request.GET['draw'])
-    # else:
-    #     no_entries = 10
-    #     start_entry = 0
-    #     draw = 1
-    #
-    # page_no = int((start_entry + no_entries) / no_entries)
-    #
-    # logger.info("Getting page starting at %s of length %s page %s", start_entry, no_entries, page_no)
 
     peaks = Peak.objects.all()
-    # paginator = Paginator(all_peaks, no_entries)
-    # peaks_page = paginator.get_page(page_no)
-    #
-    # peaks = peaks_page.object_list
 
     required_data = peaks.values('id', 'm_z', 'rt')
 
-    # required_data = [{'id': p.id, 'm_z': p.m_z, 'rt': p.rt} for p in peaks]
-
-    # no_peaks =peaks.count()
-
-    # print ("the number of peaks is ", no_peaks)
-    # print (required_data)
-    # print (type(required_data))
-    #
-    # temp_peak_data = required_data.tolist()
-    # required_data2 = temp_peak_data.values('id', 'm_z', 'rt')
-    #
-    # print (required_data2)
-    #
-    # print ("the draw is", draw)
-    #
-    # print ("the temp data is ", temp_peak_data)
-    #
-    peak_ids = [p.id for p in peaks]
-    #
     peak_df = pd.DataFrame.from_records(required_data)
-    #
 
-    # print ("peak_ids ", peak_ids)
-    # print ("peak_df ", peak_df)
-
-    blah = peak_df[['m_z', 'rt']].round(3).astype(float)
-
-
-    # test = peak_df.round({'m_z':2, 'rt':2}).astype(float)
-
-    print (blah)
-    #
     # # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peak_ids)
-    #
-    #
+    group_df = cmpd_selector.get_group_df(peaks)
+
+
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak':'id'}, inplace=True)
     #
@@ -390,9 +345,6 @@ def peak_data(request):
     view_df = view_df1.fillna("-")
     #
     peak_data = view_df.values.tolist()
-    # peak_data1 = peak_df.values.tolist()
-
-
 
     return JsonResponse({'data':peak_data})
 
