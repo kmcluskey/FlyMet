@@ -446,7 +446,15 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     cmpd_selector = CompoundSelector()
 
-    hc_int_df = cmpd_selector.get_hc_int_df()
+    hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
+
+    #Should only be looking at a single compound
+
+    single_cmpd_indexed = s_cmpds_df.index.values
+
+    hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
+
+
 
     # DFs for all the peaks
     # int_df = cmpd_selector.construct_cmpd_intensity_df()
