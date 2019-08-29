@@ -514,9 +514,16 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
-    for d in np.nan_to_num(all_intensities): # for error bar calcs Nans are used as zeros.
-        q25, q75 = np.percentile(d, [25, 75])
-        error_series =[q25, q75]
+
+    all_ints = all_intensities[~np.isnan(all_intensities)]
+
+    for d in all_intensities:
+        d = d[~np.isnan(d)]   # for error bar calcs Nans are removed.
+        if d.any():
+            q25, q75 = np.percentile(d, [25, 75])
+            error_series =[q25, q75]
+        else:
+            error_series = None
         error_data.append(error_series)
 
     #Replacing the NaNs with zeros for highchart.
