@@ -233,7 +233,7 @@ function updatePeakData(returned_data, radio_all_check){
       const conf = conf_fact[i];
 
       var nm1 = Number(neutral_mass[i]);
-      var nm = nm1.toFixed(2);
+      var nm = nm1.toFixed(4);
 
       let success ="";
       let identified="";
