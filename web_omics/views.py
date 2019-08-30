@@ -6,6 +6,7 @@ from django.views.generic import View
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
 from django.shortcuts import render
+from django.urls import reverse
 
 
 # from linker.models import Analysis
@@ -24,7 +25,11 @@ class LoginRequired(View):
 
 def index(request):
     # return HttpResponse("Hello, you have arrived at the FlyMet front page!.")
-    return render(request, 'met_explore/index.html')
+
+    context = {
+        'json_url': reverse('get_metabolite_names')
+    }
+    return render(request, 'met_explore/index.html', context)
 
 
 # class ExperimentListView(LoginRequired, ListView):
