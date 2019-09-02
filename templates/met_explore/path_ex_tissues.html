@@ -20,7 +20,7 @@
   <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
+      <ul id = "menu" class="nav nav-tabs card-header-tabs float_title"">
         <li class="nav-item">
           <a class="nav-link active" href="{% url 'path_ex_tissues' %}">Tissues</a>
         </li>
@@ -28,6 +28,9 @@
           <a class="nav-link" href="{% url 'path_ex_lifestages' %}">Life Stages</a>
         </li>
       </ul>
+      <div class="top-right" >
+        <p class ="title_text">Pathway Explorer</p>
+      </div>
     </div>
   </div>
   <div>

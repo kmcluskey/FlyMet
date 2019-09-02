@@ -54,10 +54,39 @@
       FlyMet: A metabolomics atlas for <i> Drosophila </i>
     </div>
     <div class = "p-4 text-justify">
-      <h5>About</h5>
-      <span class="bg-danger text-white p-2">Coming soon</span>
-      <p class="p-4">A little bit about the different areas of FlyMet and how to use them.</p>
-    </div>
+        <h6>This page gives a brief overview current FlyMet functionality.</h6>
+    <div class="p-4">
+    <h6><a href="{% url 'met_explore_index' %}"> FlyMet home page </a></h6>
+    <p class="p-4">
+      The FlyMet home page can be used to search for a metabolite of interest by name. These metabolites have
+      been identified using a standard compound library and are directly associated with a mass spec peak.
+      Using this search function users can observe how these metabolites change between tissue types.
+      The fold-change between the peak intensity in the tissues and the whole fly has been calculated and the relative intensity
+      of the peaks in the different life-stages displayed.
+      </p>
+
+    <hr class="my-4">
+    <h6> <a href="{% url 'met_ex_tissues' %}">Metabolite Explorer</a></h6>
+
+    <p class="p-4">
+      Use the Flymet Metabolite Explorer to compare the average peak intensity levels for metabolites identified in different
+      tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
+    </p>
+
+    <hr class="my-4">
+    <h6> <a href="{% url 'peak_explorer' %}">Peak Explorer</a></h6>
+    <p class="p-4">
+      Use the Flymet Peak Explorer to compare the average peak intensity levels for over 9,000 annotated mass spec peaks in different
+      tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>. Clicking on a peak of interest reveals all the
+      metabolite annotations associated with it.
+    </p>
+
+    <hr class="my-4">
+
+    <p class = "lead">Flymet is under rapid development. If you have any questions about the website or suggestions for data analysis please feel free to
+      <a href="{% url 'feedback' %}">contact us</a></p>
+  </div>
+  </div>
 
   </div>
   </div>
