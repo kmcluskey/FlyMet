@@ -689,8 +689,8 @@ class PeakSelector(object):
             :param A df containing a unique 'pimp' compound
             :returns: A list of identifiers relating to the compound
         """
-        names = []
-        dbs = []
+        name_list = []
+        db_list = []
 
         db_names_dict = {}
         num_rows = cmpd_rows_df.shape[0]
@@ -700,13 +700,16 @@ class PeakSelector(object):
             new_db = cmpd_rows_df.iloc[i]['db']
             new_name = cmpd_rows_df.iloc[i]['compound']
 
-            db_names_dict[new_db]=new_name
+            name_list.append(new_name)
+            db_list.append(new_db)
 
-        dbs = list(db_names_dict.keys())
-        names = list(db_names_dict.values())
+            # db_names_dict[new_db]=new_name
+
+        # dbs = list(db_names_dict.keys())
+        # names = list(db_names_dict.values())
 
 
-        return names, dbs
+        return name_list, db_list
 
 
     def get_all_identifiers(self, cmpd_rows_df):
