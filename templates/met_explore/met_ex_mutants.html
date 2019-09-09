@@ -18,9 +18,6 @@
           Investigate the metabolites found in <i> Drosophila </i>.
           </p>
         </div>
-        <div class = "logo_side">
-          <img src="{% static 'images/met_exp_logo.png'%}" class="explorer_logos" alt="Met_Ex_Logo">
-        </div>
       </div>
 
   <!--Tabs to go to new pages-->
@@ -29,10 +26,10 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_tissues' %}">Tissues</a>
+          <a class="nav-link" href="{% url 'met_ex_all' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_lifestages' %}">Life Stages</a>
+          <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
         </li>
         <li class="nav-item">
           <a class="nav-link active" href="{% url 'met_ex_mutants' %}">Mutants</a>
@@ -41,6 +38,9 @@
           <a class="nav-link" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
         </li>
       </ul>
+      <div class="top-right" >
+        <p class ="title_text">Metabolite Explorer</p>
+      </div>
     </div>
   </div>
   <div>

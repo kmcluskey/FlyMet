@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.views.generic.list import ListView
 
 from met_explore.compound_selection import *
-from met_explore.models import Peak, SamplePeak, Sample
+from met_explore.models import Peak, SamplePeak, Sample, CompoundDBDetails, Compound
 
 from django.core.cache import cache, caches
 from django.views.decorators.cache import cache_page
@@ -109,6 +109,71 @@ def links(request):
 
 def credits(request):
     return render(request, 'met_explore/credits.html')
+
+def metabolite_data(request):
+
+    """
+    :param request: Request for the metabolite data for the Met Explorer all page
+    :return: The cached url of the ajax data for the metabolite data table.
+    """
+
+    print ("METABOLITE DATA REQUEST")
+
+    logger.info("Metabolite data requested")
+
+    start = timeit.default_timer()
+
+    compounds = Compound.objects.all().order_by('id')
+
+    data_list = []
+    for c in compounds[1:10]:
+        molecule_data = []
+        metabolite = c.cmpd_name
+        cmpd_id = c.id
+        molecule_data.append(cmpd_id)
+        molecule_data.append(metabolite)
+        molecule_data.append(c.cmpd_formula)
+
+        # Get the list of other names
+        name_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('cmpd_name', flat=True))
+        if metabolite in name_list:
+            name_list = name_list.remove(
+                metabolite)  # If the names are the same as the metabolite name don't add as a synonym
+
+        if name_list:
+            name_list = list(dict.fromkeys(name_list))  # Don't add duplicate names
+            name_string = ', '.join(name_list)
+            molecule_data.append(name_string)
+        else:
+            molecule_data.append(None)
+
+        id_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('identifier', flat=True))
+
+
+
+        for i in id_list:
+            if i.startswith('Std'):
+                id_list.remove(i)
+
+        chebi_id = c.chebi_id
+        if chebi_id:
+            chebi_id = "CHEBI:" + chebi_id
+            id_list.insert(0, chebi_id)
+
+        id_string = ', '.join(id_list)
+        molecule_data.append(id_string)
+
+        data_list.append(molecule_data)
+
+
+
+    print(data_list)
+
+    stop = timeit.default_timer()
+    logger.info("Returning the metabolite data took: %s S", str(stop - start))
+
+    return JsonResponse({'data':data_list})
+
 
 def metabolite_search(request):
     """
@@ -262,13 +327,17 @@ def met_ex_mutants(request):
     return render(request, 'met_explore/met_ex_mutants.html')
 
 
-def met_ex_lifestages(request):
+def met_ex_all(request):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
     """
 
-    return render(request, 'met_explore/met_ex_lifestages.html')
+    columns = ['cmpd_id','Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
+
+    response = {'columns': columns}
+
+    return render(request, 'met_explore/met_ex_all.html', response)
 
 def peak_explorer(request):
 

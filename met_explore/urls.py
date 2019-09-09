@@ -7,7 +7,7 @@ urlpatterns = [
     path('tissue_metabolites', views.MetaboliteListView.as_view(), name='tissue_metabolites'),
     path('metabolite_search', views.metabolite_search, name='metabolite_search'),
     path('met_ex_tissues', views.met_ex_tissues, name='met_ex_tissues'),
-    path('met_ex_lifestages', views.met_ex_lifestages, name='met_ex_lifestages'),
+    path('met_ex_all', views.met_ex_all, name='met_ex_all'),
     path('met_ex_mutants', views.met_ex_mutants, name='met_ex_mutants'),
     path('met_ex_gconditions', views.met_ex_gconditions, name='met_ex_gconditions'),
     path('enzyme_search', views.enzyme_search, name='enzyme_search'),
@@ -28,4 +28,6 @@ urlpatterns = [
     path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
     path('peak_data', cache_page(60 * 1800)(views.peak_data), name='peak_data'),
+    path('metabolite_data', views.metabolite_data, name='metabolite_data'),
+
 ]

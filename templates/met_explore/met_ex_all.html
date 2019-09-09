@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Tissue Lists{% endblock %}
+{% block title %} Metabolite Explorer All Metabolites {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_list' 'css' %}
+    {% render_bundle 'met_ex_all' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -23,10 +23,9 @@
   <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
-
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_all' %}">All</a>
+          <a class="nav-link active" href="{% url 'met_ex_all' %}">All</a>
         </li>
         <li class="nav-item">
           <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
@@ -35,7 +34,7 @@
           <a class="nav-link" href="{% url 'met_ex_mutants' %}">Mutants</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
+          <a class="nav-link" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
         </li>
       </ul>
       <div class="top-right" >
@@ -43,10 +42,29 @@
       </div>
     </div>
   </div>
-  <div>
-    <p class="mt-4 mb-4" >
-      This will allow the user view the variation in metabolite peak intensity between <i>Drosophila</i> grown under different conditions. </p>
-      <p><span class="bg-danger text-white p-2">Coming soon</span></p>
+
+  <div class="card mt-4 p-2 pb-2 border border-table rounded">
+    <div class="container-fluid pb-0" >
+      <div class="row pb-0">
+        <div class="myspan80 p-2 mt-2">
+          <p>Columns can be dragged to reorganise the data as required.</p>
+          <table id="metabolite_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <thead class="thead-light">
+              <tr id = "columns">
+                {% for column_name in columns %}
+                  {% if column_name == 'cmpd_id' %}
+                    <th class = "cmpd_id" >{{column_name}}whooooo</th>
+                    {% else %}
+                    <th>{{column_name}}</th>
+                    {% endif %}
+                {% endfor %}
+              </tr>
+            </thead>
+          </table>
+        </div>
+        </div>
+        </div>
+        </div>
 
   </div>
 
@@ -54,5 +72,7 @@
   <!--Spacer so that content is not hidden-->
   <div class="spacer">
   </div>
+
+  {% render_bundle 'met_ex_all' 'js' %}
 
   {% endblock %}

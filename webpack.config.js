@@ -13,6 +13,7 @@ module.exports = {
         init_datatables: './static/js/init_datatables',
         metabolite_list: './static/js/metabolite_list',
         metabolite_search: './static/js/metabolite_search',
+        met_ex_all:'./static/js/met_ex_all',
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
         peak_explorer: './static/js/peak_explorer',
