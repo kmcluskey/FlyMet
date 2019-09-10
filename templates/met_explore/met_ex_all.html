@@ -48,14 +48,14 @@
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
           <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="metabolite_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+          <table id="metabolite_list" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
                   {% if column_name == 'cmpd_id' %}
-                    <th class = "cmpd_id" >{{column_name}}whooooo</th>
+                    <th class = "cmpd_id" >{{column_name}}</th>
                     {% else %}
-                    <th>{{column_name}}</th>
+                    <th class = {{column_name}} >{{column_name}}</th>
                     {% endif %}
                 {% endfor %}
               </tr>

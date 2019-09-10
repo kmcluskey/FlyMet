@@ -9,14 +9,16 @@ function initialise_met_table(tableName){
 
     // console.log("Peak data ", peak_data)
 
+
+  //   const DBLinks = [
+  //     "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=",
+  // "http://www.yahoo.com" ,
+  // "http://www.google.com",
+  //   "http://www.duckduckgo.com"
+  //   ];
+
     let table = $(tName).DataTable({
 
-      // drawCallback: function(settings){
-      //     /* Add some tooltips for demonstration purposes */
-      //     $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-      // },
-
-        // responsive: true,
         "scrollY": "100vh",
         "scrollCollapse": true,
         "scrollX": true,
@@ -53,7 +55,7 @@ function initialise_met_table(tableName){
 
                     let $td = $(td);
                     // console.log($td.text())
-                    let $th = $(".col").eq($td.index());
+                    // let $th = $(".col").eq($td.index());
 
                     // const colorScale = d3.scaleLog()
                     //     .domain([MIN_VAL, midpoint, highpoint])
@@ -98,6 +100,54 @@ function initialise_met_table(tableName){
                     "searchable": false,
                     "visible": false
 
+                  },
+
+                  {
+                    targets: 'DB',
+                    // data: DBLinks,
+                    "render": function (data, type, full, meta ) {
+                    // //
+                    let link =""
+                    let linker =", "
+                    let str_array = data.split(",");
+                    // //     //
+                    for (let i=0; i < str_array.length; i++){
+                      let cell_data = "";
+                      console.log("link =", link)
+                      console.log(!(link === ""))
+                      if (i==(str_array.length)-1) { //If it's not the first item in the list
+                        console.log("In the link check")
+                        linker = ""
+                        }
+
+                      cell_data = str_array[i].trim()
+
+                      console.log("cell data being looked at", cell_data)
+                      console.log("linker", linker)
+                    if (cell_data.startsWith('CHEBI')){
+                        link = link+'<a href=https://www.ebi.ac.uk/chebi/searchId.do?chebiId='+cell_data+'>'+cell_data+'</a>'+linker
+                        console.log("ChEBI", link)
+
+                    }
+                    else if (cell_data.startsWith('HMDB')){
+
+
+                      link = link+'<a href=http://www.hmdb.ca/metabolites/'+cell_data+'>'+cell_data+'</a>'+linker
+                      console.log("HMDB", link)
+
+                    }
+                    else if (cell_data.startsWith('C')){
+                      link = link+'<a href=https://www.genome.jp/dbget-bin/www_bget?cpd:'+cell_data+'>'+cell_data+'</a>'+linker
+
+                    }
+
+                    else if (cell_data.startsWith('LM')){
+                      link = link+'<a href=http://www.lipidmaps.org/data/LMSDRecord.php?LMID='+cell_data+'>'+cell_data+'</a>'+linker
+                    }
+
+                    }
+                    return link;
+                    }
                   }
         ],
         // Add the tooltips to the dataTable header
