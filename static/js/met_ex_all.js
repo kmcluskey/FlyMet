@@ -104,51 +104,36 @@ function initialise_met_table(tableName){
 
                   {
                     targets: 'DB',
-                    // data: DBLinks,
+                    // This renders the column with the class DB i.e. DB identifiers.
                     "render": function (data, type, full, meta ) {
                     // //
                     let link =""
                     let linker =", "
                     let str_array = data.split(",");
-                    // //     //
+                    // For each database identifier
                     for (let i=0; i < str_array.length; i++){
                       let cell_data = "";
-                      console.log("link =", link)
-                      console.log(!(link === ""))
-                      if (i==(str_array.length)-1) { //If it's not the first item in the list
-                        console.log("In the link check")
+                      if (i==(str_array.length)-1) { //If it's the last item in the list
                         linker = ""
                         }
 
-                      cell_data = str_array[i].trim()
-
-                      console.log("cell data being looked at", cell_data)
-                      console.log("linker", linker)
-                    if (cell_data.startsWith('CHEBI')){
+                      cell_data = str_array[i].trim() // Remove the white spaces from the DB references
+                      if (cell_data.startsWith('CHEBI')){
                         link = link+'<a href=https://www.ebi.ac.uk/chebi/searchId.do?chebiId='+cell_data+'>'+cell_data+'</a>'+linker
-                        console.log("ChEBI", link)
-
+                      }
+                      else if (cell_data.startsWith('HMDB')){
+                        link = link+'<a href=http://www.hmdb.ca/metabolites/'+cell_data+'>'+cell_data+'</a>'+linker
+                      }
+                      else if (cell_data.startsWith('C')){
+                        link = link+'<a href=https://www.genome.jp/dbget-bin/www_bget?cpd:'+cell_data+'>'+cell_data+'</a>'+linker
+                      }
+                      else if (cell_data.startsWith('LM')){
+                        link = link+'<a href=http://www.lipidmaps.org/data/LMSDRecord.php?LMID='+cell_data+'>'+cell_data+'</a>'+linker
+                      }
+                      }
+                      return link;
+                      }
                     }
-                    else if (cell_data.startsWith('HMDB')){
-
-
-                      link = link+'<a href=http://www.hmdb.ca/metabolites/'+cell_data+'>'+cell_data+'</a>'+linker
-                      console.log("HMDB", link)
-
-                    }
-                    else if (cell_data.startsWith('C')){
-                      link = link+'<a href=https://www.genome.jp/dbget-bin/www_bget?cpd:'+cell_data+'>'+cell_data+'</a>'+linker
-
-                    }
-
-                    else if (cell_data.startsWith('LM')){
-                      link = link+'<a href=http://www.lipidmaps.org/data/LMSDRecord.php?LMID='+cell_data+'>'+cell_data+'</a>'+linker
-                    }
-
-                    }
-                    return link;
-                    }
-                  }
         ],
         // Add the tooltips to the dataTable header
         // "initComplete": function(settings){
@@ -192,7 +177,7 @@ function initialise_met_table(tableName){
     // let t1 = performance.now();
     // console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
     // console.log("returning table")
-    // return table;
+    return table;
 }
 
 
@@ -210,46 +195,55 @@ function initialise_met_table(tableName){
 // }
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-// function updatePeakSidePanel(obj){
-//   let peak_id = $(obj).children().first().text();
-//
-//   console.log("updating for peak", peak_id)
-//
-//
-//   const handleUpdate = function(returned_data) {
-//
-//     let radio_filter = document.getElementById('filtered')
-//     let radio_all = document.getElementById('all_adducts')
-//     let radio_all_check = radio_all.checked
-//
-//     // Update the peak table
-//     updatePeakData(returned_data, radio_all_check)
-//
-//     // Redraw the adduct data is the radio button is clicked.
-//     $("input[name='radio_adducts']" ).click(function(){
-//       {updateAdducts(returned_data)};
-//     });
-//
-// };
-//
-// function updateAdducts(returned_data){
-//
-//   console.log("Updating adducts")
-//   let radio_all = document.getElementById('all_adducts');
-//   let radio_all_check = radio_all.checked
-//   updatePeakData(returned_data, radio_all_check);
-// }
+function updateMetboliteSidePanel(obj){
+
+  var currentRow = $(obj).closest("tr");
+
+  var cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
+
+  let cmpd_name = $(obj).children().first().text();
+
+  console.log("updating for cmpd", cmpd_name)
+  console.log("with a cmpd_id", cmpd_id)
+
+
+  // const handleUpdate = function(returned_data) {
+  //
+  //   let radio_filter = document.getElementById('filtered')
+  //   let radio_all = document.getElementById('all_adducts')
+  //   let radio_all_check = radio_all.checked
+  //
+  //   // Update the peak table
+  //   updatePeakData(returned_data, radio_all_check)
+  //
+  //   // Redraw the adduct data is the radio button is clicked.
+  //   $("input[name='radio_adducts']" ).click(function(){
+  //     {updateAdducts(returned_data)};
+  //   });
+
+//};
+
 
 // const url = `/met_explore/peak_explore_annotation_data/${peak_id}`
 // fetch(url)
 // .then(res => res.json())//response type
 // .then(handleUpdate);
 
-// find all the paragraphs with id peak in the side panel
-// $("fieldset[id='click_info']").hide();
-// $("fieldset[class^='peak_details']").show();
-// $("p[id^='peak_id']").text('Peak ' + peak_id);
+//display all the peaks that are annotated to a particular compound
+$("fieldset[id='click_info']").hide();
+$("fieldset[class^='peak_details']").show();
+$("p[id^='compound_id']").text('This will show peaks for ' + cmpd_name +' with cmpd_id '+ cmpd_id);
+
+}
+
+
+
+// function updateAdducts(returned_data){
 //
+//   console.log("Updating adducts")
+//   let radio_all = document.getElementById('all_adducts');
+//   let radio_all_check = radio_all.checked
+//   updatePeakData(returned_data, radio_all_check);
 // }
 
 // Update the compound names and any details we want on the side panel
@@ -333,12 +327,12 @@ function initialise_met_table(tableName){
 // }
 
 $(document).ready(function() {
-    // $("fieldset[class^='peak_details']").hide();
+  $("fieldset[class^='peak_details']").hide();
 
   let metabolite_table = initialise_met_table("metabolite_list");
 
-      // peak_table.on( 'click', 'tr', function () {
-      //   updatePeakSidePanel(this);
-      // } );
+      metabolite_table.on( 'click', 'tr', function () {
+      updateMetboliteSidePanel(this);
+      } );
 
 });

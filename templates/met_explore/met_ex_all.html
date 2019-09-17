@@ -62,6 +62,40 @@
             </thead>
           </table>
         </div>
+
+        <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+          <fieldset id="click_info" class="fieldset-details">
+            <legend class="sidebar">Related Peaks</legend>
+            <div class="p-2">
+              <p class="m-2">Click on a metabolite to see the related peaks</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="peak_details fieldset-details">
+            <legend class="sidebar">Related Peaks</legend>
+            <div class="p-2">
+              <p id ="compound_id" class="m-2"></p>
+
+              <div class="row">
+                <div class ="col-6">
+                <input type="radio" name="radio_adducts" id="filtered" autocomplete="off" checked=""> <small>M+H/M-H</small>
+                </div>
+                <div class ="col-6">
+                <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off"><small>All adducts</small>
+                </div>
+              </div>
+              </div>
+
+              <hr class="my-3">
+
+
+              <div id='dataDiv'>
+
+              </div>
+            </fieldset>
+
+            </div>
+
         </div>
         </div>
         </div>

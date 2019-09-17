@@ -188,14 +188,6 @@ function updatePeakSidePanel(obj){
 
 };
 
-function updateAdducts(returned_data){
-
-  console.log("Updating adducts")
-  let radio_all = document.getElementById('all_adducts');
-  let radio_all_check = radio_all.checked
-  updatePeakData(returned_data, radio_all_check);
-}
-
 const url = `/met_explore/peak_explore_annotation_data/${peak_id}`
 fetch(url)
 .then(res => res.json())//response type
@@ -207,6 +199,15 @@ $("fieldset[class^='peak_details']").show();
 $("p[id^='peak_id']").text('Peak ' + peak_id);
 
 }
+
+function updateAdducts(returned_data){
+
+  console.log("Updating adducts")
+  let radio_all = document.getElementById('all_adducts');
+  let radio_all_check = radio_all.checked
+  updatePeakData(returned_data, radio_all_check);
+}
+
 
 // Update the compound names and any details we want on the side panel
 function updatePeakData(returned_data, radio_all_check){
