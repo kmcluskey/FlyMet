@@ -126,7 +126,7 @@ def metabolite_data(request):
     compounds = Compound.objects.all().order_by('id')
 
     data_list = []
-    for c in compounds[1:10]:
+    for c in compounds:
         molecule_data = []
         metabolite = c.cmpd_name
         cmpd_id = c.id
