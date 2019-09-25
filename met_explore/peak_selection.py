@@ -16,11 +16,14 @@ Na = 22.989218
 ACN = 41.026550
 NAME_MATCH_SIG = 0.5
 MASS_TOL = 0.1
-RT_TOL = 5
+RT_TOL = 3.5
+MASS_PPM = 1
+PPM = 0.000001
 EXT_RT_TOL = 20 #Extended RT tolerance as the peak picking seemed odd
 PREPARED_DF = 'current_prepared_df'
 PEAK_FILE_NAME = 'peak_prepared_df'
 HIGH_CONF_DF = 'high_conf_peak_df'
+NO_DUP_PEAK_NAME ='dup_removed_peak_df'
 
 # A class to select the peaks required to use in further analysis
 
@@ -107,14 +110,13 @@ class PeakSelector(object):
         return selected_df, unique_sec_ids
 
 
-
     def construct_all_peak_df(self, all_peaks):
 
         """
         A method to return a DF similar to the one produced by PiMP but for each peak, each unique peak_id (sec_id) is
         given a single row for each unique compound (compound identifiers are collected for unique compounds).
         :return: all_peak_df- a DF consisting of all peak:compound represented by a single row. We still have several rows per peak for all the compounds
-        and matching compounds pointing to different peaks. Psec_id/cmpd_id  combinationshould be unique.
+        and matching compounds pointing to different peaks. Psec_id/cmpd_id combination should be unique.
         """
 
         logger.info("Constructing a DF where each compound for a unique peak is given a single row (collecting Identifiers and DBs")
@@ -152,6 +154,51 @@ class PeakSelector(object):
 
         return all_peak_df
 
+    def remove_duplicates(self, peak_df):
+        """
+
+        :param peak_df: a DF consisting of all peak:compound represented by a single row. We still have several rows per peak for all the compounds
+        and matching compounds pointing to different peaks. Psec_id/cmpd_id combination should be unique.
+        :return: The above DF with duplicate peaks removed - these duplicates are calculated on mz and RT tolerance levels.
+        """
+        logger.info("Removing duplicate peaks based on mz and RT tolerance levels")
+
+        try:
+            single_id_df = pd.read_pickle("./data/" + NO_DUP_PEAK_NAME+".pkl") #KMCL - this file should be named after the input files so not to repeat.
+            logger.info("The file %s has been found: ", NO_DUP_PEAK_NAME)
+
+
+        except FileNotFoundError:
+
+            sec_ids = peak_df.sort_values(['sec_id']).sec_id.unique()
+            columns = peak_df.columns.values
+            # dup_df = pd.DataFrame(columns=columns)
+            single_id_df = pd.DataFrame(columns=columns)
+
+            for sid in sec_ids:
+                sid_df_row = peak_df[peak_df.sec_id == sid].iloc[0]  # First row of the sid DF
+                mz = sid_df_row.mass
+                rt = sid_df_row.rt
+
+                duplicates = self.check_duplicates(single_id_df, mz, rt)
+                # If there are not duplicates store the peak in the single_id_df matrix
+                if not duplicates:
+                    single_id_df = single_id_df.append(sid_df_row)
+
+                # if duplicates:
+                #     dup_df = dup_df.append(sid_df_row)
+            try:
+                single_id_df.to_pickle("./data/" + NO_DUP_PEAK_NAME + ".pkl")
+            except Exception as e:
+                logger.error("Pickle didn't work because of %s ", e)
+                pass
+
+        single_ids = list(single_id_df.sec_id.values)
+        peak_no_dup_df = peak_df[peak_df['sec_id'].isin(single_ids)]
+
+        logger.info("Returning the peak_df without duplicate peaks")
+
+        return peak_no_dup_df
 
     def construct_high_confidence_peak_df(self, selected_df, unique_sec_ids):
         """
@@ -787,3 +834,28 @@ class PeakSelector(object):
             return
 
         return neutral_mass
+
+    def check_duplicates(self, peak_df, mz, rt):
+
+        """
+        :param peak_df: The dataframe to check for duplicates in
+        :param mz: The mz of the peak
+        :param rt: The retention time of the peak
+        :return: duplicates - A boolean stating wether or not the peak_df contains duplicates for this given (mz,rt) peak.
+        """
+        duplicates = False
+
+        mass_tol = mz * MASS_PPM * PPM
+        min_mass = mz - mass_tol
+        max_mass = mz + mass_tol
+
+        min_rt = rt - RT_TOL
+        max_rt = rt + RT_TOL
+
+
+        for index, row in peak_df.iterrows():
+            # If the mz and RT lie within a value then there are duplicates in the dataframe
+            if (min_mass < row.mass < max_mass) and (min_rt < row.rt < max_rt):
+                duplicates = True
+
+        return duplicates
