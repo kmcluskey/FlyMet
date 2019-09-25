@@ -39,6 +39,8 @@ class CompoundSelector(object):
 
         except Exception as e:
 
+            logger.info("The file has not been found: %s ", HC_INTENSITY_FILE_NAME)
+
             raise e
 
         return int_df
