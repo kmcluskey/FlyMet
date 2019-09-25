@@ -38,7 +38,8 @@ class Command(BaseCommand):
             #Add Chebi IDs and other identifiers. Additionally ensure Chebi IDs reperensent unique cmpds.
             pre_peak_df = peak_select.pre_process_compounds()
 
-            peak_df = peak_select.construct_all_peak_df(pre_peak_df)
+            construct_peak_df = peak_select.construct_all_peak_df(pre_peak_df)
+            peak_df = peak_select.remove_duplicates(construct_peak_df)
             populate_peaks_cmpds_annots(peak_df)
 
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
