@@ -31,8 +31,8 @@ class PeakGroups(object):
 
         self.peak_dict = {}
         for a in self.annotations:
-            self.peak_dict[a.peak_id]= {"adduct":a.adduct, "nm":a.neutral_mass, "rt":a.peak.rt}
-        self.peak_list = [(a.peak.id, a.adduct, a.neutral_mass, a.peak.rt) for a in self.annotations]
+            self.peak_dict[int(a.peak_id)]= {"adduct":a.adduct, "nm":a.neutral_mass, "rt":a.peak.rt, "conf":a.confidence}
+        self.peak_list = [(int(a.peak.id), a.adduct, a.neutral_mass, a.peak.rt, a.confidence) for a in self.annotations]
         self.no_peaks = len(self.peak_list)
 
         logger.info ("Getting groups of peaks for cmpd with ID %s", cmpd_id)
@@ -66,7 +66,11 @@ class PeakGroups(object):
         for index, row in single_peaks_df.iterrows():
             adduct_groups_list.append(pd.DataFrame(single_peaks_df.loc[index]).transpose())
 
-
+        for a in adduct_groups_list:
+            print ("AAAA ", a)
+            print (type(a))
+            for index, row in a.iterrows():
+                print ("ROW ", type(row.peak_id))
         return adduct_groups_list
 
         #Make sure we check that we start and end with the same number of peaks.
@@ -81,8 +85,8 @@ class PeakGroups(object):
         # This iterloops.combinations - starts at one end of the list and compares all other items without duplicating.
         # So one we find all the other peaks that match a
         for a, b in itertools.combinations(self.peak_list, 2):  # Compare all combinations of the list with itself.
-            pk, add, nm, rt = a
-            p, a, n, r = b
+            pk, add, nm, rt, conf = a
+            p, a, n, r, c = b
             # If the retention time is within a specific tolerance level
             if (rt - RT_TOL <= r <= rt + RT_TOL):
                 # Check RT as all NM should be the same.
@@ -116,8 +120,10 @@ class PeakGroups(object):
         logger.info("Peaks that don't match any others with a RT/nm tolerance: %s ", single_peaks)
 
         single_peak_details = [self.peak_dict[k] for k in single_peaks]
-        single_peaks_df = pd.DataFrame(single_peak_details)
+        single_peaks_df = pd.DataFrame(single_peak_details, dtype=object)
         single_peaks_df.insert(loc=0, column='peak_id', value=single_peaks)
+
+        single_peaks_df = single_peaks_df.astype(object)
 
 
         return single_peaks_df
@@ -188,9 +194,13 @@ class PeakGroups(object):
                 keys_to_select.append(values)
 
             peak_details = [self.peak_dict[k] for k in keys_to_select]
-            peak_df = pd.DataFrame(peak_details)
+            peak_df = pd.DataFrame(peak_details, dtype=object)
+
             peak_df.insert(loc=0, column='peak_id', value=keys_to_select)
+            peak_df = peak_df.astype(object) #Remove int64 at this point
+
             logger.info("THE RELATED ADDUCT DF IS %s", peak_df)
+
             single_adduct_df, leftover_peaks_df = self.collect_single_adducts(peak_df)
             peak_df_list.append(single_adduct_df)
 
@@ -218,12 +228,9 @@ class PeakGroups(object):
 
             # If there are any non-duplicate adducts add them to the new DF
             single_adduct_df = peak_df.drop_duplicates(subset=['adduct'], keep=False)
-            print("THE single adduct DF is ", single_adduct_df)
             # If there are no single adducts we just have duplicates.
             # If these are exactly the same delete one and if not split into two groups.
-            print ("THE SHAPE ", single_adduct_df.shape[0])
             if single_adduct_df.shape[0] > 1:
-                print ("THE SHAPE IS MORE THAN ONE ROW")
                 #check if the rt are within a sensible toterance
                 remove_list = []
                 diff_dict = {}  # Key = index, value = diff in RT from the 0 index
@@ -235,7 +242,6 @@ class PeakGroups(object):
                 for index, diff in diff_dict.items():
                     if diff > RT_TOL:
                         remove_list.append(index)
-                print(remove_list)
 
                 saved_peaks = single_adduct_df.loc[remove_list]
                 if saved_peaks.empty:
@@ -252,40 +258,31 @@ class PeakGroups(object):
 
             for adduct in dup_adducts:
 
-                print ("working on adduct ", adduct)
-
                 single_dup_adduct_df = peak_df[peak_df['adduct'] == adduct]
-
                 keep_index = self.get_closest_adduct(single_dup_adduct_df, single_adduct_df)
 
-                print ("THE KEEP INDEX IS ", keep_index)
-
                 if len(keep_index) > 1:
-                    print ("YOYOYOYOYOYOYOYO DUPLICATES")
-                    break
+                    logger.warning("DUPLICATES")
 
                 to_keep = peak_df.loc[keep_index]
                 single_adduct_df = single_adduct_df.append(to_keep)
                 peak_df.drop(keep_index)
 
             leftover_peaks_df = peak_df.drop(single_adduct_df.index)
-            print ("SAVED_PEAKS ", saved_peaks)
 
             if saved_peaks is not None:
                 if (leftover_peaks_df is not None) and (not leftover_peaks_df.empty): #If we have leftover peaks add to that.
-                    print ("IN THIS LOOP")
                     leftover_peaks_df = leftover_peaks_df + saved_peaks
                 else:
-                    print ("leftover is empty saving saved_peals")
+                    # print ("leftover is empty saving saved_peals")
                     leftover_peaks_df = saved_peaks
 
-        print ("LEFTOVER PEAKS ", leftover_peaks_df)
+        # print ("LEFTOVER PEAKS ", leftover_peaks_df)
         # if leftover_peaks_df.empty:
         #     print ("in this empty loop")
         #     leftover_peaks_df=None
 
         logger.info("returning the single peak df %s and the leftover peaks %s", single_adduct_df, leftover_peaks_df)
-
         return single_adduct_df, leftover_peaks_df
 
     # Which one is closest in value to other adducts?
@@ -302,7 +299,7 @@ class PeakGroups(object):
 
         if single_adduct_df.empty:
 
-            print("NO SINGLE ADDUCTS TO START THE GROUP")
+            logger.info("No Single adducts to start the group")
 
             # If there are no single adducts we just have duplicates.
             # If these are exactly the same delete one and if not split into two groups.
@@ -310,24 +307,22 @@ class PeakGroups(object):
             dup_all_params = dup_adduct_rows[dup_adduct_rows.duplicated(['nm', 'rt'], keep=False)]
 
             if dup_all_params.empty:  # None of the peaks are the same
-                print("NONE OF THE PEAKS ARE THE SAME CHOOSING RADOM PEAK AS KEEP")
-                print ("YO", dup_adduct_rows.index[0])
                 closest_indexes.append(dup_adduct_rows.index[0])  # Keep the first row - send the other back as leftover
 
             else:
-                print("WE HAVE DUPLICATE PEAKS!!!")
+                # print("WE HAVE DUPLICATE PEAKS!!!")
                 closest_indexes.append(dup_adduct_rows.index.values) #Send back both peaks.
 
         else:
             min_rt_keys = self.return_min_difference(dup_adduct_rows, single_adduct_df, 'rt')
-            print ("THE Min RT keys are ", min_rt_keys)
+            # print ("THE Min RT keys are ", min_rt_keys)
             if len(min_rt_keys) >1: #If There is more that one peak with this RT - check the nm
                 min_nm_keys = self.return_min_difference(dup_adduct_rows, single_adduct_df, 'nm')
                 closest_indexes = min_nm_keys
             else:
                 closest_indexes = min_rt_keys
 
-        print("returning the closest index ", closest_indexes)
+        # print("returning the closest index ", closest_indexes)
 
         return closest_indexes
 
@@ -340,20 +335,17 @@ class PeakGroups(object):
         :param param: The parameter to be matched against
         :return: The index/key of the closest match to the given parameter.
         """
-        print ("Checking the parameter ", param)
-        print ("dup_adduct_rows ", dup_adduct_rows)
-        print ("single_adduct_rows ", single_adduct_df)
-        compare_df = pd.DataFrame()
+        # print ("Checking the parameter ", param)
+        # print ("dup_adduct_rows ", dup_adduct_rows)
+        # print ("single_adduct_rows ", single_adduct_df)
+        compare_df = pd.DataFrame(dtype=object)
         compare_dict = {}  # Compare dict has the DF index as the key
 
         for index, row in dup_adduct_rows.iterrows():
-            compare_df[str(index)] = abs(single_adduct_df[param] - row[param])
-        print ("compare_df ", compare_df)
+            compare_df[index] = abs(single_adduct_df[param] - row[param])
 
         for cname, cdata in compare_df.iteritems():
             compare_dict[cname] = cdata.sum()
-
-        print("printing compare dict", compare_dict)
 
         min_key = min(compare_dict, key=compare_dict.get)
 

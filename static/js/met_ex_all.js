@@ -198,135 +198,185 @@ function initialise_met_table(tableName){
 function updateMetboliteSidePanel(obj){
 
   var currentRow = $(obj).closest("tr");
-
   var cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
-
   let cmpd_name = $(obj).children().first().text();
 
   console.log("updating for cmpd", cmpd_name)
   console.log("with a cmpd_id", cmpd_id)
 
-
-  // const handleUpdate = function(returned_data) {
+  const handleUpdate = function(returned_data) {
   //
-  //   let radio_filter = document.getElementById('filtered')
-  //   let radio_all = document.getElementById('all_adducts')
-  //   let radio_all_check = radio_all.checked
+    let radio_filter = document.getElementById('filtered')
+    let radio_all = document.getElementById('all_adducts')
+    let radio_all_check = radio_all.checked
+    // radio_all_check should start off false
+
+  // Update the peak table
+  console.log("handling update")
+  updatePeakData(returned_data, radio_all_check, cmpd_name)
   //
-  //   // Update the peak table
-  //   updatePeakData(returned_data, radio_all_check)
-  //
-  //   // Redraw the adduct data is the radio button is clicked.
-  //   $("input[name='radio_adducts']" ).click(function(){
-  //     {updateAdducts(returned_data)};
-  //   });
-
-//};
+    // Redraw the adduct data is the radio button is clicked.
+    $("input[name='radio_adducts']" ).click(function(){
+      {updateAdducts(returned_data, cmpd_name)};
+      });
+};
 
 
-// const url = `/met_explore/peak_explore_annotation_data/${peak_id}`
-// fetch(url)
-// .then(res => res.json())//response type
-// .then(handleUpdate);
+
+
+const url = `/met_explore/metabolite_peak_data/${cmpd_id}`
+fetch(url)
+.then(res => res.json())//response type
+.then(handleUpdate);
 
 //display all the peaks that are annotated to a particular compound
 $("fieldset[id='click_info']").hide();
 $("fieldset[class^='peak_details']").show();
-$("p[id^='compound_id']").text('This will show peaks for ' + cmpd_name +' with cmpd_id '+ cmpd_id);
+$("p[id^='compound_id']").text('Peak groups annotated as ' + cmpd_name);
 
 }
 
 
 
-// function updateAdducts(returned_data){
+function updateAdducts(returned_data, cmpd_name){
 //
-//   console.log("Updating adducts")
-//   let radio_all = document.getElementById('all_adducts');
-//   let radio_all_check = radio_all.checked
-//   updatePeakData(returned_data, radio_all_check);
-// }
+  console.log("Updating adducts")
+  let radio_all = document.getElementById('all_adducts');
+  let radio_all_check = radio_all.checked
+  updatePeakData(returned_data, radio_all_check);
+ }
 
 // Update the compound names and any details we want on the side panel
-// function updatePeakData(returned_data, radio_all_check){
-//
-//   const cmpd_names = returned_data.cmpd_names;
-//   const adducts = returned_data.adducts;
-//   const conf_fact = returned_data.conf_fact;
-//   const neutral_mass = returned_data.neutral_mass;
-//   const no_other_cmpds = returned_data.no_other_cmpds;
-//
-//   console.log(cmpd_names)
-//
-//   let sideDiv =  document.getElementById("dataDiv");
-//   sideDiv.innerHTML = "";
-//
-//   const no_cmpds = cmpd_names.length;
-//   let id_name ="";
-//   let frag_name="";
-//   let badge_info="";
-//
-//   for (var i = 0; i < no_cmpds; i++) {
-//       const name = cmpd_names[i];
-//       const ion = adducts[i];
-//       const conf = conf_fact[i];
-//
-//       var nm1 = Number(neutral_mass[i]);
-//       var nm = nm1.toFixed(4);
-//
-//       let success ="";
-//       let identified="";
-//       if (conf == 4){
-//         identified ="I";
-//         badge_info="I"
-//         success="success";
-//         id_name=name;
-//       }
-//       else if (conf == 3){
-//         identified ="F";
-//         badge_info="F";
-//         success="warning";
-//         frag_name=name;
-//       }
-//       else if (conf == 0){
-//         identified ="A";
-//         badge_info =`A${no_other_cmpds}`;
-//         success="danger";
-//       }
-//
-//         if (radio_all_check || ion=='M+H' || ion=='M-H'){
-//         let peakDiv = document.createElement('div');
-//         peakDiv.setAttribute('class', 'p-2');
-//
-//         let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-//         <span id="cmpd_name" class="peak_data">${name}</span><div class="row pt-2">
-//         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
-//         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
-//         console.log("here")
-//         peakDiv.innerHTML =  peak_info;
-//         sideDiv.appendChild(peakDiv);
-//
-//       }
-//       add_side_tooltips(id_name, frag_name, no_other_cmpds); //Add the tooltips after all divs created.
-//     }
-// }
-//
-// // Add table header tooltips --these are temporary.
-// //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
-// function add_side_tooltips(id_name, frag_name, no_other_cmpds){
-//   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
-//   $('.F').tooltip({title: `MS/MS Fragmentation data suggests that this peak is likely to be ${frag_name}`, placement: "top"});
-//   $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
-// };
-//
-//
-// function add_tooltips(obj){
-//   console.log("adding tooltips")
-//   $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-//   $('.test').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-//
-// }
+function updatePeakData(returned_data, radio_all_check, cmpd_name){
+
+  console.log("in update peak data")
+
+  const peak_groups = returned_data.peak_groups;
+  const columns = returned_data.columns
+
+  let sideDiv =  document.getElementById("dataDiv");
+  sideDiv.innerHTML = "";
+
+  no_groups = peak_groups.length
+  let peak_group_no = 0;
+
+  // For each peak group
+  for (var i = 0; i < no_groups; i++) {
+
+      let groupDiv = document.createElement('div');
+      groupDiv.setAttribute('class', 'p-2');
+      let peak_group = peak_groups[i];
+      let items_in_gp = peak_group.length;
+
+      // If any of the adducts in the group are M+H or M-H have a flag
+      let m_adduct = false;
+      for (var j = 0; j < items_in_gp; j++){
+        this_peak = peak_group[j]
+        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M+H'){
+          m_adduct =true;
+        }
+      }
+    // If the radio check is all or the group contains an M+H or M-H adduct add the peak group table
+      if (radio_all_check || m_adduct){
+
+        console.log("peak_gp", peak_group)
+
+        peak_group_no = peak_group_no+1;
+        let group_header = `<p class= "sidebar">Peak Group: ${peak_group_no}</p>
+        <hr class="my-3">`
+        group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
+        group = group_header+group_table;
+        groupDiv.innerHTML =  group;
+        sideDiv.appendChild(groupDiv);
+      }
+
+      //Add the tooltips after all divs created.
+      add_side_tooltips()
+    }
+}
+
+// Returns a single HTML table for a single peak group
+function get_peak_gp_table(columns, peak_group, cmpd_name){
+
+
+  let group_table = `<div class="p-2 pb-0 table-responsive">
+      <table class="table table-sm table-bordered side_table">
+      <thead>
+        <tr>`
+
+      // Add Table headers from column names
+      for (var i = 0; i < columns.length; i++) {
+        head = `<th class=${columns[i]}>${columns[i]}</th>`
+        group_table = group_table+head
+      }
+
+        group_table = group_table+`<thead>
+        <tr> <tbody>`
+
+        let peaks_in_gp = peak_group.length;
+        for (var i = 0; i < peaks_in_gp; i++) {
+          this_group=peak_group[i];
+          let peak_id = this_group['peak_id'];
+          let ion = this_group['adduct'];
+          let nm1 = Number(this_group['nm']);
+          let nm = nm1.toFixed(4);
+          let rt1 = Number(this_group['rt']);
+          let rt =  rt1.toFixed(2);
+
+          let no_other_cmpds = this_group['no_adducts']-1 //Remove one for this compound.
+          let conf =  this_group['conf']
+
+          console.log("HERE", no_other_cmpds, conf)
+
+          let success ="";
+          let identified="";
+          if (conf == 4){
+            identified ="I";
+            badge_info="I"
+            success="success";
+            id_name=name;
+          }
+          else if (conf == 3){
+            identified ="F";
+            badge_info="F";
+            success="warning";
+            frag_name=name;
+          }
+          else if (conf == 0){
+            identified ="A";
+            badge_info =`A${no_other_cmpds}`;
+            success="danger";
+          }
+
+
+          group_table = group_table +`<tr><td class="badge badge-pill badge-${success}">${badge_info}</td><td>${peak_id}</td>`
+          data_list=[ion, nm, rt]
+          // group_table = group_table+`<tr>`
+          for (var d = 0; d < data_list.length; d++) {
+            group_table = group_table+`<td>${data_list[d]}</td>`
+          }
+          group_table = group_table+`</tr>`
+ }
+  return group_table
+
+};
+// Add table header tooltips --these are temporary.
+//KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
+function add_side_tooltips(){
+
+  $('.I').tooltip({title: `This peak has been Identified using a library standard`, placement: "top"});
+  $('.F').tooltip({title: `MS/MS Fragmentation data has been used to identify this peak`, placement: "top"});
+  $('.A').tooltip({title: `This peak also annotates X other compounds`, placement: "top"});
+  $('.Conf').tooltip({title: `The confidence level given to this annotation (see Key)`, placement: "top"});
+  $('.Ion').tooltip({title: `The ion species`, placement: "top"});
+  $('.Mass').tooltip({title: `The neutral mass of the compound associated with this annotation`, placement: "top"});
+  $('.RT').tooltip({title: `The retention time of the compound`, placement: "top"});
+
+};
+
 
 $(document).ready(function() {
+
   $("fieldset[class^='peak_details']").hide();
 
   let metabolite_table = initialise_met_table("metabolite_list");

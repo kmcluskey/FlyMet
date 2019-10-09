@@ -6,7 +6,7 @@ import {initialise_table} from './flymet_tables';
 function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     let t0 = performance.now();
     const tName = '#'+tableName;
-    console.log("tablename ", tName)
+    console.log("tablename", tName)
     const MIN_VAL = 3000;
     const peak_data = document.getElementById('peak_list').getAttribute('url');
 
@@ -181,7 +181,7 @@ function updatePeakSidePanel(obj){
     // Update the peak table
     updatePeakData(returned_data, radio_all_check)
 
-    // Redraw the adduct data is the radio button is clicked.
+    // Redraw the adduct data if the radio button is clicked.
     $("input[name='radio_adducts']" ).click(function(){
       {updateAdducts(returned_data)};
     });
@@ -255,8 +255,8 @@ function updatePeakData(returned_data, radio_all_check){
         badge_info =`A${no_other_cmpds}`;
         success="danger";
       }
+        if (radio_all_check || ion=='M+H' || ion=='M-H'){ //draw if ion = M+H or M-H or if all adducts are chosen
 
-        if (radio_all_check || ion=='M+H' || ion=='M-H'){
         let peakDiv = document.createElement('div');
         peakDiv.setAttribute('class', 'p-2');
 

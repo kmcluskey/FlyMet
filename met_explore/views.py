@@ -11,10 +11,12 @@ from django.views.generic.list import ListView
 
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample, CompoundDBDetails, Compound
+from met_explore.peak_groups import PeakGroups
+
 
 from django.core.cache import cache, caches
 from django.views.decorators.cache import cache_page
-
+from decimal import *
 
 import pandas as pd
 import logging
@@ -476,6 +478,49 @@ def get_metabolite_names(request):
 
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
+
+def metabolite_peak_data(request, cmpd_id):
+    """
+
+    :param request:
+    :param cmpd_id: The ID of the cmpd that we want to obtain the peak info for
+    :return: A list of peak groups, the number of cmpds that peak annotates and a confidence value for the annotation
+    """
+
+    pg = PeakGroups(cmpd_id)
+
+    peak_groups = pg.get_peak_groups()
+    gp_df_list = []
+    for group_df in peak_groups:
+
+        # group_df = pd.DataFrame(a)
+        # print ("GPDF", group_df)
+        group_df["no_adducts"] = pd.Series([], dtype=object)
+        for index, row in group_df.iterrows():
+            peak = Peak.objects.get(id=row.peak_id)
+            annots = Annotation.objects.filter(peak=peak)
+            row.no_annots = len(annots)
+            group_df.loc[index, 'no_adducts'] = len(annots)
+
+        gp_df_list.append(group_df.to_dict('r'))
+        # columns = group_df.columns.tolist()
+        columns = []
+
+        columns_for_display = {'peak_id': "Peak ID", 'adduct': 'Ion', 'rt': "RT", 'nm':"Mass"}
+        # This little function makes sure we keep the useful columns in the same order as required
+        for c in  group_df.columns:
+            if c in columns_for_display:
+                columns.append(columns_for_display[c])
+
+        columns.insert(0,'Conf')
+        print ("The columns are ", columns)
+
+        print ("The mental list", gp_df_list)
+
+
+
+    return JsonResponse({'peak_groups':gp_df_list,'columns':columns})
+
 
 def peak_explore_annotation_data(request, peak_id):
     """
