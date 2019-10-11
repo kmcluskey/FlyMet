@@ -25,7 +25,7 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_explorer' %}">Tissues</a>
+          <a class="nav-link active" href="{% url 'peak_explorer' 'All' %}">Tissues</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'path_ex_lifestages' %}">Life Stages</a>
@@ -122,7 +122,8 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    console.log(min_value, max_value, mean_value)
+    var peak_list = "{{peak_list | safe}}"
+    console.log(min_value, max_value, mean_value, peak_list)
 
     </script>
 

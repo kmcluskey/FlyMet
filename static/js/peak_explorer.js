@@ -26,7 +26,7 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
         fixedheader: true,
         colReorder: true,
         ajax: {
-          url: "/met_explore/peak_data",
+          url: `/met_explore/peak_data/${peak_list}`,
           cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
         },
 

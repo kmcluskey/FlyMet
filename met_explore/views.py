@@ -341,20 +341,19 @@ def met_ex_all(request):
 
     return render(request, 'met_explore/met_ex_all.html', response)
 
-def peak_explorer(request):
+def peak_explorer(request, peak_list):
 
     """
     :param request: The peak Explorer page
     :return: The template and required parameters for the peak explorer page.
     """
 
-    print ("PEAK EXPLORER REQUEST")
+    print ("PEAK EXPLORER REQUEST", peak_list)
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
     peaks = Peak.objects.all()
 
-    # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
 
     # peak_ids = [p.id for p in peaks]
@@ -387,25 +386,33 @@ def peak_explorer(request):
 
     # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-
+    print ("PEAK LIST ", peak_list)
     stop = timeit.default_timer()
+
     logger.info("Returning the peak DF took: %s S", str(stop - start))
-    response = {'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
+    response = {'peak_list': peak_list, 'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
-def peak_data(request):
+def peak_data(request, peak_list):
 
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    print ("PEAK DATA REQUEST")
+    if peak_list=="All":
 
-    peaks = Peak.objects.all()
+        peaks = Peak.objects.all()
+
+    else:
+        peak_list = peak_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list))
+
+
+    print("The peak list is ", peak_list)
 
     required_data = peaks.values('id', 'm_z', 'rt')
 
@@ -423,8 +430,8 @@ def peak_data(request):
     #
     peak_data = view_df.values.tolist()
 
+    print ("returning peak data ", peak_data)
     return JsonResponse({'data':peak_data})
-
 
 def path_ex_lifestages(request):
 

@@ -23,11 +23,11 @@ urlpatterns = [
     path('about', views.about, name='about'),
     path('path_ex_tissues', views.path_ex_tissues, name='path_ex_tissues'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
-    path('peak_explorer', cache_page(60 * 1800)(views.peak_explorer), name='peak_explorer'),
+    path('peak_explorer/<str:peak_list>', cache_page(60 * 1800)(views.peak_explorer), name='peak_explorer'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
-    path('peak_data', cache_page(60 * 1800)(views.peak_data), name='peak_data'),
+    path('peak_data/<str:peak_list>', cache_page(60 * 1800)(views.peak_data), name='peak_data'),
     path('metabolite_data', cache_page(60 * 1800) (views.metabolite_data), name='metabolite_data'),
     path('metabolite_peak_data/<int:cmpd_id>', views.metabolite_peak_data, name='metabolite_peak_data'),
 

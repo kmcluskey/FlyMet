@@ -4,7 +4,7 @@ require('bootstrap/js/dist/tooltip');
 
 function initialise_met_table(tableName){
     const tName = '#'+tableName;
-    console.log("tablename ", tName)
+    console.log("tablename whoo ", tName)
     // const peak_data = document.getElementById('peak_list').getAttribute('url');
 
     // console.log("Peak data ", peak_data)
@@ -281,8 +281,18 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
 
         console.log("peak_gp", peak_group)
 
+        let peak_ids =""
+        for (var p = 0; p < items_in_gp; p++){
+          this_peak = peak_group[p];
+          console.log("this_peak_id ", this_peak['peak_id'] )
+          peak_ids = peak_ids+this_peak['peak_id']+",";
+        }
+
+        peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
+        console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
-        let group_header = `<p class= "sidebar">Peak Group: ${peak_group_no}</p>
+        var url_pg = `peak_explorer/${peak_list}`
+        let group_header = `<p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>
         <hr class="my-3">`
         group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
         group = group_header+group_table;
@@ -317,6 +327,8 @@ function get_peak_gp_table(columns, peak_group, cmpd_name){
         for (var i = 0; i < peaks_in_gp; i++) {
           this_group=peak_group[i];
           let peak_id = this_group['peak_id'];
+          let peak_url = `peak_explorer/${peak_id}`
+
           let ion = this_group['adduct'];
           let nm1 = Number(this_group['nm']);
           let nm = nm1.toFixed(4);
@@ -325,8 +337,6 @@ function get_peak_gp_table(columns, peak_group, cmpd_name){
 
           let no_other_cmpds = this_group['no_adducts']-1 //Remove one for this compound.
           let conf =  this_group['conf']
-
-          console.log("HERE", no_other_cmpds, conf)
 
           let success ="";
           let identified="";
@@ -349,7 +359,7 @@ function get_peak_gp_table(columns, peak_group, cmpd_name){
           }
 
 
-          group_table = group_table +`<tr><td class="badge badge-pill badge-${success}">${badge_info}</td><td>${peak_id}</td>`
+          group_table = group_table +`<tr><td class="badge badge-pill badge-${success}">${badge_info}</td><td><a href="${peak_url}">${peak_id}<a></td>`
           data_list=[ion, nm, rt]
           // group_table = group_table+`<tr>`
           for (var d = 0; d < data_list.length; d++) {
