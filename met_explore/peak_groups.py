@@ -1,4 +1,3 @@
-
 import logging
 from met_explore.models import *
 from met_explore.peak_selection import PeakSelector
@@ -66,11 +65,12 @@ class PeakGroups(object):
         for index, row in single_peaks_df.iterrows():
             adduct_groups_list.append(pd.DataFrame(single_peaks_df.loc[index]).transpose())
 
-        for a in adduct_groups_list:
-            print ("AAAA ", a)
-            print (type(a))
-            for index, row in a.iterrows():
-                print ("ROW ", type(row.peak_id))
+        # for a in adduct_groups_list:
+        #     print ("AAAA ", a)
+        #     print (type(a))
+        #     for index, row in a.iterrows():
+        #         print ("ROW ", type(row.peak_id))
+        #
         return adduct_groups_list
 
         #Make sure we check that we start and end with the same number of peaks.
@@ -335,9 +335,7 @@ class PeakGroups(object):
         :param param: The parameter to be matched against
         :return: The index/key of the closest match to the given parameter.
         """
-        # print ("Checking the parameter ", param)
-        # print ("dup_adduct_rows ", dup_adduct_rows)
-        # print ("single_adduct_rows ", single_adduct_df)
+
         compare_df = pd.DataFrame(dtype=object)
         compare_dict = {}  # Compare dict has the DF index as the key
 

@@ -520,10 +520,6 @@ def metabolite_peak_data(request, cmpd_id):
                 columns.append(columns_for_display[c])
 
         columns.insert(0,'Conf')
-        print ("The columns are ", columns)
-
-        print ("The mental list", gp_df_list)
-
 
 
     return JsonResponse({'peak_groups':gp_df_list,'columns':columns})

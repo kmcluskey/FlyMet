@@ -4,18 +4,7 @@ require('bootstrap/js/dist/tooltip');
 
 function initialise_met_table(tableName){
     const tName = '#'+tableName;
-    console.log("tablename whoo ", tName)
-    // const peak_data = document.getElementById('peak_list').getAttribute('url');
-
-    // console.log("Peak data ", peak_data)
-
-
-  //   const DBLinks = [
-  //     "https://www.ebi.ac.uk/chebi/searchId.do?chebiId=",
-  // "http://www.yahoo.com" ,
-  // "http://www.google.com",
-  //   "http://www.duckduckgo.com"
-  //   ];
+    console.log("tablename ", tName)
 
     let table = $(tName).DataTable({
 
@@ -54,44 +43,7 @@ function initialise_met_table(tableName){
                 "createdCell": function (td, cellData, rowData, row, col) {
 
                     let $td = $(td);
-                    // console.log($td.text())
-                    // let $th = $(".col").eq($td.index());
 
-                    // const colorScale = d3.scaleLog()
-                    //     .domain([MIN_VAL, midpoint, highpoint])
-                    //     .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
-
-                    //If the column header doesn't include the string Tissue then colour the column.
-                    // Format the column numbers
-                    //Ignore for the peak ID
-                   //  if ($th.text().includes('Peak ID')){
-                   //    $(td).addClass('"text-center"')
-                   //  }
-                   //  // If m_z or RT reformat the number to 2 dec places.
-                   // else if ($th.text().includes('RT')){
-                   //    const value = $td.text()
-                   //    const num = parseFloat(value).toFixed(2)
-                   //    $td.empty();
-                   //    $td.append(num);
-                   //  }
-                   //  else if ($th.text().includes('m/z')){
-                   //    const value = $td.text()
-                   //    const num = parseFloat(value).toFixed(4)
-                   //    $td.empty();
-                   //    $td.append(num);
-                   //  }
-
-                    // If the number is some of the tissue data
-                    // else {
-                    //   const value = $td.text()
-                    //   if (value > 0){
-                    //   const num = parseFloat(value).toExponential(2)
-                    //   $td.empty();
-                    //   $td.append(num);
-                    //   $(td).addClass("data");
-                    // } else {$(td).addClass("NotDetected");}
-                    //
-                    // }
                     }
                   },
 
@@ -135,64 +87,10 @@ function initialise_met_table(tableName){
                       }
                     }
         ],
-        // Add the tooltips to the dataTable header
-        // "initComplete": function(settings){
-        //
-        //             $(".col").each(function(){
-        //
-        //               let $td = $(this);
-        //               let header = $td.text();
-        //               let head_split = header.split(" ");
-        //               let string ="";
-        //               let ls="";
-        //
-        //               if (head_split[0]=="m/z")
-        //                 string = "mass-to-charge ratio";
-        //               else if (head_split[0]=="Peak")
-        //                 string ="";
-        //               else if (head_split[0]=="RT")
-        //                 string ="Retention Time";
-        //               else
-        //                 string =`${head_split[0]} tissue from`;
-        //                 const header_words = head_split.length;
-        //                 const ls_check = header_words-1;
-        //                 ls = get_lifestage(head_split[ls_check])
-        //
-        //               //Change the title attribute of the column to the string/tooltip info
-        //               $td.attr({title: `${string} ${ls}`});
-        //               $td.attr('data-toggle', "tooltip");
-        //               $td.attr('data-placement', "top" );
-        //           });
-        //           /* Apply the tooltips */
-        //           $('[data-toggle="tooltip"]').tooltip({
-        //               container: 'body'
-        //           });
-        //       },
-    })
 
-    // add data here
-
-//Return the table so that the it is resuable.
-    //
-    // let t1 = performance.now();
-    // console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
-    // console.log("returning table")
     return table;
 }
 
-
-// function get_lifestage(ls_string){
-//
-//   let ls = "";
-//   if (ls_string=="(F)")
-//     ls ="Females";
-//   else if (ls_string=="(M)")
-//       ls ="Males";
-//   else if (ls_string=="(L)")
-//         ls ="Larvae";
-//
-//   return ls
-// }
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updateMetboliteSidePanel(obj){
@@ -264,7 +162,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
   for (var i = 0; i < no_groups; i++) {
 
       let groupDiv = document.createElement('div');
-      groupDiv.setAttribute('class', 'p-2');
+      groupDiv.setAttribute('class', 'p-1');
       let peak_group = peak_groups[i];
       let items_in_gp = peak_group.length;
 
@@ -292,8 +190,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`
-        let group_header = `<p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>
-        <hr class="my-3">`
+        let group_header = `<hr class="my-2"><p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
         group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
         group = group_header+group_table;
         groupDiv.innerHTML =  group;
@@ -309,7 +206,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
 function get_peak_gp_table(columns, peak_group, cmpd_name){
 
 
-  let group_table = `<div class="p-2 pb-0 table-responsive">
+  let group_table = `<div class="pl-2 pb-0 table-responsive">
       <table class="table table-sm table-bordered side_table">
       <thead>
         <tr>`
