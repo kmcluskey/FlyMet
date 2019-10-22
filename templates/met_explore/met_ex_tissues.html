@@ -52,7 +52,7 @@
     tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
     </p>
     <p class="small">
-    The metabolites in this preliminary list have a high confidence score having been
+    The metabolites in this list have a high confidence score having been
     <a href="#" class ="Identified">identified</a> by a standard compound libary or by <a href ="#" class="FragA">fragmentation analysis</a>.
     Expansion of these trems can be found in the <a href="{% url 'glossary'%}">Glossary</a>
     </p>
@@ -73,7 +73,7 @@
       <tr>
             {% for m in met_exp_data %}
             {% if forloop.first %}
-              <td>{{m}}</td>
+              <td><a href="metabolite_search?metabolite_search={{m}}">{{m}}</a></td>
             {% else %}
               {% if m > 0 %}
                 <td>{{m|stringformat:".2e"}}</td>

@@ -87,7 +87,7 @@ function initialise_met_table(tableName){
                       }
                     }
         ],
-
+})
     return table;
 }
 
