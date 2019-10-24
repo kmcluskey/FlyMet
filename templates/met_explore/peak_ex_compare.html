@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Peak Tissue Lists {% endblock %}
+{% block title %} Peak Tissue Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'peak_explorer' 'css' %}
+    {% render_bundle 'peak_ex_compare' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -14,7 +14,7 @@
     <div class="logo_row">
       <div class="logo_main mt-4">
         <p class="lead">
-          Investigate the the metabolite peaks found in <i> Drosophila </i> tissues.
+          Compare the the metabolite peaks found in <i> Drosophila </i> tissues.
           </p>
         </div>
       </div>
@@ -25,10 +25,10 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+          <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_ex_compare' %}">Comparisons</a>
+          <a class="nav-link active" href="{% url 'peak_ex_compare' %}">Comparisons</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'met_ex_mutants' %}">Mutants</a>
@@ -44,7 +44,7 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The average peak intensity levels found in different <i>Drosophila</i> tissues
+    The fold change in peak intesity levels between <i>Drosophila</i> tissues and the whole flies
     </p>
   </div>
 
@@ -122,10 +122,10 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_list = "{{peak_list | safe}}"
-    console.log(min_value, max_value, mean_value, peak_list)
+    // var peak_list = "{{peak_list | safe}}"
+    console.log(min_value, max_value, mean_value)
 
     </script>
 
-  {% render_bundle 'peak_explorer' 'js' %}
+  {% render_bundle 'peak_ex_compare' 'js' %}
   {% endblock %}

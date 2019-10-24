@@ -341,6 +341,56 @@ def met_ex_all(request):
 
     return render(request, 'met_explore/met_ex_all.html', response)
 
+def peak_ex_compare(request):
+    """
+       :param request: The peak Explorer page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    logger.info("Peak comaprison table requested")
+    start = timeit.default_timer()
+    peaks = Peak.objects.all()
+
+    required_data = peaks.values('id', 'm_z', 'rt')
+
+    # peak_ids = [p.id for p in peaks]
+
+    peak_df = pd.DataFrame.from_records(list(required_data))
+
+    peak_df[['m_z', 'rt']].round(3).astype(str)
+
+    # Get all of the peaks and all of he intensities of the sample files
+
+    group_df = cmpd_selector.get_group_df(peaks)
+
+    max_value = np.nanmax(group_df)
+    min_value = np.nanmin(group_df)
+    mean_value = np.nanmean(group_df)
+
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    view_df = pd.merge(peak_df, group_df, on='id')
+
+    column_names = view_df.columns.tolist()
+
+    group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+    column_headers = []
+    for c in column_names:
+        column_headers.append(group_names[c])
+
+    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S", str(stop - start))
+    response = {'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/peak_ex_compare.html', response)
+
+
 def peak_explorer(request, peak_list):
 
     """
