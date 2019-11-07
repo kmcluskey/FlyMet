@@ -262,6 +262,7 @@ def metabolite_search(request):
                 actual_mean = np.nanmean(view_df)
 
                 # If the max and min values are outwith the standard range
+                # KMCL: I have a feeling that this code is doing absolutely nothing...
                 if (actual_min < MIN) or (actual_max > MAX):
                     min = actual_min
                     max = actual_max
@@ -445,6 +446,35 @@ def peak_explorer(request, peak_list):
 
 
     return render(request, 'met_explore/peak_explorer.html', response)
+
+def peak_compare_data(request):
+
+    """
+    :param request: Request for the peak data for the Peak Explorer page
+    :return: The cached url of the ajax data for the peak data table.
+    """
+    peaks = Peak.objects.all()
+    required_data = peaks.values('id', 'm_z', 'rt')
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    # Get all of the peaks and all of the intensities of the sample files
+    group_df = cmpd_selector.get_group_df(peaks)
+
+    # Calculate the
+
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak':'id'}, inplace=True)
+
+    #
+    view_df1 = pd.merge(peak_df, group_df, on='id')
+    view_df = view_df1.fillna("-")
+    #
+    peak_data = view_df.values.tolist()
+
+    print ("returning peak data ", peak_data)
+    return JsonResponse({'data':peak_data})
+
+
 
 def peak_data(request, peak_list):
 
