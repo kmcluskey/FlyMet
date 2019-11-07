@@ -414,8 +414,17 @@ def peak_explorer(request, peak_list):
     peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
+    # If we want all the colours to be for the whole table this should be cached?
 
-    group_df = cmpd_selector.get_group_df(peaks)
+    # group_df = cmpd_selector.get_group_df(peaks)
+
+    if cache.get('my_group_df') is None:
+        print ("we dont have cache so running the function")
+        cache.set('my_group_df', cmpd_selector.get_group_df(peaks), 60*18000)
+        group_df = cache.get('my_group_df')
+    else:
+        print ("we have cache so retrieving it")
+        group_df = cache.get('my_group_df')
 
     max_value = np.nanmax(group_df)
     min_value = np.nanmin(group_df)

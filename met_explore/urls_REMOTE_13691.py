@@ -23,7 +23,6 @@ urlpatterns = [
     path('about', views.about, name='about'),
     path('path_ex_tissues', views.path_ex_tissues, name='path_ex_tissues'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
-    path('peak_ex_compare', views.peak_ex_compare, name='peak_ex_compare'),
     path('peak_explorer/<str:peak_list>', cache_page(60 * 18000)(views.peak_explorer), name='peak_explorer'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
