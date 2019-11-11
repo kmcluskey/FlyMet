@@ -26,6 +26,9 @@ import django
 import math
 import timeit
 
+MIN = -7
+MAX = 7
+MEAN = 0
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +171,6 @@ def metabolite_data(request):
         data_list.append(molecule_data)
 
 
-
     print(data_list)
 
     stop = timeit.default_timer()
@@ -184,9 +186,7 @@ def metabolite_search(request):
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
 
-    MIN = -7
-    MAX = 7
-    MEAN = 0
+
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
@@ -262,7 +262,6 @@ def metabolite_search(request):
                 actual_mean = np.nanmean(view_df)
 
                 # If the max and min values are outwith the standard range
-                # KMCL: I have a feeling that this code is doing absolutely nothing...
                 if (actual_min < MIN) or (actual_max > MAX):
                     min = actual_min
                     max = actual_max
@@ -348,31 +347,9 @@ def peak_ex_compare(request):
        :return: The template and required parameters for the peak explorer page.
        """
 
-    logger.info("Peak comaprison table requested")
+    logger.info("Peak comparison table requested")
     start = timeit.default_timer()
-    peaks = Peak.objects.all()
-
-    required_data = peaks.values('id', 'm_z', 'rt')
-
-    # peak_ids = [p.id for p in peaks]
-
-    peak_df = pd.DataFrame.from_records(list(required_data))
-
-    peak_df[['m_z', 'rt']].round(3).astype(str)
-
-    # Get all of the peaks and all of he intensities of the sample files
-
-    group_df = cmpd_selector.get_group_df(peaks)
-
-    max_value = np.nanmax(group_df)
-    min_value = np.nanmin(group_df)
-    mean_value = np.nanmean(group_df)
-
-    group_df.reset_index(inplace=True)
-    group_df.rename(columns={'peak': 'id'}, inplace=True)
-
-    view_df = pd.merge(peak_df, group_df, on='id')
-
+    view_df, min, mean, max = get_peak_compare_df()
     column_names = view_df.columns.tolist()
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -386,8 +363,8 @@ def peak_ex_compare(request):
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S", str(stop - start))
-    response = {'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
+    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
 
     return render(request, 'met_explore/peak_ex_compare.html', response)
 
@@ -429,8 +406,9 @@ def peak_explorer(request, peak_list):
     max_value = np.nanmax(group_df)
     min_value = np.nanmin(group_df)
     mean_value = np.nanmean(group_df)
-
     group_df.reset_index(inplace=True)
+
+
     group_df.rename(columns={'peak':'id'}, inplace=True)
 
     view_df = pd.merge(peak_df, group_df, on='id')
@@ -456,34 +434,23 @@ def peak_explorer(request, peak_list):
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
+
+
+
 def peak_compare_data(request):
 
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
-    peaks = Peak.objects.all()
-    required_data = peaks.values('id', 'm_z', 'rt')
-    peak_df = pd.DataFrame.from_records(required_data)
 
-    # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peaks)
-
-    # Calculate the
-
-    group_df.reset_index(inplace=True)
-    group_df.rename(columns={'peak':'id'}, inplace=True)
-
-    #
-    view_df1 = pd.merge(peak_df, group_df, on='id')
+    view_df1, _, _, _ = get_peak_compare_df()
     view_df = view_df1.fillna("-")
     #
-    peak_data = view_df.values.tolist()
+    peak_compare_data = view_df.values.tolist()
 
-    print ("returning peak data ", peak_data)
-    return JsonResponse({'data':peak_data})
-
-
+    logger.info("returning the peak comparison data ", peak_compare_data)
+    return JsonResponse({'data': peak_compare_data})
 
 def peak_data(request, peak_list):
 
@@ -752,6 +719,59 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data, 'drilldown_data': drilldown_data})
 
+def get_peak_compare_df():
+    peaks = Peak.objects.all()
+    required_data = peaks.values('id', 'm_z', 'rt')
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    # Get all of the peaks and all of the intensities of the sample files
+
+    if cache.get('full_group_df') is None:
+        print("we dont have cache so running the function")
+        cache.set('full_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
+        group_df = cache.get('full_group_df')
+    else:
+        print("we have cache so retrieving it")
+        group_df = cache.get('full_group_df')
+
+    # group_df = cmpd_selector.get_group_df(peaks)
+
+    # Calculate the log fold change values for the table.
+
+    # Add an index so that we can export the peak as one of the values.
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    column_names = group_df.columns
+
+    # divide by the whole fly amount for the sex/life-stage.
+    for c in column_names:
+        if c.endswith('f'):
+            group_df[c] = group_df[c].div(group_df['Whole_f'])
+        elif c.endswith('l'):
+            group_df[c] = group_df[c].div(group_df['Whole_l'])
+        elif c.endswith('m'):  # it starts with m
+            group_df[c] = group_df[c].div(group_df['Whole_m'])
+
+    # Exclude the ID column for the calculation and then add it back to merge the DFs
+    temp_df = group_df['id']
+    group_df = group_df.drop(['id'], axis=1)
+    log_df = np.log2(group_df)
+    log_df.insert(0, 'id', temp_df)
+
+    calc_df = log_df.drop(['id', 'Whole_f', 'Whole_m', 'Whole_l'], axis=1)
+
+    max_value = np.nanmax(calc_df)
+    min_value = np.nanmin(calc_df)
+    mean_value = np.nanmean(calc_df)
+
+    print(max_value, min_value, mean_value)
+
+    peak_compare_df = pd.merge(peak_df, log_df, on='id')
+
+    peak_compare_df = peak_compare_df.drop(['Whole_f', 'Whole_m', 'Whole_l'], axis=1)
+
+    return peak_compare_df, min_value, mean_value, max_value
 
 class MetaboliteListView(ListView):
 

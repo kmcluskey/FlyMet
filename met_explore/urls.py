@@ -31,5 +31,6 @@ urlpatterns = [
     path('peak_data/<str:peak_list>', cache_page(60 * 18000)(views.peak_data), name='peak_data'),
     path('metabolite_data', cache_page(60 * 18000) (views.metabolite_data), name='metabolite_data'),
     path('metabolite_peak_data/<int:cmpd_id>', views.metabolite_peak_data, name='metabolite_peak_data'),
+    path('peak_compare_data', cache_page(60 * 18000) (views.peak_compare_data), name='peak_compare_data'),
 
 ]
