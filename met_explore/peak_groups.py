@@ -53,7 +53,7 @@ class PeakGroups(object):
         single_peaks_df = self.get_single_peaks(initial_peak_groups)
 
         # If there are an initial group then collect them into adduct group lists
-        if len(initial_peak_groups) > 1:
+        if len(initial_peak_groups) >= 1:
             #Similar to a network, collect all of the peaks that are linked to one another
             collected_peaks = self.collect_connected_peaks(initial_peak_groups)
             # For the collected peaks split into adduct groups so that there are no duplicate adducts in a group.
