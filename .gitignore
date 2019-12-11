@@ -120,3 +120,4 @@ sendgrid.env
 db.sqlite3.full
 webpack-stats.json
 django_cache
+db.sqlite3_old
