@@ -32,6 +32,7 @@ nbstripout = "*"
 sendgrid = "*"
 django-datatables-view = "*"
 django-cache-memoize = "*"
+xlrd = "*"
 
 [dev-packages]
 

@@ -6,8 +6,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Names to pickle the files as we go along so canges can be made without running all of the methods again.
-CHEBI_DF_NAME = "chebi_ontology_df"
+# Names to pickle the files as we go along so changes can be made without running all of the methods again.
+CHEBI_DF_NAME = "chebi_ontology_df_PERMANENT"
 ADDED_CHEBI_NAME = "chebi_peak_df_current"
 CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_current"
 CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_current"
