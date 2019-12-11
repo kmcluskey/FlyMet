@@ -1,7 +1,6 @@
 require('./init_datatables.js');
 const d3 = require('d3');
 require('bootstrap/js/dist/tooltip');
-import {initialise_table} from './flymet_tables';
 
 
 

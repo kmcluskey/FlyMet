@@ -6,8 +6,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Names to pickle the files as we go along so canges can be made without running all of the methods again.
-CHEBI_DF_NAME = "chebi_ontology_df"
+# Names to pickle the files as we go along so changes can be made without running all of the methods again.
+CHEBI_DF_NAME = "chebi_ontology_df_PERMANENT"
 ADDED_CHEBI_NAME = "chebi_peak_df_current"
 CHEBI_CMPD_MATCH = "chebi_peak_df_cmpd_match_current"
 CHEBI_UNIQUE_IDS = "chebi_unique_cmpd_ids_current"
@@ -31,6 +31,7 @@ class PreprocessCompounds(object):
         self.give_each_chebi_same_id()
         self.give_chebi_inchi_unique_id()
         self.collect_dup_cmpds_no_chebi()
+        self.change_std_cmpds_no_chebi()
 
         return self.peak_df
 
@@ -321,6 +322,34 @@ class PreprocessCompounds(object):
             except Exception as e:
                 logger.error("Pickle didn't work because of %s ", e)
                 pass
+
+    def change_std_cmpds_no_chebi(self):
+        """
+        A method to collect any std_cmpds with no chebi and match them to other cmpds with the same Inchikeys
+        :return:
+        """
+        stds_db = self.peak_df['db'] == 'stds_db'
+        no_chebi = self.peak_df['chebi_id'].isnull()
+        stds_no_chebi = self.peak_df[stds_db & no_chebi] #DF that contains standard compounds with no chebi_ids
+
+        unique_inchis = stds_no_chebi.inchikey.unique()
+
+        for inchi in unique_inchis:
+            inchi_df = self.peak_df[self.peak_df['inchikey'] == inchi]
+            cmpd_ids = list(inchi_df.cmpd_id.unique())
+            num_cmpd_ids = len(cmpd_ids)
+            # If there is more than one cmpd_id with this inchi
+            if num_cmpd_ids > 1:
+                # give them all the same cmpd_id?
+                for c in cmpd_ids:
+                    cmpd_id_df = self.peak_df[self.peak_df['cmpd_id'] == c]
+                    no_chebi_id = cmpd_id_df['chebi_id'].isnull().unique()[0] #Check if this is the cmpd without the chebi_id
+                    std_db = (cmpd_id_df.db == 'stds_db').values[0]
+
+                    if (no_chebi_id and std_db): #If it's the standard cmpd with no chebi id
+                        new_cmpd_id = [x for x in cmpd_ids if x != c] #Remove c (without the chebi_id from the list)
+                        indexes_to_change = cmpd_id_df.index
+                        self.peak_df.loc[indexes_to_change, 'cmpd_id'] = new_cmpd_id
 
 
 
