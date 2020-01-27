@@ -33,6 +33,10 @@ sendgrid = "*"
 django-datatables-view = "*"
 django-cache-memoize = "*"
 xlrd = "*"
+notebook = ">=5"
+cameo = "*"
+tornado = "==5.0.2"
+pals-pathway = "*"
 
 [dev-packages]
 
