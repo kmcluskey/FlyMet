@@ -99,6 +99,28 @@ class Compound(models.Model):
 
         return hmdb_id
 
+    ## Returns a list of all the identifiers associated with a compound in dictionary format
+    def get_all_identifiers(self):
+
+        db_objects = CompoundDBDetails.objects.filter(compound=self)
+        all_identifiers = {}
+
+        ### Add identfiers including chebi and cas as long as they are not Nan or None
+        for d in db_objects:
+            if not (d.identifier == 'nan' or d.identifier == None):
+                all_identifiers[d.db_name.db_name] =  d.identifier
+
+        if (self.cas_code != 'nan'):
+            all_identifiers['cas-code']=self.cas_code
+
+        if (self.chebi_id !=None):
+            all_identifiers['chebi_id']=self.chebi_id
+
+        return all_identifiers
+
+
+
+
 
 class DBNames(models.Model):
     db_name = models.CharField(unique=True, max_length=100)

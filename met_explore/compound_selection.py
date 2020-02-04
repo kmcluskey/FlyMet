@@ -1,5 +1,5 @@
-from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation
-from met_explore.helpers import get_filename_from_string
+from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames
+from django.db.models import Q
 import collections
 import pandas as pd
 import numpy as np
@@ -418,3 +418,80 @@ class CompoundSelector(object):
 
             annot.save()
         logger.info("Auto generated, preferred annotations added")
+
+    def update_std_cmpds(self):
+
+        """
+        This method is to check the compound database and for standard
+        compounds that don't have any other associated  DB identifiers )that would make them useful for other methods).
+        It updates the DB accordingly.
+        """
+        logger.info("Checking for Standard compounds without DB identifiers")
+
+        # This dictionary is used when we have std_cmpds without DB Ids - if a compound not in this dictionary this should be flagged
+        # and the KEGG ID added to the dictionary if possible.
+        missing_cmpd_dict = {"O-Acetylcarnitine": "C02571"}
+
+        KEGG = 2 #DB identifier for kegg - currenly the only missing entry has a KEGG ID - this may need to be changed.
+
+        cmpds = Compound.objects.all()
+
+        for c in cmpds:
+            all_ids = c.get_all_identifiers()
+            if len(all_ids) == 1 and 'stds_db' in all_ids: #If the cmpd has a std Id and no other DB identifiers
+
+                # If the compound name is found under a different compound ID add the std_db ID to this compound
+                name_match = CompoundDBDetails.objects.filter(~Q(compound_id=c.id), cmpd_name=c.cmpd_name)
+                if name_match:
+
+                    matching_cmpd_id = name_match[0].compound_id  # Take the first/only matching compound.
+                    matching_cmpd = Compound.objects.get(id=matching_cmpd_id)
+                    logger.info("We have a name match for the cmpd %s, which is  %s", c, matching_cmpd)
+
+                    std_cmpd_db = CompoundDBDetails.objects.get(compound_id=c.id)
+
+                    std_db_name = std_cmpd_db.db_name
+                    std_cmpd_id = std_cmpd_db.identifier
+
+                    new_cmpd_details, created_cmpd_details = CompoundDBDetails.objects.get_or_create(db_name=std_db_name,
+                                                        identifier=std_cmpd_id, cmpd_name=c.cmpd_name, compound=matching_cmpd)
+
+                    ## If the confidence of the annotation for this peak is 4, update the annotation so that we don't miss an identified cmpd.
+                    std_annot = Annotation.objects.filter(compound=c)
+                    new_cmpd_annot = Annotation.objects.filter(compound=matching_cmpd)
+
+                    # Update the annotation to true for the standard cmpd - with checks.
+                    for s in std_annot:
+                        for n in new_cmpd_annot:
+                            if s.peak == n.peak and s.identified and s.confidence == 4:
+                                # Same peaks/same compound should be same annotation
+                                logger.info("Updating identity and confidence scores to the standard cmpd")
+                                n.identified = True
+                                n.confidence = 4
+                                n.save()
+
+                    # Delete the original cmpd.
+                    logger.info("Deleting %s", c)
+                    c.delete()  # delete the std_cmpd with no DB identifiers.
+                else:  # no name match
+                    #Currenly we only have kegg IDs in the dictonary - this will need refactored if this changes.
+                    logger.info("We have no name match for the cmpd %s", c)
+
+                    added_id = missing_cmpd_dict[c.cmpd_name]
+                    try:
+                        assert(added_id.startswith('C0'))
+                        db_name = DBNames.objects.get(id=KEGG)
+                        new_cmpd_details, created_cmpd_details = CompoundDBDetails.objects.get_or_create(
+                            db_name=db_name,
+                            identifier=added_id,
+                            cmpd_name=c.cmpd_name,
+                            compound=c)
+
+                    except AssertionError as e:
+                        logger.error("This is not a KEGG ID so code should be refactored, error %s ", e)
+                        raise
+
+                if created_cmpd_details:
+                    logger.info("New cmpd details were created %s", new_cmpd_details)
+                    new_cmpd_details.save()
+

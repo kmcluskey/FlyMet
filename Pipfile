@@ -37,6 +37,9 @@ notebook = ">=5"
 cameo = "*"
 tornado = "==5.0.2"
 pals-pathway = "*"
+loguru = "*"
+"neo4j-driver" = "*"
+pyparsing = "*"
 
 [dev-packages]
 
