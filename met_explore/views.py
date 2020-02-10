@@ -32,7 +32,7 @@ MEAN = 0
 
 logger = logging.getLogger(__name__)
 
-#If the Db exists and has been initialised:
+# If the Db exists and has been initialised:
 try:
     cmpd_selector = CompoundSelector()
     #DFs for all the peaks
