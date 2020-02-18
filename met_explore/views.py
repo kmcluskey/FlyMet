@@ -12,7 +12,7 @@ from django.views.generic.list import ListView
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample, CompoundDBDetails, Compound
 from met_explore.peak_groups import PeakGroups
-
+from met_explore.pathway_analysis import *
 
 from django.core.cache import cache, caches
 from django.views.decorators.cache import cache_page
@@ -496,7 +496,24 @@ def path_ex_lifestages(request):
 
 def path_ex_tissues(request):
 
-    return render(request, 'met_explore/path_ex_tissues.html')
+    """
+       :param request: The pathway Explorer page for the tissue data
+       :return: The template and required parameters for the pathway explorer page.
+       """
+
+    logger.info("Pathway ranking table requested")
+    start = timeit.default_timer()
+    view_df, pals_min, pals_mean, pals_max = get_pals_df()
+    column_headers = view_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S", str(stop - start))
+    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
+                'mean_value': pals_mean}
+
+
+    return render(request, 'met_explore/path_ex_tissues.html', response)
 
 
 def met_ex_tissues(request):
@@ -605,8 +622,6 @@ def peak_explore_annotation_data(request, peak_id):
     no_other_cmpds = len(cmpd_names)-1
 
     return JsonResponse({'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
-
-
 
 
 
@@ -719,6 +734,60 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data, 'drilldown_data': drilldown_data})
 
+
+def get_pals_df_for_page():
+
+
+    # Get all of the peaks and all of the intensities of the sample files
+
+    if cache.get('pals_df') is None:
+        print("we dont have cache so running the function")
+        cache.set('pals_df', get_pals_df(), 60 * 18000)
+        pals_df = cache.get('pals_df')
+    else:
+        print("we have cache so retrieving it")
+        pals_df = cache.get('pals_df')
+
+    fly_pals_df = change_pals_col_names(pals_df)
+
+    #dropping colums not required for calculating the min. max and mean for the datatable.
+
+    met_info_columns = ['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov']
+    p_values_df = fly_pals_df.drop(met_info_columns, axis=1)
+    pals_max_value = np.nanmax(p_values_df)
+    pals_min_value = np.nanmin(p_values_df)
+    pals_mean_value = np.nanmean(p_values_df)
+
+    return fly_pals_df,  pals_min_value,  pals_mean_value,  pals_max_value
+
+
+
+def change_pals_col_names(pals_df):
+    """
+    :param pals_df: A dataframe returned fromm the PALS package
+    :return: The pals_df with columns removed and headings changed for use on the website
+    """
+    columns = pals_df.columns
+    # Drop the columns that are not required for the FlyMet page.
+    drop_list = ['sf', 'exp_F', 'Ex_Cov']
+    for c in columns:
+        if 'p-value' in c:
+            drop_list.append(c)
+    pals_df.drop(drop_list, axis = 1, inplace=True)
+
+    # Rename the columns that are left for use on the website
+    pals_df.rename(columns={'index': 'Reactome ID','pw_name': 'Pathway name','unq_pw_F': 'PW F','tot_ds_F' : 'DS F','F_coverage': 'F Cov'}, inplace=True)
+    for c in columns:
+        if "ChEBI" in c:
+            c_new = c.replace("ChEBI","")
+        else: c_new = c
+        if 'comb_p' in c:
+            split_c = c_new.split('/')
+            col_name = split_c[0]
+            pals_df.rename(columns={c:col_name}, inplace=True)
+
+    return pals_df
+
 def get_peak_compare_df():
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
@@ -764,8 +833,6 @@ def get_peak_compare_df():
     max_value = np.nanmax(calc_df)
     min_value = np.nanmin(calc_df)
     mean_value = np.nanmean(calc_df)
-
-    print(max_value, min_value, mean_value)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
 

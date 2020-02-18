@@ -16,7 +16,6 @@ from scipy.sparse import coo_matrix
 
 from met_explore.models import *
 from met_explore.compound_selection import CompoundSelector
-from met_explore.views import get_peak_compare_df
 
 logger = logging.getLogger(__name__)
 
