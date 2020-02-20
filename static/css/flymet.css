@@ -427,10 +427,17 @@ padding-left:0;
 }
 
 table.dataTable .px300 {
-  min-width: 20vw;
-  word-wrap: break-word;
+  min-width: 25vw;
+  max-width: 25vw;
+  overflow-x: scroll;
 }
 
+/* Here try and make column one like this */
+table.dataTable .maxpx300 {
+  max-width: 35vw;
+  min-width: 20vw;
+  overflow-x: scroll;
+}
 
 .inline_list{
   display: inline-block;
@@ -477,4 +484,9 @@ table.dataTable .px300 {
   position: absolute;
   top: 8px;
   right: 20%;
+}
+
+.pw_name_col {
+  overflow-x: scroll;
+  width: 10px;
 }

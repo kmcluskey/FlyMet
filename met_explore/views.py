@@ -435,6 +435,21 @@ def peak_explorer(request, peak_list):
     return render(request, 'met_explore/peak_explorer.html', response)
 
 
+def pals_data(request):
+
+    """
+    :param request: Request for the peak data for the Pathway explorer
+    :return: The cached url of the ajax data for the pals data table.
+    """
+
+    view_df1, _, _, _ = get_pals_view_data()
+    view_df = view_df1.fillna("-")
+    #
+    pals_data = view_df.values.tolist()
+
+    logger.info("returning the pals data ")
+    return JsonResponse({'data': pals_data})
+
 
 
 def peak_compare_data(request):
@@ -494,7 +509,7 @@ def path_ex_lifestages(request):
     return render(request, 'met_explore/path_ex_lifestages.html')
 
 
-def path_ex_tissues(request):
+def pathway_explorer(request):
 
     """
        :param request: The pathway Explorer page for the tissue data
@@ -503,17 +518,17 @@ def path_ex_tissues(request):
 
     logger.info("Pathway ranking table requested")
     start = timeit.default_timer()
-    view_df, pals_min, pals_mean, pals_max = get_pals_df()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data()
     column_headers = view_df.columns.tolist()
 
     stop = timeit.default_timer()
 
-    logger.info("Returning the peak DF took: %s S", str(stop - start))
+    logger.info("Returning the pals data took: %s S", str(stop - start))
     response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
                 'mean_value': pals_mean}
 
 
-    return render(request, 'met_explore/path_ex_tissues.html', response)
+    return render(request, 'met_explore/pathway_explorer.html', response)
 
 
 def met_ex_tissues(request):
@@ -735,17 +750,17 @@ def met_search_highchart_data(request, tissue, metabolite):
     return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data, 'drilldown_data': drilldown_data})
 
 
-def get_pals_df_for_page():
-
-
-    # Get all of the peaks and all of the intensities of the sample files
+def get_pals_view_data():
+    """
+    :return: The pals DF and the min, mean and max values for the databale colouring.
+    """
 
     if cache.get('pals_df') is None:
-        print("we dont have cache so running the function")
-        cache.set('pals_df', get_pals_df(), 60 * 18000)
+        logger.debug("we dont have cache so running the function")
+        cache.set('pals_df', get_pals_df(), 60 * 180000)
         pals_df = cache.get('pals_df')
     else:
-        print("we have cache so retrieving it")
+        logger.debug("we have cache for the pals df, so retrieving it")
         pals_df = cache.get('pals_df')
 
     fly_pals_df = change_pals_col_names(pals_df)
@@ -761,12 +776,13 @@ def get_pals_df_for_page():
     return fly_pals_df,  pals_min_value,  pals_mean_value,  pals_max_value
 
 
-
 def change_pals_col_names(pals_df):
     """
     :param pals_df: A dataframe returned fromm the PALS package
     :return: The pals_df with columns removed and headings changed for use on the website
     """
+
+    pals_df.reset_index(inplace=True)
     columns = pals_df.columns
     # Drop the columns that are not required for the FlyMet page.
     drop_list = ['sf', 'exp_F', 'Ex_Cov']

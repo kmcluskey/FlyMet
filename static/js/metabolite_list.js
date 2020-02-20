@@ -56,6 +56,10 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                             $(td).css('background-color', colour)
                         }
                     }
+
+                    if ($th.text().includes('Metabolite')){
+                      $(td).addClass("px300")
+                    }
                 }
             }
         ]
