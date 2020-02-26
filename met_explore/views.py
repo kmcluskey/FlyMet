@@ -754,14 +754,15 @@ def get_pals_view_data():
     """
     :return: The pals DF and the min, mean and max values for the databale colouring.
     """
-
+    # cache.delete('pals_df') #If we want to delete the cache.
     if cache.get('pals_df') is None:
-        logger.debug("we dont have cache so running the function")
+        logger.debug("we dont have cache so running get_pals_df function")
         cache.set('pals_df', get_pals_df(), 60 * 180000)
         pals_df = cache.get('pals_df')
     else:
         logger.debug("we have cache for the pals df, so retrieving it")
         pals_df = cache.get('pals_df')
+
 
     fly_pals_df = change_pals_col_names(pals_df)
 

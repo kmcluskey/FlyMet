@@ -20,7 +20,7 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint){
         // responsive: true,
         "scrollY": "100vh",
         "scrollCollapse": true,
-        "scrollX": true,
+        scrollX: true,
         fixedheader: true,
         colReorder: true,
         ajax: {
@@ -214,7 +214,7 @@ function updatePathwaySidePanel(obj){
 // find all the paragraphs with id peak in the side panel
 $("fieldset[id='click_info']").hide();
 $("fieldset[class^='pathway_details']").show();
-$("p[id^='pwy_id']").text(`This will show the rectome pathway ${reactome_id}: ${pathway_name}`);
+$("p[id^='pwy_id']").text(`This will show the reactome pathway ${reactome_id}: ${pathway_name}`);
 
 }
 
