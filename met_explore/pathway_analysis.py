@@ -47,12 +47,22 @@ def get_pals_df():
 
     pals = PALS(ds, plage_weight=5, hg_weight=1)
     pathway_df_chebi = pals.get_pathway_df()
-
-    print ("going to add formulas")
     pw_df_chebi = add_num_fly_formulas(ds, pathway_df_chebi)
 
     return pw_df_chebi
 
+def get_cache_df():
+
+    # cache.delete('pals_df')
+    if cache.get('pals_df') is None:
+        logger.info("we dont have cache so running the function")
+        cache.set('pals_df', get_pals_df(), 60 * 180000)
+        pals_df = cache.get('pals_df')
+    else:
+        logger.info("we have cache for the pals df, so retrieving it")
+        pals_df = cache.get('pals_df')
+
+    return pals_df
 
 
 def get_pals_int_df():
@@ -134,9 +144,11 @@ def add_num_fly_formulas(pals_ds, pals_df):
     :param pals_df: The original pals df
     :return: Pals DF with the unique formulas belonging to the annotated compound in a dataset
     """
-    print ("adding  the formula stuff")
-    logger.info("Adding Fly F to the pals DF")
+    logger.info("Updating the DS F to those identified bu Chebi Ids in Fly")
     pathway_ids = pals_df.index.values
+    print ("one")
+    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
+
 
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
@@ -153,8 +165,39 @@ def add_num_fly_formulas(pals_ds, pals_df):
 
     # Recalculate the coverage for the new values.
     pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
+    print ('two')
+    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
 
     return pals_df
+
+
+def get_fly_pw_cmpd_formula(pw_id):
+    """
+    Method to return a cmpd_id: cmpd formula dictionary for a given pathway
+    :param pw_id: The ID of the pathway for which the compound/formula dict is required
+    :return: Dict with cmpd_id: formula for each of the cmpds in a given pathway for the fly data
+    """
+
+    fly_pw_cmpd_for_dict = {}
+    pals_df = get_cache_df()
+    pals_ds = get_cache_ds()
+    pathway_ids = pals_df.index.values
+
+    # Grab all chebi_ids from the Fly DB
+    fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
+    # For all of the pathways in reactome get the uniue cmpd_ids
+    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
+
+    reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
+    fly_pw_cmpds = reactome_pw_cmpds.intersection(fly_chebi_ids)
+    print("REACTOME PATHWAY CMPDS ", reactome_pw_cmpds)
+    print ("FLY PATHWAY CMPDS ", fly_pw_cmpds)
+    for cmpd in fly_pw_cmpds:
+
+        formula = get_formula_set([cmpd]) #if only one element we still have to send as a list
+        fly_pw_cmpd_for_dict[cmpd]=formula
+
+    return fly_pw_cmpd_for_dict
 
 
 def get_formula_set(cmpd_list):

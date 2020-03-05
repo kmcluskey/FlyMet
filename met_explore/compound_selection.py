@@ -323,7 +323,17 @@ class CompoundSelector(object):
         print ("The details for this compound are:  ", compound_details)
         return compound_details
 
+    def get_simple_compound_details(self, cmpd_id):
+
+        cmpd = Compound.objects.get(id=cmpd_id)
+
+        cmpd_details = {'inchikey': cmpd.inchikey, 'smiles': cmpd.smiles, 'cas_code': cmpd.cas_code, 'chebi_id': cmpd.chebi_id, 'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),
+                        'formula': cmpd.cmpd_formula,  'name': cmpd.cmpd_name}
+
+        return cmpd_details
+
     def get_groups(self, tissue):
+
         """
         :param tissue: The tissue of interest
         :return: The groups that this tissue is found in

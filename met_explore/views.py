@@ -153,9 +153,6 @@ def metabolite_data(request):
             molecule_data.append(None)
 
         id_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('identifier', flat=True))
-
-
-
         for i in id_list:
             if i.startswith('Std'):
                 id_list.remove(i)
@@ -170,9 +167,6 @@ def metabolite_data(request):
 
         data_list.append(molecule_data)
 
-
-    print(data_list)
-
     stop = timeit.default_timer()
     logger.info("Returning the metabolite data took: %s S", str(stop - start))
 
@@ -185,8 +179,6 @@ def metabolite_search(request):
     :returns: Render met_explore/metabolite_search
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
-
-
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
@@ -613,6 +605,29 @@ def metabolite_peak_data(request, cmpd_id):
     return JsonResponse({'peak_groups':gp_df_list,'columns':columns})
 
 
+def metabolite_pathway_data(request, pw_id):
+    """
+
+    :param request:
+    :param pw_id: The pathway ID that for which the compounds and formulas are required for
+    :return: cmpd_id: formula dictionary
+    """
+
+    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
+    cmpds = []
+    cmpd_details = {}
+    for cmpd, formula in  pw_cmpd_for_dict.items():
+
+        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+        references = cmpd_selector.get_simple_compound_details(cmpd_id)
+        print (references)
+        cmpd_details[cmpd] = references
+
+
+    return JsonResponse({'cmpd_details':cmpd_details})
+
+
+
 def peak_explore_annotation_data(request, peak_id):
     """
 
@@ -754,15 +769,9 @@ def get_pals_view_data():
     """
     :return: The pals DF and the min, mean and max values for the databale colouring.
     """
-    # cache.delete('pals_df') #If we want to delete the cache.
-    if cache.get('pals_df') is None:
-        logger.debug("we dont have cache so running get_pals_df function")
-        cache.set('pals_df', get_pals_df(), 60 * 180000)
-        pals_df = cache.get('pals_df')
-    else:
-        logger.debug("we have cache for the pals df, so retrieving it")
-        pals_df = cache.get('pals_df')
 
+    pals_df = get_cache_df()
+    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
 
     fly_pals_df = change_pals_col_names(pals_df)
 
@@ -774,7 +783,17 @@ def get_pals_view_data():
     pals_min_value = np.nanmin(p_values_df)
     pals_mean_value = np.nanmean(p_values_df)
 
-    return fly_pals_df,  pals_min_value,  pals_mean_value,  pals_max_value
+    # reorder the sample values of the dataframe for the view
+    df_unordered = fly_pals_df[['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov']]
+    df_to_order = fly_pals_df.drop(['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov'], axis=1)
+
+    ordered_df = df_to_order.reindex(sorted(df_to_order.columns), axis=1)
+
+    final_df = pd.concat([df_unordered, ordered_df], axis=1)
+
+    # fly_pals_df = fly_pals_df.reindex(sorted(fly_pals_df.columns[2:]), axis=1)
+
+    return final_df,  pals_min_value,  pals_mean_value,  pals_max_value
 
 
 def change_pals_col_names(pals_df):
