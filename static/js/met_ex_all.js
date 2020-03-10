@@ -189,7 +189,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
         let peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
-        var url_pg = `peak_explorer/${peak_list}`
+        var url_pg = `../peak_explorer/${peak_list}`
         let group_header = `<hr class="my-2"><p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
         group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
         group = group_header+group_table;
@@ -224,7 +224,7 @@ function get_peak_gp_table(columns, peak_group, cmpd_name){
         for (var i = 0; i < peaks_in_gp; i++) {
           this_group=peak_group[i];
           let peak_id = this_group['peak_id'];
-          let peak_url = `peak_explorer/${peak_id}`
+          let peak_url = `../peak_explorer/${peak_id}`
 
           let ion = this_group['adduct'];
           let nm1 = Number(this_group['nm']);
