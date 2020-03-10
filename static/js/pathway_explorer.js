@@ -12,12 +12,6 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint){
 
     let table = $(tName).DataTable({
 
-      // drawCallback: function(settings){
-      //     /* Add some tooltips for demonstration purposes */
-      //     $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-      // },
-
-        // responsive: true,
         "scrollY": "100vh",
         "scrollCollapse": true,
         scrollX: true,
@@ -191,18 +185,7 @@ function updatePathwaySidePanel(obj){
 
 
   const handleUpdate = function(returned_data) {
-
-    // let radio_filter = document.getElementById('filtered')
-    // let radio_all = document.getElementById('all_adducts')
-    // let radio_all_check = radio_all.checked
-    //
-    // // Update the peak table
     updatePathwayInfo(returned_data)
-
-    // Redraw the adduct data if the radio button is clicked.
-    // $("input[name='radio_adducts']" ).click(function(){
-    //   {updateAdducts(returned_data)};
-    // });
 
 };
 
@@ -218,119 +201,42 @@ $("p[id^='pwy_id']").text(`${pathway_name}`);
 
 }
 
-// function updateAdducts(returned_data){
-//
-//   console.log("Updating adducts")
-//   let radio_all = document.getElementById('all_adducts');
-//   let radio_all_check = radio_all.checked
-//   updatePathwayInfo(returned_data, radio_all_check);
-// }
-
-
-// Update the compound names and any details we want on the side panel
+// Update the compound names and any details for the side panel.
 function updatePathwayInfo(returned_data){
   let cmpd_details = returned_data.cmpd_details
   let cmpds = Object.keys(cmpd_details)
-
   let no_cmpds = cmpds.length;
-  let names_formulae = [];
+
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
+
+  let headerDiv = document.createElement('div');
+  headerDiv.setAttribute('class', 'sidebar p-2');
+  cmpd_list = cmpds.toString()
+
+  //Set the header with a link to all metabolites in the cmpd_list
+  let url_pwm = `met_ex_all/${cmpd_list}`; //pathway metabolites
+  let metabolite_header = `<a href="${url_pwm}">Metabolites</a>`;
+  headerDiv.innerHTML =  metabolite_header;
+  sideDiv.appendChild(headerDiv);
+
+  //List all the metabolites in the pathway individually.
   for (var i = 0; i < no_cmpds; i++) {
-       const name = cmpd_details[cmpds[i]].name
-       const formula = cmpd_details[cmpds[i]].formula
 
-       let cmpdDiv = document.createElement('div');
-       cmpdDiv.setAttribute('class', 'p-2');
+      let cmpdDiv = document.createElement('div');
+      cmpdDiv.setAttribute('class', 'p-2 small');
 
-       let cmpd_info = `
-            <div><span>${name} (${formula})</span></div>`
+      let url_cmpd = `met_ex_all/${cmpds[i]}`;
+      let name = cmpd_details[cmpds[i]].name
+      let formula = cmpd_details[cmpds[i]].formula
+
+       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (${formula})</span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 
 }
-  //     const ion = adducts[i];
-  //     const conf = conf_fact[i];
-
-
-  // const adducts = returned_data.adducts;
-  // const conf_fact = returned_data.conf_fact;
-  // const neutral_mass = returned_data.neutral_mass;
-  // const no_other_cmpds = returned_data.no_other_cmpds;
-
-
-
-
-
-
-  // let sideDiv =  document.getElementById("dataDiv");
-  // sideDiv.innerHTML = "";
-  //
-  // const no_cmpds = cmpd_names.length;
-  // let id_name ="";
-  // let frag_name="";
-  // let badge_info="";
-  //
-  // for (var i = 0; i < no_cmpds; i++) {
-  //     const name = cmpd_names[i];
-  //     const ion = adducts[i];
-  //     const conf = conf_fact[i];
-  //
-  //     var nm1 = Number(neutral_mass[i]);
-  //     var nm = nm1.toFixed(4);
-  //
-  //     let success ="";
-  //     let identified="";
-  //     if (conf == 4){
-  //       identified ="I";
-  //       badge_info="I"
-  //       success="success";
-  //       id_name=name;
-  //     }
-  //     else if (conf == 3){
-  //       identified ="F";
-  //       badge_info="F";
-  //       success="warning";
-  //       frag_name=name;
-  //     }
-  //     else if (conf == 0){
-  //       identified ="A";
-  //       badge_info =`A${no_other_cmpds}`;
-  //       success="danger";
-  //     }
-  //       if (radio_all_check || ion=='M+H' || ion=='M-H'){ //draw if ion = M+H or M-H or if all adducts are chosen
-  //
-  //       let peakDiv = document.createElement('div');
-  //       peakDiv.setAttribute('class', 'p-2');
-  //
-  //       let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-  //       <span id="cmpd_name" class="peak_data">${name}</span><div class="row pt-2">
-  //       <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
-  //       <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
-  //       console.log("here")
-  //       peakDiv.innerHTML =  peak_info;
-  //       sideDiv.appendChild(peakDiv);
-  //
-  //     }
-      // add_side_tooltips(id_name, frag_name, no_other_cmpds); //Add the tooltips after all divs created.
-    // }
 }
-//
-// // Add table header tooltips --these are temporary.
-// //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
-// function add_side_tooltips(id_name, frag_name, no_other_cmpds){
-//   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
-//   $('.F').tooltip({title: `MS/MS Fragmentation data suggests that this peak is likely to be ${frag_name}`, placement: "top"});
-//   $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
-// };
-//
-//
-// function add_tooltips(obj){
-//   console.log("adding tooltips")
-//   $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-//   $('.test').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-//
-// }
+
 
 $(document).ready(function() {
     $("fieldset[class^='pathway_details']").hide();

@@ -25,7 +25,7 @@
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_all' %}">All</a>
+          <a class="nav-link active" href="{% url 'met_ex_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
           <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
@@ -104,6 +104,17 @@
   <div class="spacer">
   </div>
 
-  {% render_bundle 'met_ex_all' 'js' %}
-
   {% endblock %}
+
+
+  {% block js_block %}
+
+  <script type='text/javascript'>
+    var cmpd_list = "{{cmpd_list | safe}}"
+    console.log("The cmpd list is "+ cmpd_list)
+
+  </script>
+
+ {% render_bundle 'met_ex_all' 'js' %}
+
+{% endblock %}

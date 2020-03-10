@@ -14,7 +14,7 @@ function initialise_met_table(tableName){
         fixedheader: true,
         colReorder: true,
         ajax: {
-          url: "/met_explore/metabolite_data",
+          url: `/met_explore/metabolite_data/${cmpd_list}`,
           cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
         },
 
@@ -186,7 +186,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
           peak_ids = peak_ids+this_peak['peak_id']+",";
         }
 
-        peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
+        let peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`

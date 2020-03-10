@@ -16,9 +16,7 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
         select: {
             style: 'single'
         },
-        // dom: "<'top'col-sm-12 lBf>"+
-        // "<'row'<tr>>"+
-        // "<'bottom'<ip><'clear'>>",       // dom: //code to override bootstrap and keep buttons on one line.
+        //code to override bootstrap and keep buttons on one line.
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
@@ -29,7 +27,7 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                 buttons: [ 'csv', 'pdf' ]
             }
         ],
-        // "columns": [ { "width": "25px" }, { "width": "25px" },],
+        
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},

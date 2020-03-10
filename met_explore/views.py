@@ -115,7 +115,7 @@ def links(request):
 def credits(request):
     return render(request, 'met_explore/credits.html')
 
-def metabolite_data(request):
+def metabolite_data(request, cmpd_ids):
 
     """
     :param request: Request for the metabolite data for the Met Explorer all page
@@ -128,7 +128,18 @@ def metabolite_data(request):
 
     start = timeit.default_timer()
 
-    compounds = Compound.objects.all().order_by('id')
+    if cmpd_ids=="All":
+
+        compounds = Compound.objects.all().order_by('id')
+
+    else:
+        cmpd_list = cmpd_ids.split(',')
+        print (cmpd_list)
+        compounds = Compound.objects.filter(id__in=list(cmpd_list))
+
+    print ("COMPOUNDS WHOOO ", compounds)
+
+    # compounds = Compound.objects.all().order_by('id')
 
     data_list = []
     for c in compounds:
@@ -321,7 +332,7 @@ def met_ex_mutants(request):
     return render(request, 'met_explore/met_ex_mutants.html')
 
 
-def met_ex_all(request):
+def met_ex_all(request, cmpd_list):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
@@ -329,7 +340,7 @@ def met_ex_all(request):
 
     columns = ['cmpd_id','Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
 
-    response = {'columns': columns}
+    response = {'cmpd_list': cmpd_list, 'columns': columns}
 
     return render(request, 'met_explore/met_ex_all.html', response)
 
@@ -621,8 +632,7 @@ def metabolite_pathway_data(request, pw_id):
         cmpd_id = Compound.objects.get(chebi_id=cmpd).id
         references = cmpd_selector.get_simple_compound_details(cmpd_id)
         print (references)
-        cmpd_details[cmpd] = references
-
+        cmpd_details[cmpd_id] = references
 
     return JsonResponse({'cmpd_details':cmpd_details})
 

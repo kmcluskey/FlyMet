@@ -8,9 +8,7 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
     console.log("tablename", tName)
     const MIN_VAL = 3000;
-    const peak_data = document.getElementById('peak_list').getAttribute('url');
-
-    console.log("Peak data ", peak_data)
+    // const peak_data = document.getElementById('peak_list').getAttribute('url');
 
     let table = $(tName).DataTable({
 
@@ -264,7 +262,6 @@ function updatePeakData(returned_data, radio_all_check){
         <span id="cmpd_name" class="peak_data">${name}</span><div class="row pt-2">
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
-        console.log("here")
         peakDiv.innerHTML =  peak_info;
         sideDiv.appendChild(peakDiv);
 

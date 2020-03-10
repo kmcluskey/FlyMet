@@ -190,8 +190,7 @@ def get_fly_pw_cmpd_formula(pw_id):
 
     reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
     fly_pw_cmpds = reactome_pw_cmpds.intersection(fly_chebi_ids)
-    print("REACTOME PATHWAY CMPDS ", reactome_pw_cmpds)
-    print ("FLY PATHWAY CMPDS ", fly_pw_cmpds)
+
     for cmpd in fly_pw_cmpds:
 
         formula = get_formula_set([cmpd]) #if only one element we still have to send as a list
