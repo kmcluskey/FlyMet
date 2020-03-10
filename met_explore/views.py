@@ -135,11 +135,8 @@ def metabolite_data(request, cmpd_ids):
     else:
         cmpd_list = cmpd_ids.split(',')
         print (cmpd_list)
-        compounds = Compound.objects.filter(id__in=list(cmpd_list))
+        compounds = Compound.objects.filter(id__in=list(cmpd_list)).order_by('id')
 
-    print ("COMPOUNDS WHOOO ", compounds)
-
-    # compounds = Compound.objects.all().order_by('id')
 
     data_list = []
     for c in compounds:
@@ -625,7 +622,6 @@ def metabolite_pathway_data(request, pw_id):
     """
 
     pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
-    cmpds = []
     cmpd_details = {}
     for cmpd, formula in  pw_cmpd_for_dict.items():
 

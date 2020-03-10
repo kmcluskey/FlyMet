@@ -8,7 +8,7 @@ function initialise_peak_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
     console.log("tablename", tName)
     const MIN_VAL = 3000;
-    // const peak_data = document.getElementById('peak_list').getAttribute('url');
+    const peak_data = document.getElementById('peak_list').getAttribute('url');
 
     let table = $(tName).DataTable({
 
