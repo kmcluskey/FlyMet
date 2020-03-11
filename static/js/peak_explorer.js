@@ -216,8 +216,6 @@ function updatePeakData(returned_data, radio_all_check){
   const neutral_mass = returned_data.neutral_mass;
   const no_other_cmpds = returned_data.no_other_cmpds;
 
-  console.log(cmpd_names)
-
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
 
@@ -253,8 +251,8 @@ function updatePeakData(returned_data, radio_all_check){
         badge_info =`A${no_other_cmpds}`;
         success="danger";
       }
-        if (radio_all_check || ion=='M+H' || ion=='M-H'){ //draw if ion = M+H or M-H or if all adducts are chosen
-
+        if (radio_all_check || ion=='M+H' || ion=='M-H'|| ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
+          console.log("ION ", ion)
         let peakDiv = document.createElement('div');
         peakDiv.setAttribute('class', 'p-2');
 

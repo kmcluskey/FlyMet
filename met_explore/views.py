@@ -424,7 +424,6 @@ def peak_explorer(request, peak_list):
 
     # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-    print ("PEAK LIST ", peak_list)
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S", str(stop - start))
