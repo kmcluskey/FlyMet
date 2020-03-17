@@ -267,6 +267,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
+                print ("HERE ", peak_id, cmpd_id)
                 #Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
 
@@ -656,7 +657,9 @@ def peak_explore_annotation_data(request, peak_id):
 
     no_other_cmpds = len(cmpd_names)-1
 
-    return JsonResponse({'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
+    compound_ids = list(cmpd_ids)
+
+    return JsonResponse({'cmpd_ids':compound_ids,'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
 
 
 

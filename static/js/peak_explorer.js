@@ -215,6 +215,7 @@ function updatePeakData(returned_data, radio_all_check){
   const conf_fact = returned_data.conf_fact;
   const neutral_mass = returned_data.neutral_mass;
   const no_other_cmpds = returned_data.no_other_cmpds;
+  const cmpd_ids = returned_data.cmpd_ids
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
@@ -228,7 +229,9 @@ function updatePeakData(returned_data, radio_all_check){
       const name = cmpd_names[i];
       const ion = adducts[i];
       const conf = conf_fact[i];
+      const cmpd_id = cmpd_ids[i];
 
+      var url_met = `met_ex_all/${cmpd_id}`
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
 
@@ -252,12 +255,11 @@ function updatePeakData(returned_data, radio_all_check){
         success="danger";
       }
         if (radio_all_check || ion=='M+H' || ion=='M-H'|| ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
-          console.log("ION ", ion)
         let peakDiv = document.createElement('div');
         peakDiv.setAttribute('class', 'p-2');
 
         let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-        <span id="cmpd_name" class="peak_data">${name}</span><div class="row pt-2">
+        <span id="cmpd_name" class="peak_data"><a href="${url_met}">${name}</a></span><div class="row pt-2">
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
         peakDiv.innerHTML =  peak_info;

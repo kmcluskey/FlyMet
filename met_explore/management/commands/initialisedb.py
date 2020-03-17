@@ -40,11 +40,11 @@ class Command(BaseCommand):
 
             construct_peak_df = peak_select.construct_all_peak_df(pre_peak_df)
             peak_df = peak_select.remove_duplicates(construct_peak_df)
-            populate_peaks_cmpds_annots(peak_df)
+            # populate_peaks_cmpds_annots(peak_df)
 
-            int_df, ids_dict = peak_select.construct_int_df(peak_df)
+            # int_df, ids_dict = peak_select.construct_int_df(peak_df)
 
-            populate_peaksamples(int_df, ids_dict)
+            # populate_peaksamples(int_df, ids_dict)
 
             #
             logger.info("Getting the selected DF")
@@ -58,9 +58,9 @@ class Command(BaseCommand):
             compound_select = CompoundSelector()
 
             hc_int_df = compound_select.construct_hc_int_df(high_conf_peak_df)
-            single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
-            compound_select.add_preferred_annotations(single_cmpds_df)
-            compound_select.update_std_cmpds()
+            # single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
+            # compound_select.add_preferred_annotations(single_cmpds_df)
+            # compound_select.update_std_cmpds()
 
         except Exception as e:
             raise CommandError(e, "Something went horribly wrong")

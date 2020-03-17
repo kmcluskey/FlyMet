@@ -99,6 +99,9 @@ function updateMetboliteSidePanel(obj){
   var cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
   let cmpd_name = $(obj).children().first().text();
 
+  console.log("updating for cmpd", cmpd_name)
+  console.log("with a cmpd_id", cmpd_id)
+
   const handleUpdate = function(returned_data) {
   //
     let radio_filter = document.getElementById('filtered')
@@ -107,6 +110,7 @@ function updateMetboliteSidePanel(obj){
     // radio_all_check should start off false
 
   // Update the peak table
+  console.log("handling update")
   updatePeakData(returned_data, radio_all_check, cmpd_name)
   //
     // Redraw the adduct data is the radio button is clicked.
@@ -131,9 +135,9 @@ $("p[id^='compound_id']").text('Peak groups annotated as ' + cmpd_name);
 }
 
 
-
 function updateAdducts(returned_data, cmpd_name){
 //
+  console.log("Updating adducts")
   let radio_all = document.getElementById('all_adducts');
   let radio_all_check = radio_all.checked
   updatePeakData(returned_data, radio_all_check);
@@ -165,21 +169,23 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
       let m_adduct = false;
       for (var j = 0; j < items_in_gp; j++){
         this_peak = peak_group[j]
-        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M-H' || this_peak['adduct']=='M'){
+        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M+H'){
           m_adduct =true;
         }
       }
     // If the radio check is all or the group contains an M+H or M-H adduct add the peak group table
       if (radio_all_check || m_adduct){
 
+        console.log("peak_gp", peak_group)
+
         let peak_ids =""
         for (var p = 0; p < items_in_gp; p++){
           this_peak = peak_group[p];
-          console.log("this_peak_id ", this_peak['peak_id'] )
           peak_ids = peak_ids+this_peak['peak_id']+",";
         }
 
         let peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
+        console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`
         let group_header = `<hr class="my-2"><p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
