@@ -169,7 +169,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
       let m_adduct = false;
       for (var j = 0; j < items_in_gp; j++){
         this_peak = peak_group[j]
-        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M+H'){
+        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M-H' || this_peak['adduct']=='M'){
           m_adduct =true;
         }
       }

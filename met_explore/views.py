@@ -149,10 +149,10 @@ def metabolite_data(request, cmpd_ids):
 
         # Get the list of other names
         name_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('cmpd_name', flat=True))
-        if metabolite in name_list:
-            name_list = name_list.remove(
-                metabolite)  # If the names are the same as the metabolite name don't add as a synonym
 
+        if metabolite in name_list:
+            name_list = [x for x in name_list if x != metabolite]
+             # If the names are the same as the metabolite name don't add as a synonym
         if name_list:
             name_list = list(dict.fromkeys(name_list))  # Don't add duplicate names
             name_string = ', '.join(name_list)

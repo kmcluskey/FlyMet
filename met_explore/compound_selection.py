@@ -445,7 +445,9 @@ class CompoundSelector(object):
         KEGG = 2 #DB identifier for kegg - currenly the only missing entry has a KEGG ID - this may need to be changed.
 
         cmpds = Compound.objects.all()
-
+        # This was changed such that a std cmpd without other identifiers would be assigned the CompoundDBdetails
+        # from another compound that matched in name. The name matching compound is then deleted.
+        # Old code - git March 23 2020
         for c in cmpds:
             all_ids = c.get_all_identifiers()
             if len(all_ids) == 1 and 'stds_db' in all_ids: #If the cmpd has a std Id and no other DB identifiers
@@ -458,31 +460,14 @@ class CompoundSelector(object):
                     matching_cmpd = Compound.objects.get(id=matching_cmpd_id)
                     logger.info("We have a name match for the cmpd %s, which is  %s", c, matching_cmpd)
 
-                    std_cmpd_db = CompoundDBDetails.objects.get(compound_id=c.id)
+                    cmpd_detail_matches = CompoundDBDetails.objects.filter(compound_id=matching_cmpd_id)
 
-                    std_db_name = std_cmpd_db.db_name
-                    std_cmpd_id = std_cmpd_db.identifier
+                    for match_cmpd in cmpd_detail_matches:
+                        match_cmpd.compound = c #change the compound in the CompoundDBDetails to the std cmpd with no identifiers
+                        match_cmpd.save()
 
-                    new_cmpd_details, created_cmpd_details = CompoundDBDetails.objects.get_or_create(db_name=std_db_name,
-                                                        identifier=std_cmpd_id, cmpd_name=c.cmpd_name, compound=matching_cmpd)
+                    matching_cmpd.delete() #Delete matching cmpd as all of the
 
-                    ## If the confidence of the annotation for this peak is 4, update the annotation so that we don't miss an identified cmpd.
-                    std_annot = Annotation.objects.filter(compound=c)
-                    new_cmpd_annot = Annotation.objects.filter(compound=matching_cmpd)
-
-                    # Update the annotation to true for the standard cmpd - with checks.
-                    for s in std_annot:
-                        for n in new_cmpd_annot:
-                            if s.peak == n.peak and s.identified and s.confidence == 4:
-                                # Same peaks/same compound should be same annotation
-                                logger.info("Updating identity and confidence scores to the standard cmpd")
-                                n.identified = True
-                                n.confidence = 4
-                                n.save()
-
-                    # Delete the original cmpd.
-                    logger.info("Deleting %s", c)
-                    c.delete()  # delete the std_cmpd with no DB identifiers.
                 else:  # no name match
                     #Currenly we only have kegg IDs in the dictonary - this will need refactored if this changes.
                     logger.info("We have no name match for the cmpd %s", c)
@@ -501,7 +486,7 @@ class CompoundSelector(object):
                         logger.error("This is not a KEGG ID so code should be refactored, error %s ", e)
                         raise
 
-                if created_cmpd_details:
-                    logger.info("New cmpd details were created %s", new_cmpd_details)
-                    new_cmpd_details.save()
+                    if created_cmpd_details:
+                        logger.info("New cmpd details were created %s", new_cmpd_details)
+                        new_cmpd_details.save()
 
