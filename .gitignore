@@ -121,3 +121,4 @@ db.sqlite3.full
 webpack-stats.json
 django_cache
 db.sqlite3_old
+db.sqlite3_march20
