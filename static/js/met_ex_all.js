@@ -14,7 +14,7 @@ function initialise_met_table(tableName){
         fixedheader: true,
         colReorder: true,
         ajax: {
-          url: "/met_explore/metabolite_data",
+          url: `/met_explore/metabolite_data/${cmpd_list}`,
           cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
         },
 
@@ -135,7 +135,6 @@ $("p[id^='compound_id']").text('Peak groups annotated as ' + cmpd_name);
 }
 
 
-
 function updateAdducts(returned_data, cmpd_name){
 //
   console.log("Updating adducts")
@@ -147,7 +146,7 @@ function updateAdducts(returned_data, cmpd_name){
 // Update the compound names and any details we want on the side panel
 function updatePeakData(returned_data, radio_all_check, cmpd_name){
 
-  console.log("in update peak data")
+  console.log("Updating peak data")
 
   const peak_groups = returned_data.peak_groups;
   const columns = returned_data.columns
@@ -170,7 +169,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
       let m_adduct = false;
       for (var j = 0; j < items_in_gp; j++){
         this_peak = peak_group[j]
-        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M+H'){
+        if (this_peak['adduct']=='M+H' || this_peak['adduct']=='M-H' || this_peak['adduct']=='M'){
           m_adduct =true;
         }
       }
@@ -182,11 +181,10 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
         let peak_ids =""
         for (var p = 0; p < items_in_gp; p++){
           this_peak = peak_group[p];
-          console.log("this_peak_id ", this_peak['peak_id'] )
           peak_ids = peak_ids+this_peak['peak_id']+",";
         }
 
-        peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
+        let peak_list = peak_ids.substring(0,peak_ids.length-1) //remove last "," from string the lazy way
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`

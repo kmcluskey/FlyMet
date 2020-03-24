@@ -12,7 +12,7 @@ from django.views.generic.list import ListView
 from met_explore.compound_selection import *
 from met_explore.models import Peak, SamplePeak, Sample, CompoundDBDetails, Compound
 from met_explore.peak_groups import PeakGroups
-
+from met_explore.pathway_analysis import *
 
 from django.core.cache import cache, caches
 from django.views.decorators.cache import cache_page
@@ -32,7 +32,7 @@ MEAN = 0
 
 logger = logging.getLogger(__name__)
 
-#If the Db exists and has been initialised:
+# If the Db exists and has been initialised:
 try:
     cmpd_selector = CompoundSelector()
     #DFs for all the peaks
@@ -115,7 +115,7 @@ def links(request):
 def credits(request):
     return render(request, 'met_explore/credits.html')
 
-def metabolite_data(request):
+def metabolite_data(request, cmpd_ids):
 
     """
     :param request: Request for the metabolite data for the Met Explorer all page
@@ -128,7 +128,15 @@ def metabolite_data(request):
 
     start = timeit.default_timer()
 
-    compounds = Compound.objects.all().order_by('id')
+    if cmpd_ids=="All":
+
+        compounds = Compound.objects.all().order_by('id')
+
+    else:
+        cmpd_list = cmpd_ids.split(',')
+        print (cmpd_list)
+        compounds = Compound.objects.filter(id__in=list(cmpd_list)).order_by('id')
+
 
     data_list = []
     for c in compounds:
@@ -141,10 +149,10 @@ def metabolite_data(request):
 
         # Get the list of other names
         name_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('cmpd_name', flat=True))
-        if metabolite in name_list:
-            name_list = name_list.remove(
-                metabolite)  # If the names are the same as the metabolite name don't add as a synonym
 
+        if metabolite in name_list:
+            name_list = [x for x in name_list if x != metabolite]
+             # If the names are the same as the metabolite name don't add as a synonym
         if name_list:
             name_list = list(dict.fromkeys(name_list))  # Don't add duplicate names
             name_string = ', '.join(name_list)
@@ -153,9 +161,6 @@ def metabolite_data(request):
             molecule_data.append(None)
 
         id_list = list(CompoundDBDetails.objects.filter(compound_id=cmpd_id).values_list('identifier', flat=True))
-
-
-
         for i in id_list:
             if i.startswith('Std'):
                 id_list.remove(i)
@@ -170,9 +175,6 @@ def metabolite_data(request):
 
         data_list.append(molecule_data)
 
-
-    print(data_list)
-
     stop = timeit.default_timer()
     logger.info("Returning the metabolite data took: %s S", str(stop - start))
 
@@ -185,8 +187,6 @@ def metabolite_search(request):
     :returns: Render met_explore/metabolite_search
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
-
-
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
@@ -267,6 +267,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
+                print ("HERE ", peak_id, cmpd_id)
                 #Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
 
@@ -329,7 +330,7 @@ def met_ex_mutants(request):
     return render(request, 'met_explore/met_ex_mutants.html')
 
 
-def met_ex_all(request):
+def met_ex_all(request, cmpd_list):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
@@ -337,7 +338,7 @@ def met_ex_all(request):
 
     columns = ['cmpd_id','Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
 
-    response = {'columns': columns}
+    response = {'cmpd_list': cmpd_list, 'columns': columns}
 
     return render(request, 'met_explore/met_ex_all.html', response)
 
@@ -424,7 +425,6 @@ def peak_explorer(request, peak_list):
 
     # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-    print ("PEAK LIST ", peak_list)
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S", str(stop - start))
@@ -434,6 +434,21 @@ def peak_explorer(request, peak_list):
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
+
+def pals_data(request):
+
+    """
+    :param request: Request for the peak data for the Pathway explorer
+    :return: The cached url of the ajax data for the pals data table.
+    """
+
+    view_df1, _, _, _ = get_pals_view_data()
+    view_df = view_df1.fillna("-")
+    #
+    pals_data = view_df.values.tolist()
+
+    logger.info("returning the pals data ")
+    return JsonResponse({'data': pals_data})
 
 
 
@@ -494,9 +509,26 @@ def path_ex_lifestages(request):
     return render(request, 'met_explore/path_ex_lifestages.html')
 
 
-def path_ex_tissues(request):
+def pathway_explorer(request):
 
-    return render(request, 'met_explore/path_ex_tissues.html')
+    """
+       :param request: The pathway Explorer page for the tissue data
+       :return: The template and required parameters for the pathway explorer page.
+       """
+
+    logger.info("Pathway ranking table requested")
+    start = timeit.default_timer()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data()
+    column_headers = view_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the pals data took: %s S", str(stop - start))
+    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
+                'mean_value': pals_mean}
+
+
+    return render(request, 'met_explore/pathway_explorer.html', response)
 
 
 def met_ex_tissues(request):
@@ -581,6 +613,27 @@ def metabolite_peak_data(request, cmpd_id):
     return JsonResponse({'peak_groups':gp_df_list,'columns':columns})
 
 
+def metabolite_pathway_data(request, pw_id):
+    """
+
+    :param request:
+    :param pw_id: The pathway ID that for which the compounds and formulas are required for
+    :return: cmpd_id: formula dictionary
+    """
+
+    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
+    cmpd_details = {}
+    for cmpd, formula in  pw_cmpd_for_dict.items():
+
+        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+        references = cmpd_selector.get_simple_compound_details(cmpd_id)
+        print (references)
+        cmpd_details[cmpd_id] = references
+
+    return JsonResponse({'cmpd_details':cmpd_details})
+
+
+
 def peak_explore_annotation_data(request, peak_id):
     """
 
@@ -604,9 +657,9 @@ def peak_explore_annotation_data(request, peak_id):
 
     no_other_cmpds = len(cmpd_names)-1
 
-    return JsonResponse({'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
+    compound_ids = list(cmpd_ids)
 
-
+    return JsonResponse({'cmpd_ids':compound_ids,'no_other_cmpds':no_other_cmpds, 'neutral_mass': list(neutral_mass), 'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
 
 
 
@@ -719,6 +772,66 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data, 'drilldown_data': drilldown_data})
 
+
+def get_pals_view_data():
+    """
+    :return: The pals DF and the min, mean and max values for the databale colouring.
+    """
+
+    pals_df = get_cache_df()
+    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
+
+    fly_pals_df = change_pals_col_names(pals_df)
+
+    #dropping colums not required for calculating the min. max and mean for the datatable.
+
+    met_info_columns = ['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov']
+    p_values_df = fly_pals_df.drop(met_info_columns, axis=1)
+    pals_max_value = np.nanmax(p_values_df)
+    pals_min_value = np.nanmin(p_values_df)
+    pals_mean_value = np.nanmean(p_values_df)
+
+    # reorder the sample values of the dataframe for the view
+    df_unordered = fly_pals_df[['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov']]
+    df_to_order = fly_pals_df.drop(['Reactome ID', 'Pathway name', 'PW F', 'DS F', 'F Cov'], axis=1)
+
+    ordered_df = df_to_order.reindex(sorted(df_to_order.columns), axis=1)
+
+    final_df = pd.concat([df_unordered, ordered_df], axis=1)
+
+    # fly_pals_df = fly_pals_df.reindex(sorted(fly_pals_df.columns[2:]), axis=1)
+
+    return final_df,  pals_min_value,  pals_mean_value,  pals_max_value
+
+
+def change_pals_col_names(pals_df):
+    """
+    :param pals_df: A dataframe returned fromm the PALS package
+    :return: The pals_df with columns removed and headings changed for use on the website
+    """
+
+    pals_df.reset_index(inplace=True)
+    columns = pals_df.columns
+    # Drop the columns that are not required for the FlyMet page.
+    drop_list = ['sf', 'exp_F', 'Ex_Cov']
+    for c in columns:
+        if 'p-value' in c:
+            drop_list.append(c)
+    pals_df.drop(drop_list, axis = 1, inplace=True)
+
+    # Rename the columns that are left for use on the website
+    pals_df.rename(columns={'index': 'Reactome ID','pw_name': 'Pathway name','unq_pw_F': 'PW F','tot_ds_F' : 'DS F','F_coverage': 'F Cov'}, inplace=True)
+    for c in columns:
+        if "ChEBI" in c:
+            c_new = c.replace("ChEBI","")
+        else: c_new = c
+        if 'comb_p' in c:
+            split_c = c_new.split('/')
+            col_name = split_c[0]
+            pals_df.rename(columns={c:col_name}, inplace=True)
+
+    return pals_df
+
 def get_peak_compare_df():
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
@@ -764,8 +877,6 @@ def get_peak_compare_df():
     max_value = np.nanmax(calc_df)
     min_value = np.nanmin(calc_df)
     mean_value = np.nanmean(calc_df)
-
-    print(max_value, min_value, mean_value)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
 
