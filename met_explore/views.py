@@ -31,6 +31,7 @@ MAX = 7
 MEAN = 0
 
 logger = logging.getLogger(__name__)
+NUM_WHOLE_SAMPLES = 12
 
 # If the Db exists and has been initialised:
 try:
@@ -669,7 +670,6 @@ def met_search_highchart_data(request, tissue, metabolite):
        :return: A list of dictionaries for the metabolite/tissue highcharts.
 
     """
-
     cmpd_selector = CompoundSelector()
 
     hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
@@ -677,48 +677,54 @@ def met_search_highchart_data(request, tissue, metabolite):
     #Should only be looking at a single compound
 
     single_cmpd_indexed = s_cmpds_df.index.values
-
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
 
-
-    # DFs for all the peaks
-    # int_df = cmpd_selector.construct_cmpd_intensity_df()
-    # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
-
-    # DF for the Highly confident peaks
-    # relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
+    # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
     samples = Sample.objects.all()
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
 
-    met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Adult Male",'y': None,'drilldown': "2"},
-        {'name': "Larvae",'y':None ,'drilldown': "3"}]
+    met_series_data = [{'name': "Adult Female",'y': None,'drilldown': "1"},{'name': "Whole Female",'y': None,'drilldown': "2"},{'name': "Adult Male",'y': None,'drilldown': "3"},{'name': "Whole Male",'y': None,'drilldown': "4"},
+        {'name': "Larvae",'y':None ,'drilldown': "5"}, {'name': "Whole Larvae",'y': None,'drilldown': "6"}]
 
-    all_intensities = np.empty((3, 4), dtype=float)
-    all_intensities[:] = np.nan
     gp_intensities = cmpd_selector.get_gp_intensity(metabolite, tissue, single_cmpds_df)
+    all_intensities = np.empty((6), dtype=object)
+    all_intensities[:] = np.nan
 
-    print ("This is the group intensites ", gp_intensities)
 
     # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
     # AF = data[0], AM = data[1], L = data[2]
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
     # The group intensities just have the group name so have to work out the LS from this.
+    # try:
     for gp, v in gp_intensities.items():
         if math.isnan(v):
             v =  np.nan_to_num(v) #Can't pass NaN to JSON so return a zero to the highchart.
-        if group_ls_tissue_dict[gp][1] == 'F':
-            met_series_data[0]['y'] = v
+        if group_ls_tissue_dict[gp][1] == 'F' and group_ls_tissue_dict[gp][0] != 'Whole' :
+            met_series_data[0]['y'] = v #The average int
             all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
-        elif group_ls_tissue_dict[gp][1] == 'M':
+        elif group_ls_tissue_dict[gp][1] == 'F' and group_ls_tissue_dict[gp][0] == 'Whole' :
             met_series_data[1]['y'] = v
             all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
-        elif group_ls_tissue_dict[gp][1] == 'L':
+        elif group_ls_tissue_dict[gp][1] == 'M' and group_ls_tissue_dict[gp][0] != 'Whole' :
             met_series_data[2]['y'] = v
             all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+
+        elif group_ls_tissue_dict[gp][1] == 'M' and group_ls_tissue_dict[gp][0] == 'Whole':
+            met_series_data[3]['y'] = v
+            all_intensities[3] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+
+        elif group_ls_tissue_dict[gp][1] == 'L' and group_ls_tissue_dict[gp][0] != 'Whole' :
+            met_series_data[4]['y'] = v
+            all_intensities[4] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+
+        elif group_ls_tissue_dict[gp][1] == 'L' and group_ls_tissue_dict[gp][0] == 'Whole':
+            met_series_data[5]['y'] = v
+            all_intensities[5] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+
 
     logger.info("Passing the series data %s", met_series_data)
     logger.info("all intensities F, M and Larvae are %s", all_intensities)
@@ -727,26 +733,43 @@ def met_search_highchart_data(request, tissue, metabolite):
     # The all_intensities data is a list of lists as 4 replicates for the LS: F, M and L
 
     drilldown_data = [[["F1", None], ["F2", None], ["F3", None], ["F4", None]],
+                      [["FW1", None], ["FW2", None], ["FW3", None], ["FW4", None],
+                      ["FW5", None], ["FW6", None], ["FW7", None], ["FW8", None],
+                      ["FW9", None], ["FW10", None], ["FW11", None], ["FW12", None]],
                       [["M1", None], ["M2", None], ["M3", None], ["M4", None]],
-                      [["L1", None], ["L2", None], ["L3", None], ["L4", None]]]
+                      [["MW1", None], ["MW2", None], ["MW3", None], ["MW4", None],
+                       ["MW5", None], ["MW6", None], ["MW7", None], ["MW8", None],
+                       ["MW9", None], ["MW10", None], ["MW11", None], ["MW12", None]],
+                      [["L1", None], ["L2", None], ["L3", None], ["L4", None]],
+                      [["LW1", None], ["LW2", None], ["LW3", None], ["LW4", None],
+                       ["LW5", None], ["LW6", None], ["LW7", None], ["LW8", None]]]
 
-    int_data = np.nan_to_num(all_intensities).tolist()
+
+    df = pd.DataFrame({'ints': all_intensities})
+
+    # Change the NaNs to empty lists...
+
+    df.loc[df['ints'].isnull(), ['ints']] = df.loc[df['ints'].isnull(), 'ints'].apply(lambda x: [])
+
+    int_data = df.ints.values.tolist()
 
     #Replace the None in the drilldown data with the data from all_intensities.
     for drill, intensity in zip(drilldown_data, int_data):
-        for d, i in zip(drill, intensity):
-            d[1] = i
+        if intensity:
+            print ("intensity ", intensity)
+            for d, i in zip(drill, intensity):
+                d[1] = i
 
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
 
-    all_ints = all_intensities[~np.isnan(all_intensities)]
-
     for d in all_intensities:
-        d = d[~np.isnan(d)]   # for error bar calcs Nans are removed.
-        if d.any():
-            q25, q75 = np.percentile(d, [25, 75])
+        np_data = np.array(d)
+        np_data = np_data[~np.isnan(np_data)]   # for error bar calcs Nans are removed.
+
+        if np_data.any():
+            q25, q75 = np.percentile(np_data, [25, 75])
             error_series =[q25, q75]
         else:
             error_series = None
@@ -754,7 +777,7 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     #Replacing the NaNs with zeros for highchart.
     error_bar_data = (np.nan_to_num(error_data)).tolist()
-
+    print ("error_bar_data ", error_bar_data)
     logger.info("Passing the series data %s", met_series_data)
     logger.info("Passing the error bar data %s", error_bar_data)
     logger.info("Passing the drilldown data %s", drilldown_data)

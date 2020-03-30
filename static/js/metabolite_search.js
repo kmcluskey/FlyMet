@@ -44,16 +44,34 @@ const drilldown_data = [
   },
   {
     xAxis: 1,
-    name: "M",
+    name: "FW",
     id: "2",
     data: null
   },
   {
     xAxis: 1,
-    name: "L",
+    name: "M",
     id: "3",
     data: null
-  }
+  },
+  {
+    xAxis: 1,
+    name: "MW",
+    id: "4",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "L",
+    id: "5",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "LW",
+    id: "6",
+    data: null
+  },
 
 ];
 

@@ -340,23 +340,36 @@ class CompoundSelector(object):
         """
         filtered_sps = Sample.objects.filter(tissue=tissue)
         groups = set([f.group for f in filtered_sps])
+        lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)
+        life_stages = [ls[1] for ls in lifestage_dict.values()]
 
-        return groups
+        return groups, life_stages
 
     def get_gp_intensity(self, metabolite, tissue, single_cmpds_df):
 
         """
         Given a metabolite and tissue, this method returns the group name and the intensity.
         The average intensity has already been calculated in the single_cmpds_df
+        This also returns the whole fly data for the compound for comparisons.
 
         :param metabolite:
         :param tissue:
         :return: The group name of the tissue and metabolite and
         """
-        groups = self.get_groups(tissue)
+        groups, life_stages = self.get_groups(tissue) #This is the tissue groups without the whole fly
+
+        all_groups=[]
+        whole_tissue ="Whole"
+
+        for g, ls in zip(groups, life_stages):
+            all_groups.append(g)
+            whole_gp = Sample.objects.filter(tissue=whole_tissue, life_stage=ls)[0].group
+            all_groups.append(whole_gp)
+
+
         met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == metabolite]
         gp_int_dict = {}
-        for g in groups:
+        for g in all_groups:
             ave_intensity = met_search_df[g].values[0]
             gp_int_dict[g] = ave_intensity
 
