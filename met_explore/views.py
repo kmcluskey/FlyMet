@@ -692,12 +692,10 @@ def met_search_highchart_data(request, tissue, metabolite):
     all_intensities = np.empty((6), dtype=object)
     all_intensities[:] = np.nan
 
-
     # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
-    # AF = data[0], AM = data[1], L = data[2]
+    # AF = data[0], AFW = data[1], AM = data[2], AFW = data[3] L = data[4], AFW = data[5]
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
     # The group intensities just have the group name so have to work out the LS from this.
-    # try:
     for gp, v in gp_intensities.items():
         if math.isnan(v):
             v =  np.nan_to_num(v) #Can't pass NaN to JSON so return a zero to the highchart.
@@ -731,35 +729,22 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     # Return all the intensities as drilldown data to highcharts
     # The all_intensities data is a list of lists as 4 replicates for the LS: F, M and L
+    # 12 replicates for Whole M and Whole F and Whole L change and hence the get_drilldown_data method.
 
-    drilldown_data = [[["F1", None], ["F2", None], ["F3", None], ["F4", None]],
-                      [["FW1", None], ["FW2", None], ["FW3", None], ["FW4", None],
-                      ["FW5", None], ["FW6", None], ["FW7", None], ["FW8", None],
-                      ["FW9", None], ["FW10", None], ["FW11", None], ["FW12", None]],
-                      [["M1", None], ["M2", None], ["M3", None], ["M4", None]],
-                      [["MW1", None], ["MW2", None], ["MW3", None], ["MW4", None],
-                       ["MW5", None], ["MW6", None], ["MW7", None], ["MW8", None],
-                       ["MW9", None], ["MW10", None], ["MW11", None], ["MW12", None]],
-                      [["L1", None], ["L2", None], ["L3", None], ["L4", None]],
-                      [["LW1", None], ["LW2", None], ["LW3", None], ["LW4", None],
-                       ["LW5", None], ["LW6", None], ["LW7", None], ["LW8", None]]]
-
+    drilldown_data = get_drilldown_data()
 
     df = pd.DataFrame({'ints': all_intensities})
 
-    # Change the NaNs to empty lists...
+    # Change the NaNs to empty lists []
 
     df.loc[df['ints'].isnull(), ['ints']] = df.loc[df['ints'].isnull(), 'ints'].apply(lambda x: [])
-
     int_data = df.ints.values.tolist()
 
     #Replace the None in the drilldown data with the data from all_intensities.
     for drill, intensity in zip(drilldown_data, int_data):
         if intensity:
-            print ("intensity ", intensity)
             for d, i in zip(drill, intensity):
                 d[1] = i
-
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
@@ -802,8 +787,6 @@ def get_pals_view_data():
     """
 
     pals_df = get_cache_df()
-    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
-
     fly_pals_df = change_pals_col_names(pals_df)
 
     #dropping colums not required for calculating the min. max and mean for the datatable.
@@ -906,6 +889,43 @@ def get_peak_compare_df():
     peak_compare_df = peak_compare_df.drop(['Whole_f', 'Whole_m', 'Whole_l'], axis=1)
 
     return peak_compare_df, min_value, mean_value, max_value
+
+def get_drilldown_data():
+
+    """
+    A method to return the structure of the drilldown data structure
+    :return: A list of lists containing the drilldown data structure - this may change depending on the number of
+    whole fly replicates.
+    """
+    num_FW = len(Sample.objects.filter(group="Whole_f"))
+    num_MW = len(Sample.objects.filter(group="Whole_m"))
+    num_LW = len(Sample.objects.filter(group="Whole_l"))
+
+    whole_fly_dict = {'FW': num_FW, 'MW': num_MW, 'LW': num_LW}  # whole_female, whole_male, whole_larvae
+
+    #Structure of the drilldown data for the tissue samples
+    f_list = [["F1", None], ["F2", None], ["F3", None], ["F4", None]]
+    m_list = [["M1", None], ["M2", None], ["M3", None], ["M4", None]]
+    l_list = [["L1", None], ["L2", None], ["L3", None], ["L4", None]]
+
+    drilldown_data = []
+
+    for whole_type, numf in whole_fly_dict.items():
+        fw_list = []
+        for f in range(1, numf + 1):
+            f_num = whole_type + str(f)
+            f_sample = [f_num, None]
+            fw_list.append(f_sample)
+        drilldown_data.append(fw_list)
+
+    # Add the tissue F, M, L in the appropriate position...
+    drilldown_data.insert(0, f_list)
+    drilldown_data.insert(2, m_list)
+    drilldown_data.insert(4, l_list)
+
+    print ("Returning drilldown_data", drilldown_data)
+
+    return drilldown_data
 
 class MetaboliteListView(ListView):
 
