@@ -8,7 +8,7 @@ sys.path.append('/Users/Karen/PALS/')
 import pals
 from pals.pimp_tools import get_pimp_API_token_from_env, PIMP_HOST, download_from_pimp, get_ms1_peaks
 from pals.feature_extraction import DataSource
-from pals.PALS import PALS
+from pals.PLAGE import PLAGE
 from pals.ORA import ORA
 from pals.common import *
 from scipy.sparse import coo_matrix
@@ -45,7 +45,7 @@ def get_pals_df():
 
     ds = get_cache_ds()
 
-    pals = PALS(ds, plage_weight=5, hg_weight=1)
+    pals = PLAGE(ds, plage_weight=5, hg_weight=1)
     pathway_df_chebi = pals.get_pathway_df()
     pw_df_chebi = add_num_fly_formulas(ds, pathway_df_chebi)
 
@@ -146,8 +146,6 @@ def add_num_fly_formulas(pals_ds, pals_df):
     """
     logger.info("Updating the DS F to those identified bu Chebi Ids in Fly")
     pathway_ids = pals_df.index.values
-    print ("one")
-    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
 
 
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
@@ -165,8 +163,6 @@ def add_num_fly_formulas(pals_ds, pals_df):
 
     # Recalculate the coverage for the new values.
     pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
-    print ('two')
-    print (pals_df.loc['R-DME-1483101', 'tot_ds_F'])
 
     return pals_df
 

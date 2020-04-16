@@ -39,6 +39,7 @@ tornado = "==5.0.2"
 loguru = "*"
 "neo4j-driver" = "*"
 pyparsing = "*"
+pals-pathway = "*"
 
 [dev-packages]
 
