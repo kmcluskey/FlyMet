@@ -744,7 +744,8 @@ def met_search_highchart_data(request, tissue, metabolite):
     for drill, intensity in zip(drilldown_data, int_data):
         if intensity:
             for d, i in zip(drill, intensity):
-                d[1] = i
+                if not math.isnan(i): #Replace if the value is not a nan - otherwise leave as None
+                    d[1] = i
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_data = []
