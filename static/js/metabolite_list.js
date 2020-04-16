@@ -27,11 +27,11 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                 buttons: [ 'csv', 'pdf' ]
             }
         ],
-        
+
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {className: "px300", "targets":0 }, //First column minumum size of 300px
+            {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
             {
                 "targets": '_all',
                 "createdCell": function (td, cellData, rowData, row, col) {
@@ -56,7 +56,7 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
                     }
 
                     if ($th.text().includes('Metabolite')){
-                      $(td).addClass("px300")
+                      $(td).addClass("maxpx300")
                     }
                 }
             }
