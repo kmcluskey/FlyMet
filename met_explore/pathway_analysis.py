@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import sys
 import logging
-sys.path.append('/Users/Karen/PALS/')
+# sys.path.append('/Users/Karen/PALS/')
 
 import pals
 from pals.pimp_tools import get_pimp_API_token_from_env, PIMP_HOST, download_from_pimp, get_ms1_peaks
@@ -45,7 +45,7 @@ def get_pals_df():
 
     ds = get_cache_ds()
 
-    pals = PLAGE(ds, plage_weight=5, hg_weight=1)
+    pals = PLAGE(ds)
     pathway_df_chebi = pals.get_pathway_df()
     pw_df_chebi = add_num_fly_formulas(ds, pathway_df_chebi)
 
