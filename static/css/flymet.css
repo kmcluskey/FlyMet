@@ -156,6 +156,14 @@ card-header {
     /*z-index: 4;*/
 }
 
+.myspan100 {
+  overflow-y: scroll;
+  width: 100%;
+  float: left;
+  margin-left:0px;
+  height: 100%;
+}
+
 .myspan75 {
     overflow-y: scroll;
     width: 75%;
@@ -437,7 +445,7 @@ table.dataTable .maxpx300 {
   max-width: 30vw;
   min-width: 30vw;
   overflow-x: hidden;
-  /* overflow-x: scroll; */ 
+  /* overflow-x: scroll; */
 }
 
 .inline_list{
@@ -494,4 +502,11 @@ table.dataTable .maxpx300 {
 .pw_name_col {
   overflow-x: scroll;
   width: 10px;
+}
+
+.text_box{
+  border: 1px solid;
+  border-radius: 5px;
+  display: inline;
+  padding: 3px 3px 3px 3px;
 }

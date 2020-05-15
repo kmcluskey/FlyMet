@@ -309,9 +309,65 @@ def pathway_search(request):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
+
     """
 
-    return render(request, 'met_explore/pathway_search.html')
+    if request.method == 'GET':  # If the URL is loaded
+        search_query = request.GET.get('pathway_search', None)
+        met_peak_list = []
+        metabolite_names = []
+        min = MIN
+        max = MAX
+        mean = MEAN
+        column_headers = []
+
+        # If we get a metabolite sent from the view
+        if search_query is not None:
+
+            pathway_id_names_dict = get_pathway_id_names_dict()
+
+            try:
+
+                pathway_id = pathway_id_names_dict[search_query]
+                metabolite_names, met_peak_list = pathway_search_data(pathway_id)
+
+            except KeyError:
+
+                met_peak_list = []
+
+            view_df, min, mean, max = get_peak_compare_df()
+            column_names = view_df.columns.tolist()
+
+            group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+            for c in column_names:
+                column_headers.append(group_names[c])
+
+
+        num_metabolites = len(metabolite_names)
+
+        name_data = zip(metabolite_names, met_peak_list)
+        print ("name_data", name_data)
+
+        name_data_list = list(name_data)
+
+        for n, m in name_data_list:
+            print (n)
+            print (m)
+
+        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+        context = {
+            'name_data':name_data_list,
+            'metabolite_names':metabolite_names,
+            'met_peak_list':met_peak_list,
+            'num_metabolites':num_metabolites,
+            'pathway_name': search_query,
+            'columns': column_headers, 'max_value': max, 'min_value': min,
+            'mean_value': mean,
+            'json_url': reverse('get_pathway_names')
+        }
+
+        return render(request, 'met_explore/pathway_search.html', context)
 
 
 def met_ex_gconditions(request):
@@ -574,6 +630,55 @@ def get_metabolite_names(request):
 
     else:
         return JsonResponse({'metaboliteNames':['Not', 'ajax']})
+
+
+def get_pathway_names(request):
+    """
+       A method to return a list of all the Pathway names present in Reactome for the daea
+       :return: A unique list of pathway names
+    """
+    pals_df = get_cache_df()
+
+    if request.is_ajax():
+        pathway_names = pals_df.pw_name.tolist()
+        return JsonResponse({'pathwayNames':pathway_names})
+
+    else:
+        return JsonResponse({'pathwayNames':['Not', 'ajax']})
+
+
+def pathway_search_data(pwy_id):
+    """
+    Given the pathway ID return the list of metabolites and associated peaks
+    :param request:
+    :param pwy_id: Reactome pathway ID
+    :return: List of metabolite names followed by associated peaks in the pathway.
+    """
+
+    cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
+
+    peak_compare_df, _, _, _ = get_peak_compare_df()
+    peak_compare_df = peak_compare_df.fillna("-")
+
+    met_name_list =[]
+    met_peak_list = []
+    for cmpd, form in cmpd_form_dict.items():
+        cmpd_name = Compound.objects.get(chebi_id=cmpd).cmpd_name
+        met_name_list.append(cmpd_name)
+        peaks = Peak.objects.filter(compound__chebi_id=cmpd)
+        peak_list = [p.id for p in peaks]
+        m_peaks = peak_compare_df[peak_compare_df['id'].isin(peak_list)]
+        m_peaks_data = m_peaks.values.tolist()
+        met_peak_list.append(m_peaks_data)
+
+    print ("returning met_peak_list ", met_peak_list)
+
+    return met_name_list, met_peak_list
+
+    # return JsonResponse({'pathway_search_data': met_peak_list})
+
+
+
 
 def metabolite_peak_data(request, cmpd_id):
     """

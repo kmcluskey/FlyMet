@@ -64,6 +64,18 @@ def get_cache_df():
 
     return pals_df
 
+def get_pathway_id_names_dict():
+
+    pals_df = get_cache_df()
+    pathway_id_names_dict ={}
+    for ix, row in pals_df.iterrows():
+
+        pathway_id_names_dict[row.pw_name] = ix
+
+    return pathway_id_names_dict
+
+
+
 
 def get_pals_int_df():
     """
@@ -171,7 +183,7 @@ def get_fly_pw_cmpd_formula(pw_id):
     """
     Method to return a cmpd_id: cmpd formula dictionary for a given pathway
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
-    :return: Dict with cmpd_id: formula for each of the cmpds in a given pathway for the fly data
+    :return: Dict with cmpd chebi_id: formula for each of the cmpds in a given pathway for the fly data
     """
 
     fly_pw_cmpd_for_dict = {}
@@ -210,14 +222,10 @@ def get_formula_set(cmpd_list):
     return formula_list
 
 
-
-
-
-
 def get_pals_single_entity_annot_df():
     ## This chooses one entity per compound to use for mapping to the patwhays - the order is: chebi, kegg, hmdb and then lipidmaps.
     """
-    :param annot_cmpd_df: A dataframe with the peaks with all the availbale annotations for the compounds
+    :param annot_cmpd_df: A dataframe with the peaks with all the available annotations for the compounds
     :return: Peak:entity ID DF - choses one DB ID for each peak compound
     """
     logger.info("Getting the single entity annotation df")
