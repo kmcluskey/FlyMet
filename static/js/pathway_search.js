@@ -1,18 +1,12 @@
 require('./init_datatables')
 require('bootstrap/js/dist/tooltip');
 const d3 = require('d3');
-import {initialise_table} from './flymet_tables';
-import {show_hide_tables} from './flymet_tables';
+// import {initialise_table} from './flymet_tables';
+// import {show_hide_tables} from './flymet_tables';
 
 Awesomplete = require('awesomplete');
 require('awesomplete/awesomplete.css');
 require('../css/awesomechanges.css')
-
-// const url = `/met_explore/pathway_search_data/${pwy_id}`
-// fetch(url)
-// .then(res => res.json())//response type
-// .then(handleUpdate);
-
 
 function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
     // let t0 = performance.now();
@@ -28,7 +22,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
 
       drawCallback: function(settings){
           /* Add some tooltips for demonstration purposes */
-          $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+          $('.NotDetected2').tooltip({title: "This MS peak was not detected for this tissue/life stage combination", placement: "top", position:"relative"})
       },
 
         // responsive: true,
@@ -37,11 +31,6 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
         "scrollX": true,
         fixedheader: true,
         colReorder: true,
-        // ajax: {
-        //   url: `/met_explore/metabolite_pathway_data/${pwy_id}`,
-        //   cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
-        // },
-
         select: {
             style: 'single'
         },
@@ -108,7 +97,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                     else {
                       const value = $td.text()
                       if (value == '-') {
-                        $(td).addClass("NotDetected");
+                        $(td).addClass("NotDetected2");
                       }
                       else {
                       const num = parseFloat(value).toFixed(2)

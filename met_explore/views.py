@@ -347,13 +347,9 @@ def pathway_search(request):
         num_metabolites = len(metabolite_names)
 
         name_data = zip(metabolite_names, met_peak_list)
-        print ("name_data", name_data)
-
         name_data_list = list(name_data)
 
-        for n, m in name_data_list:
-            print (n)
-            print (m)
+
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
         context = {
@@ -671,13 +667,7 @@ def pathway_search_data(pwy_id):
         m_peaks_data = m_peaks.values.tolist()
         met_peak_list.append(m_peaks_data)
 
-    print ("returning met_peak_list ", met_peak_list)
-
     return met_name_list, met_peak_list
-
-    # return JsonResponse({'pathway_search_data': met_peak_list})
-
-
 
 
 def metabolite_peak_data(request, cmpd_id):

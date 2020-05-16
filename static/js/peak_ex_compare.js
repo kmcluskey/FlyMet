@@ -18,7 +18,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
 
       drawCallback: function(settings){
           /* Add some tooltips for demonstration purposes */
-          $('.NotDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
+          $('.NotDetected').tooltip({title: "This MS peak was not detected for this tissue/life stage combination", placement: "top"})
       },
 
         // responsive: true,

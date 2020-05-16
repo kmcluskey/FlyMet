@@ -134,9 +134,9 @@ div.dt-buttons {
 .table-card-header {
   color: #5D2627;
   background-color:  #D6DCE6;
-
 }
 
+ .tooltip { pointer-events: none; }
 
 card-header {
   padding: 0.5rem 0.75rem;
@@ -172,7 +172,6 @@ card-header {
     height: 100%;
     /* z-index: 1; */
 }
-
 
 .myspan80 {
     overflow-y: scroll;
