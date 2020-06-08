@@ -259,7 +259,7 @@ function updatePeakData(returned_data, radio_all_check){
         badge_info =`A${no_other_cmpds}`;
         success="danger";
       }
-        if (radio_all_check || ion=='M+H' || ion=='M-H'){ //draw if ion = M+H or M-H or if all adducts are chosen
+        if (radio_all_check || ion=='M+H' || ion=='M-H' || ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
 
         let peakDiv = document.createElement('div');
         peakDiv.setAttribute('class', 'p-2');

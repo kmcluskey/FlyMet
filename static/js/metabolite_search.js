@@ -168,7 +168,4 @@ $(document).ready(function() {
     console.log("waiting on table, caught", e);
     }
   }
-
-  console.log('metabolite_passed', metabolite);
-  console.log('url', url)
 });
