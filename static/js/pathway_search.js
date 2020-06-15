@@ -204,8 +204,9 @@ $(document).ready(function() {
   // initialise_table("pw_table_AM",-10.0, 0.0, 10);
   // initialise_table("pw_table_L",-10.0, 0.0, 10);
   //
-  // $('#activity1').tooltip({title: "Histidine decarboxylase", placement: "top"});
-  // $('#activity2').tooltip({title: "Carnosine N-methyltransferase", placement: "top"});
+  $('#DSF').tooltip({title: "Matching Formulae in found Flymet", placement: "top"});
+  $('#PWF').tooltip({title: "Unique Formulae in the Pathway", placement: "top"});
+  $('#Cov').tooltip({title: "Dataset/Pathway formulae coverage", placement: "top"});
   //
   // let check_table_dict = {
   //   "AF_check": "AFtable",

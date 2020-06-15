@@ -101,14 +101,36 @@
                   <fieldset class="pathway_details fieldset-details">
                     <legend class="sidebar">Selected Pathway</legend>
                     <div class="p-2">
-                      <p class="m-2">{{pathway_name}}</p>
+                      <p class="lead m-2">{{pathway_name}}</p>
                       </div>
                       <hr class="my-3">
-                      <div class="p-2">
-                        <p class="lead m-2">Metabolites in Pathway:</p>
+                      <div class>
+                        <p class=" m-2">Metabolite Coverage:</p>
                       </div>
                       <!-- <legend class="sidebar">Metabolites</legend> -->
                       <div class = "p-2" id='dataDiv'>
+
+                      <div class="pl-2 pb-0 table-responsive">
+                        <table class="table table-sm table-bordered side_table">
+                          <thead>
+                            <tr id = "side_columns">
+                                <th id='PWF' class="side_col">Pwy Formula</th>
+                                <th id='DSF' class="side_col">DS Formula</th>
+                                <th id='Cov' class="side_col">Coverage</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                {% for m in summ_values %}
+                                {% if forloop.last %}
+                                      <td class="text-center ">{{m}} %</td>
+                                {% else %}
+                                      <td class="text-center">{{m}}</td>
+                                {% endif %}
+                                 {% endfor %}
+                              </tr>
+                            </tbody>
+                            </table>
 
                       </div>
                       </fieldset>

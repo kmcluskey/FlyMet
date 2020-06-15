@@ -187,14 +187,14 @@ def get_fly_pw_cmpd_formula(pw_id):
     """
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df()
-    pals_ds = get_cache_ds()
+    pals_df = get_cache_df() #possibly member variables
+    pals_ds = get_cache_ds() #possibly member variables
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     # For all of the pathways in reactome get the uniue cmpd_ids
-    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
+    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids) #Possibly an member variable
 
     reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
     fly_pw_cmpds = reactome_pw_cmpds.intersection(fly_chebi_ids)
@@ -205,6 +205,28 @@ def get_fly_pw_cmpd_formula(pw_id):
         fly_pw_cmpd_for_dict[cmpd]=formula
 
     return fly_pw_cmpd_for_dict
+
+def get_reactome_pw_metabolites(pw_id):
+    """
+
+    :param pw_id: The ID of the pathway
+    :return: A list of metabolites associated with this Reactome pathway.
+    """
+
+    pals_df = get_cache_df()  # possibly member variables
+    pals_ds = get_cache_ds()  # possibly member variables
+    pathway_ids = pals_df.index.values
+
+    # Pass the summary table for the pathway from another function.
+    # pwy_summ_table = pals_df.index
+
+    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids) #Possibly an member variable
+    reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
+
+    print ("CMPDS", reactome_pw_cmpds)
+
+    return reactome_pw_cmpds
+
 
 
 def get_formula_set(cmpd_list):

@@ -321,15 +321,21 @@ def pathway_search(request):
         mean = MEAN
         column_headers = []
 
+        pals_df, _, _, _ = get_pals_view_data()
+
+        #Lists for the little pathway summary table.
+        summ_values =[]
+
         # If we get a metabolite sent from the view
         if search_query is not None:
 
             pathway_id_names_dict = get_pathway_id_names_dict()
+            pathway_id = pathway_id_names_dict[search_query]
 
             try:
 
-                pathway_id = pathway_id_names_dict[search_query]
                 metabolite_names, met_peak_list = pathway_search_data(pathway_id)
+
 
             except KeyError:
 
@@ -341,14 +347,22 @@ def pathway_search(request):
             group_names = cmpd_selector.get_list_view_column_names(column_names)
 
             for c in column_names:
-                column_headers.append(group_names[c])
+                column_headers.append(group_names[c])            #
 
+
+            # Here and send back the list of reactome compounds too...
+            summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
+            summ_values_orig = summ_table.values.flatten().tolist()
+            summ_values = [int(i) for i in summ_values_orig[:-1]]
+
+            summ_values.append(summ_values_orig[-1])
 
         num_metabolites = len(metabolite_names)
 
         name_data = zip(metabolite_names, met_peak_list)
         name_data_list = list(name_data)
 
+        #Get the summary list for know/all metabolites in a pathway
 
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
@@ -358,8 +372,8 @@ def pathway_search(request):
             'met_peak_list':met_peak_list,
             'num_metabolites':num_metabolites,
             'pathway_name': search_query,
-            'columns': column_headers, 'max_value': max, 'min_value': min,
-            'mean_value': mean,
+            'columns': column_headers, 'max_value': max, 'min_value': min, 'mean_value': mean,
+            'summ_values':summ_values,
             'json_url': reverse('get_pathway_names')
         }
 
@@ -670,6 +684,21 @@ def pathway_search_data(pwy_id):
     return met_name_list, met_peak_list
 
 
+def get_compounds_details(cmpds):
+    """
+    :param cmpds: A list of compounds that all for which the references are required
+    :return: A dictionary of cmpd_id: all the compound parameters
+    """
+    compounds_details = {}
+
+    for cmpd in cmpds:
+
+        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+        references = cmpd_selector.get_simple_compound_details(cmpd_id)
+        compounds_details[cmpd_id] = references
+
+    return compounds_details
+
 def metabolite_peak_data(request, cmpd_id):
     """
 
@@ -719,7 +748,7 @@ def metabolite_pathway_data(request, pw_id):
 
     pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
     cmpd_details = {}
-    for cmpd, formula in  pw_cmpd_for_dict.items():
+    for cmpd, formula in pw_cmpd_for_dict.items():
 
         cmpd_id = Compound.objects.get(chebi_id=cmpd).id
         references = cmpd_selector.get_simple_compound_details(cmpd_id)
