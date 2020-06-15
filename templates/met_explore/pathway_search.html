@@ -108,7 +108,7 @@
                         <p class=" m-2">Metabolite Coverage:</p>
                       </div>
                       <!-- <legend class="sidebar">Metabolites</legend> -->
-                      <div class = "p-2" id='dataDiv'>
+                      <!-- <div class = "p-2"> -->
 
                       <div class="pl-2 pb-0 table-responsive">
                         <table class="table table-sm table-bordered side_table">
@@ -136,13 +136,33 @@
                       </fieldset>
 
                       <fieldset id="click_info" class="fieldset-details">
-                        <legend class="sidebar">Pathway Summary</legend>
+                        <legend class="sidebar">Peak Annotations</legend>
                         <div class="p-2">
                           <p class="m-2">Click on a peak to see other associated metabolites</p>
                         </div>
                       </fieldset>
 
+
+                      <fieldset class="peak_details fieldset-details">
+                        <legend class="sidebar">Peak Annotations</legend>
+                        <div class="p-2">
+                          <p id ="peak_id" class="m-2"></p>
+
+                          <div class="row">
+                            <div class ="col-6">
+                            <input type="radio" name="radio_adducts" id="filtered" autocomplete="off" checked=""> <small>M+H/M-H</small>
+                            </div>
+                            <div class ="col-6">
+                            <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off"><small>All adducts</small>
+                            </div>
+                          </div>
+                          </div>
+                          <hr class="my-3">
+                          <div id='dataDiv'>
+                          </div>
+                          </fieldset>
                     </div>
+                    <!-- </div> -->
 
 
 

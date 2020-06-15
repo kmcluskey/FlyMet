@@ -240,8 +240,8 @@ function updatePathwayInfo(returned_data){
 
 $(document).ready(function() {
     $("fieldset[class^='pathway_details']").hide();
-  console.log ("min, mean, max values for table ", min_value, mean_value, max_value)
-  let pals_table = initialise_pals_table("pals_data", min_value, mean_value, max_value);
+
+    let pals_table = initialise_pals_table("pals_data", min_value, mean_value, max_value);
 
       pals_table.on( 'click', 'tr', function () {
         updatePathwaySidePanel(this);

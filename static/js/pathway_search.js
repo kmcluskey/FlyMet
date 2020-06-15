@@ -1,8 +1,6 @@
 require('./init_datatables')
 require('bootstrap/js/dist/tooltip');
 const d3 = require('d3');
-// import {initialise_table} from './flymet_tables';
-// import {show_hide_tables} from './flymet_tables';
 
 Awesomplete = require('awesomplete');
 require('awesomplete/awesomplete.css');
@@ -11,13 +9,6 @@ require('../css/awesomechanges.css')
 function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
     // let t0 = performance.now();
     const tName = '#'+tableName;
-    console.log("tablename", tName)
-    console.log (lowpoint, midpoint, highpoint)
-    // const MIN_VAL = -7;
-    // const peak_data = document.getElementById('pwy_met_table').getAttribute('url');
-//
-//     console.log("Peak data ", peak_data)
-//
     let table = $(tName).DataTable({
 
       drawCallback: function(settings){
@@ -147,6 +138,129 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
     return table;
 }
 
+//Update the metabolite side panel depending on which row is selected.
+//Let tissue name = the first text sent back from the row (more or less)
+// KMCL*** This code is copied directly from the peak_explorer - can this be made reusable??
+//---------------------------------------------------------------------------------------
+function updatePeakSidePanel(obj){
+  let peak_id = $(obj).children().first().text();
+
+  console.log("updating for peak", peak_id)
+
+
+  const handleUpdate = function(returned_data) {
+
+    let radio_filter = document.getElementById('filtered')
+    let radio_all = document.getElementById('all_adducts')
+    let radio_all_check = radio_all.checked
+
+    // Update the peak table
+    updatePeakData(returned_data, radio_all_check)
+
+    // Redraw the adduct data if the radio button is clicked.
+    $("input[name='radio_adducts']" ).click(function(){
+      {updateAdducts(returned_data)};
+    });
+
+};
+
+const url = `/met_explore/peak_explore_annotation_data/${peak_id}`
+fetch(url)
+.then(res => res.json())//response type
+.then(handleUpdate);
+
+// find all the paragraphs with id peak in the side panel
+$("fieldset[id='click_info']").hide();
+$("fieldset[class^='peak_details']").show();
+$("p[id^='peak_id']").text('Peak ' + peak_id);
+
+}
+
+function updateAdducts(returned_data){
+
+  console.log("Updating adducts")
+  let radio_all = document.getElementById('all_adducts');
+  let radio_all_check = radio_all.checked
+  updatePeakData(returned_data, radio_all_check);
+}
+
+
+// Update the compound names and any details we want on the side panel
+function updatePeakData(returned_data, radio_all_check){
+
+  const cmpd_names = returned_data.cmpd_names;
+  const adducts = returned_data.adducts;
+  const conf_fact = returned_data.conf_fact;
+  const neutral_mass = returned_data.neutral_mass;
+  const no_other_cmpds = returned_data.no_other_cmpds;
+  const cmpd_ids = returned_data.cmpd_ids
+
+  let sideDiv =  document.getElementById("dataDiv");
+  sideDiv.innerHTML = "";
+
+  const no_cmpds = cmpd_names.length;
+  let id_name ="";
+  let frag_name="";
+  let badge_info="";
+
+  for (var i = 0; i < no_cmpds; i++) {
+      const name = cmpd_names[i];
+      const ion = adducts[i];
+      const conf = conf_fact[i];
+      const cmpd_id = cmpd_ids[i];
+
+      var url_met = `met_ex_all/${cmpd_id}`
+      var nm1 = Number(neutral_mass[i]);
+      var nm = nm1.toFixed(4);
+
+      let success ="";
+      let identified="";
+      if (conf == 4){
+        identified ="I";
+        badge_info="I"
+        success="success";
+        id_name=name;
+      }
+      else if (conf == 3){
+        identified ="F";
+        badge_info="F";
+        success="warning";
+        frag_name=name;
+      }
+      else if (conf == 0){
+        identified ="A";
+        badge_info =`A${no_other_cmpds}`;
+        success="danger";
+      }
+        if (radio_all_check || ion=='M+H' || ion=='M-H'|| ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
+        let peakDiv = document.createElement('div');
+        peakDiv.setAttribute('class', 'p-2');
+
+        let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
+        <span id="cmpd_name" class="peak_data"><a href="${url_met}">${name}</a></span><div class="row pt-2">
+        <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
+        <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
+        peakDiv.innerHTML =  peak_info;
+        sideDiv.appendChild(peakDiv);
+
+      }
+      add_side_tooltips(id_name, frag_name, no_other_cmpds); //Add the tooltips after all divs created.
+    }
+}
+
+// Add table header tooltips --these are temporary.
+//KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
+function add_side_tooltips(id_name, frag_name, no_other_cmpds){
+  $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
+  $('.F').tooltip({title: `MS/MS Fragmentation data suggests that this peak is likely to be ${frag_name}`, placement: "top"});
+  $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
+};
+
+
+//-----------------------------------------------------------------------------------
+
+
+
 async function loadData(viewUrl) {
   try {
     const result = await $.getJSON(viewUrl);
@@ -171,7 +285,7 @@ function get_lifestage(ls_string){
 
 
 $(document).ready(function() {
-
+  $("fieldset[class^='peak_details']").hide();
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
     new Awesomplete(pathway_search, {list: data.pathwayNames});
@@ -179,17 +293,15 @@ $(document).ready(function() {
 
   try {
     for (var i = 0; i < num_metabolites; i++) {
-      console.log('printing i',i)
 
       let pwy_met_table = initialise_pcompare_table(`pwy_met_table_${i}`, min, mid, max);
+
+      pwy_met_table.on( 'click', 'tr', function () {
+        updatePeakSidePanel(this);
+      } );
+
     }
 
-    // add_met_tooltips(pwy_met_table, metabolite);
-    // add_table_tooltip(pwy_met_table);
-
-    // met_table.on( 'click', 'tr', function () {
-    //   updateMetSidePanel(this, metabolite);
-    // } )
   }
   catch(e) {
 
@@ -198,23 +310,11 @@ $(document).ready(function() {
     console.log("waiting on table, caught", e);
     }
   }
-  // //$("fieldset[class^='peak_details']").hide();
-  //
-  // initialise_table("pw_table_AF",-10.0, 0.0, 10);
-  // initialise_table("pw_table_AM",-10.0, 0.0, 10);
-  // initialise_table("pw_table_L",-10.0, 0.0, 10);
-  //
+
   $('#DSF').tooltip({title: "Matching Formulae in found Flymet", placement: "top"});
   $('#PWF').tooltip({title: "Unique Formulae in the Pathway", placement: "top"});
   $('#Cov').tooltip({title: "Dataset/Pathway formulae coverage", placement: "top"});
-  //
-  // let check_table_dict = {
-  //   "AF_check": "AFtable",
-  //   "AM_check": "AMtable",
-  //   "L_check": "Ltable",
-  //     };
-  //
-  // show_hide_tables("pw_form", check_table_dict);
+
   console.log('number of metabolites', num_metabolites)
   console.log('pathway passed', pathway_name);
   console.log('url', url)
