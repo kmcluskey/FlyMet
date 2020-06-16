@@ -216,7 +216,7 @@ function updatePathwayInfo(returned_data){
 
   //Set the header with a link to all metabolites in the cmpd_list
   let url_pwm = `met_ex_all/${cmpd_list}`; //pathway metabolites
-  let metabolite_header = `<a href="${url_pwm}">Metabolites</a>`;
+  let metabolite_header = `<a href="${url_pwm}">Metabolites in FlyMet</a>`;
   headerDiv.innerHTML =  metabolite_header;
   sideDiv.appendChild(headerDiv);
 
