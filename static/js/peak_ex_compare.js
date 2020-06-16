@@ -118,23 +118,28 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                       let $td = $(this);
                       let header = $td.text();
                       let head_split = header.split(" ");
+                      let tissue ="";
                       let string ="";
                       let ls="";
-
-                      if (head_split[0]=="m/z")
+                    
+                      if (head_split[0]=="m/z"){
                         string = "mass-to-charge ratio";
-                      else if (head_split[0]=="Peak")
+                      }
+                      else if (head_split[0]=="Peak"){
                         string ="";
-                      else if (head_split[0]=="RT")
+                      }
+                      else if (head_split[0]=="RT"){
                         string ="Retention Time";
-                      else
-                        string =`Fold change between ${head_split[0]} tissue from`;
+                      }
+                      else {
+                        tissue =`Fold change between ${head_split[0]} tissue from`;
                         const header_words = head_split.length;
                         const ls_check = header_words-1;
                         ls = get_lifestage(head_split[ls_check])
-
-                      //Change the title attribute of the column to the string/tooltip info
-                      $td.attr({title: `${string} ${ls} and Whole ${ls} flies`});
+                        string = `${tissue} ${ls} and Whole ${ls} flies`
+                      }
+                        //Change the title attribute of the column to the string/tooltip info
+                      $td.attr({title: `${string}`});
                       $td.attr('data-toggle', "tooltip");
                       $td.attr('data-placement', "top" );
                   });
