@@ -494,6 +494,11 @@ table.dataTable .maxpx300 {
   width: auto;
 }
 
+.bbscr_logo {
+  height: 60px;
+  width: auto;
+}
+
 .sponsor_box {
   position: absolute;
   top: auto;

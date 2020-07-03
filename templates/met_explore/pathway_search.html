@@ -14,7 +14,7 @@
 
     <div>
       <p class="mt-2 lead">
-        Choose to search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+        Choose to search for <i> Drosophila </i> metabolites or pathways:
       </p>
     </div>
 
@@ -22,18 +22,18 @@
     <div class="card text-center">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
-          </li>
+          </li> -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
           </li>
           <li class="nav-item">
             <a class="nav-link active" href="{% url 'pathway_search' %}">Pathways</a>
           </li>
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a class="nav-link" href="{% url 'tissue_search' %}">Tissues</a>
-          </li>
+          </li> -->
         </ul>
       </div>
     </div>
@@ -42,7 +42,8 @@
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>pathway</b> and find out how the associated metabolites in <i> Drosophila </i> tissues changes from the Whole Fly
+        Search for a <b>pathway</b> and find out how the associated metabolites in <i> Drosophila
+        </i> tissues change from those found in the Whole Fly.
       </p>
     </div>
 
