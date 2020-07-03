@@ -213,7 +213,7 @@ def metabolite_search(request):
                 peak_id = met_search_df.index.values[0]
                 cmpd_id = met_search_df.cmpd_id.values[0]
 
-                print ("COMPOUND_ID ", cmpd_id)
+                # print ("COMPOUND_ID ", cmpd_id)
 
                 logger.info("Getting the details for %s ", search_query)
 
@@ -268,7 +268,7 @@ def metabolite_search(request):
                     max = actual_max
                     mean = actual_mean
 
-                print ("HERE ", peak_id, cmpd_id)
+                # print ("HERE ", peak_id, cmpd_id)
                 #Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
 
@@ -316,6 +316,7 @@ def pathway_search(request):
         search_query = request.GET.get('pathway_search', None)
         met_peak_list = []
         metabolite_names = []
+        cmpd_id_list =[]
         min = MIN
         max = MAX
         mean = MEAN
@@ -334,7 +335,7 @@ def pathway_search(request):
 
             try:
 
-                metabolite_names, met_peak_list = pathway_search_data(pathway_id)
+                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id)
 
 
             except KeyError:
@@ -359,7 +360,7 @@ def pathway_search(request):
 
         num_metabolites = len(metabolite_names)
 
-        name_data = zip(metabolite_names, met_peak_list)
+        name_data = zip(cmpd_id_list, metabolite_names, met_peak_list)
         name_data_list = list(name_data)
 
         #Get the summary list for know/all metabolites in a pathway
@@ -367,6 +368,7 @@ def pathway_search(request):
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
         context = {
+            'cmpd_id_list':cmpd_id_list,
             'name_data':name_data_list,
             'metabolite_names':metabolite_names,
             'met_peak_list':met_peak_list,
@@ -672,16 +674,19 @@ def pathway_search_data(pwy_id):
 
     met_name_list =[]
     met_peak_list = []
+    cmpd_id_list = []
     for cmpd, form in cmpd_form_dict.items():
         cmpd_name = Compound.objects.get(chebi_id=cmpd).cmpd_name
+        cmpd_id =  Compound.objects.get(chebi_id=cmpd).id
         met_name_list.append(cmpd_name)
         peaks = Peak.objects.filter(compound__chebi_id=cmpd)
         peak_list = [p.id for p in peaks]
         m_peaks = peak_compare_df[peak_compare_df['id'].isin(peak_list)]
         m_peaks_data = m_peaks.values.tolist()
         met_peak_list.append(m_peaks_data)
+        cmpd_id_list.append(cmpd_id)
 
-    return met_name_list, met_peak_list
+    return cmpd_id_list, met_name_list, met_peak_list
 
 
 def get_compounds_details(cmpds):

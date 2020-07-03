@@ -59,7 +59,6 @@
     border-color: #d6dce6;
   }
 
-
 a {
   color: #5D2627;
   }
@@ -110,7 +109,7 @@ body
   }
   .lead {
     font-size: 1.1rem;
-    font-weight: 600; }
+    font-weight: 400; }
 
   .explorer_logos {
     height: 7vh;

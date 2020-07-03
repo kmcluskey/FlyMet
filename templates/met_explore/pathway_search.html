@@ -68,9 +68,9 @@
       <div class="container-fluid pb-0" >
         <div class="row pb-0">
           <div class="myspan80 mt-2">
-            {% for metabolite, peak_table_data in name_data %}
+            {% for cmpd_id, metabolite, peak_table_data in name_data %}
             <div class='pt-3 pb-4'>
-            <p class="text_box">Peaks associated with {{metabolite}}</p>
+            <p class="text_box">Peaks associated with <a href="met_ex_all/{{cmpd_id}}">{{metabolite}}</a></p>
             </div>
             <table id="pwy_met_table_{{forloop.counter0}}" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
                 <thead class="thead-light">
@@ -142,7 +142,6 @@
                         </div>
                       </fieldset>
 
-
                       <fieldset class="peak_details fieldset-details">
                         <legend class="sidebar">Peak Annotations</legend>
                         <div class="p-2">
@@ -163,8 +162,6 @@
                           </fieldset>
                     </div>
                     <!-- </div> -->
-
-
 
                 </div>
                 </div>

@@ -320,7 +320,6 @@ class CompoundSelector(object):
                             'identified': annot.identified, 'frank_annots': annot.frank_anno}
 
 
-        print ("The details for this compound are:  ", compound_details)
         return compound_details
 
     def get_simple_compound_details(self, cmpd_id):
@@ -427,7 +426,6 @@ class CompoundSelector(object):
         cmpd_ids = single_cmpds_df.cmpd_id.values
 
         for pid, cid in zip(peaks_ids, cmpd_ids):
-            print ("PID, CMPD_ID ", pid, cid)
             peak = Peak.objects.get(id=pid)
             annot = Annotation.objects.get(peak=peak, compound__id=cid)
             peak.preferred_annotation = annot
