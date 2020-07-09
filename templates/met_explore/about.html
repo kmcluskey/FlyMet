@@ -80,26 +80,29 @@
 
       <p class="p-4">
       Use the Pathway Search Page to look for metabolic
-        <a href="https://reactome.org/" target="_blank">Reactome</a>pathways of interest by name.
+        <a href="https://reactome.org/" target="_blank">Reactome</a> pathways of interest by name.
         This then reveals the pathway metabolites found in FlyMet by looking at the associated peaks found
         across Female (F), Male (M) and Larvae (L) <i>Drosophila</i> tissues and how they change.
-        The coverage of the metabolites found in FlyMet and in the pathways is also shown.
+        The coverage of the metabolites found in FlyMet and in the pathways, is also shown.
       </p>
       <hr class="my-4">
 
-    <h6 id ="MetEx"> <a href="{% url 'met_ex_tissues' %}">Metabolite Explorer</a></h6>
+    <h6 id ="MetEx"> <a href="{% url 'met_ex_all' 'All' %}">Metabolite Explorer</a></h6>
 
     <p class="p-4">
-      Use the Flymet Metabolite Explorer to examine all of the metabolites that have been annotated in FlyMet.
+      Use the Metabolite Explorer to examine all the metabolites that have been annotated in FlyMet.
       Metabolite formulas, synonyms, references to external databases and FlyMet peaks associated with the
       metabolites are shown.
+      From here the average peak intensity levels for all <a href="{% url 'glossary' %}#MetId">identified</a> metabolites in different tissues for Female (F), Male (M) and Larvae (L) Drosophila.
+      can be found.
+
     </p>
 
     <hr class="my-4">
 
     <h6 id ="PkEx"> <a href="{% url 'peak_explorer' 'All' %}">Peak Explorer</a></h6>
     <p class="p-4">
-      Use the Flymet Peak Explorer to compare the average peak intensity levels for over 9,000 annotated mass spec peaks in different
+      Use the Peak Explorer to compare the average peak intensity levels for over 9,000 annotated mass spec peaks in different
       tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>. Clicking on a peak of interest reveals all the
       metabolite annotations associated with it.
     </p>
@@ -109,15 +112,15 @@
     <h6 id ="PwyEx"> <a href="{% url 'pathway_explorer' %}">Pathway Explorer</a></h6>
     <p class="p-4">
       Use the Pathway Explorer to investigate changing metabolic pathways between <i> Drosophila </i> tissue types.
-      This ranks metabolic pathways by a statistical significance which highlights small correlated changes in a group of pathway metabolites as more
-      interesting than large changes in an individual metabolite.
-      The Pathway Explorer incorporates <a href="https://pals.glasgowcompbio.org/app/" target="_blank">PALS</a> (<b>P</b>athway <b>A</b>ctivity <b>L</b>evel <b>S</b>coring) for pathway ranking.
+      Pathways with correlated changes in a group of pathway metabolites are ranked highest. This is acheived by incorporating
+      the  <a href="https://pals.glasgowcompbio.org/app/" target="_blank">PALS</a> system
+      (<b>P</b>athway <b>A</b>ctivity <b>L</b>evel <b>S</b>coring) for pathway ranking.
     </p>
 
     <hr class="my-4">
 
     <p class = "lead">Flymet is under rapid development. If you have any questions about the website or suggestions for data analysis please feel free to
-      <a href="{% url 'feedback' %}">contact us</a></p>
+      <a href="{% url 'feedback' %}">contact us</a>.</p>
   </div>
   </div>
 
