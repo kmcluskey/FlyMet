@@ -188,7 +188,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`
-        let group_header = `<hr class="my-2"><p class= "sidebar"><a href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
+        let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
         group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
         group = group_header+group_table;
         groupDiv.innerHTML =  group;
