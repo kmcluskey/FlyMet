@@ -29,7 +29,12 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
-        buttons: [ 'colvis', 'copy',
+        buttons: [ 'copy',
+
+        {
+            extend: 'colvis',
+            columns: ':gt(0)' //do not include first column in list of columns to remove
+        },
 
             {
                 extend: 'collection',
@@ -310,6 +315,22 @@ $(document).ready(function() {
     console.log("waiting on table, caught", e);
     }
   }
+
+  //Retrieve the datatables in order to have the columns delete throughout the page.
+  var tables = $('table.display').DataTable( {
+     retrieve: true,
+     paging: false
+
+    } );
+    // When the column visibility changes on the first table, also change it on the others
+    tables.table(0).on('column-visibility', function ( e, settings, colIdx, visibility ) {
+        tables.tables(':gt(0)').columns( colIdx ).visible( visibility );
+    } );
+
+    //
+    // Create ColVis on the first table only
+    // let colvis = new $.fn.dataTable.ColVis(tables.table(0));
+  //$( colvis.button() ).insertAfter('div.info');
 
   $('#DSF').tooltip({title: "Matching Formulae in found Flymet", placement: "top"});
   $('#PWF').tooltip({title: "Unique Formulae in the Pathway", placement: "top"});

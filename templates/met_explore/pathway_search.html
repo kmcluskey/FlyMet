@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Search Metabolites {% endblock %}
+{% block title %} Search Pathways {% endblock %}
 
 {% block head_block %}
     {% render_bundle 'pathway_search' 'css' %}
@@ -63,7 +63,7 @@
       {% endif %}
 
       {% if met_peak_list|length > 0 %}
-      <div class="card-header pb-0 table-card-header">
+      <div class="info card-header pb-0 table-card-header">
       Changes observed in the {{pathway_name}} metabolites and associated peaks found in <i> Drosophila </i> tissues
       </div>
       <div class="container-fluid pb-0" >
@@ -73,7 +73,7 @@
             <div class='pt-3 pb-4'>
             <p class="text_box">Peaks associated with <a href="met_ex_all/{{cmpd_id}}">{{metabolite}}</a></p>
             </div>
-            <table id="pwy_met_table_{{forloop.counter0}}" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <table id="pwy_met_table_{{forloop.counter0}}" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
                 <thead class="thead-light">
                   <tr id = "columns">
                     {% for column_name in columns %}
