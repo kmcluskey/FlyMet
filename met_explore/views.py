@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+
 from django.http import JsonResponse
 from django.urls import reverse
-from met_explore.forms import ContactForm
+# from met_explore.forms import ContactForm
 from django.core.paginator import Paginator
 from web_omics.settings import CACHE_DURATION
 
