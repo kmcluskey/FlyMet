@@ -32,6 +32,7 @@ MEAN = 0
 
 logger = logging.getLogger(__name__)
 NUM_WHOLE_SAMPLES = 12
+WF_MIN = 1000  # Minimum value used for missing values in the whole fly data.
 
 # If the Db exists and has been initialised:
 try:
@@ -551,9 +552,6 @@ def peak_data(request, peak_list):
         peak_list = peak_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_list))
 
-
-    print("The peak list is ", peak_list)
-
     required_data = peaks.values('id', 'm_z', 'rt')
 
     peak_df = pd.DataFrame.from_records(required_data)
@@ -662,7 +660,6 @@ def get_pathway_names(request):
 def pathway_search_data(pwy_id):
     """
     Given the pathway ID return the list of metabolites and associated peaks
-    :param request:
     :param pwy_id: Reactome pathway ID
     :return: List of metabolite names followed by associated peaks in the pathway.
     """
@@ -969,6 +966,7 @@ def change_pals_col_names(pals_df):
     return pals_df
 
 def get_peak_compare_df():
+
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
@@ -987,11 +985,19 @@ def get_peak_compare_df():
 
     # Calculate the log fold change values for the table.
 
+    # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
+    # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
+    # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
+
+    group_df[['Whole_f', 'Whole_m', 'Whole_l']] = group_df[['Whole_f', 'Whole_m', 'Whole_l']].replace(np.nan, WF_MIN)
+
+
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak': 'id'}, inplace=True)
 
     column_names = group_df.columns
+
 
     # divide by the whole fly amount for the sex/life-stage.
     for c in column_names:
