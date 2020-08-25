@@ -144,10 +144,8 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint){
                       $td.attr('data-toggle', "tooltip");
                       $td.attr('data-placement', "top" );
                   });
-                  /* Apply the tooltips */
-                  $('[data-toggle="tooltip"]').tooltip({
-                      container: 'body'
-                  });
+
+                  enableTooltips();
               },
     })
 
@@ -160,7 +158,6 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint){
     console.log("returning table")
     return table;
 }
-
 
 function get_lifestage(ls_string){
   let ls = "";
@@ -185,27 +182,35 @@ function updatePathwaySidePanel(obj){
 
 
   const handleUpdate = function(returned_data) {
-    updatePathwayInfo(returned_data)
+    updatePathwayInfo(returned_data, pathway_name)
     updateReactomePathway(reactome_id, pathway_name)
 
-
 };
-//Update the bottom panel with a diagram using the Reactome ID.
+  //Update the bottom panel with a diagram using the Reactome ID.
 
-const url = `/met_explore/metabolite_pathway_data/${reactome_id}`
-fetch(url)
-.then(res => res.json())//response type
-.then(handleUpdate);
+  const url = `/met_explore/metabolite_pathway_data/${reactome_id}`
+  fetch(url)
+  .then(res => res.json())//response type
+  .then(handleUpdate);
 
-// find all the paragraphs with id peak in the side panel
-$("fieldset[id='click_info']").hide();
-$("fieldset[class^='pathway_details']").show();
-$("p[id^='pwy_id']").text(`${pathway_name}`);
+  // find all the paragraphs with id peak in the side panel
+  $("fieldset[id='click_info']").hide();
+  $("fieldset[class^='pathway_details']").show();
+  $("p[id^='pwy_id']").html(`<a href="pathway_search?pathway_search=${pathway_name}" data-toggle="tooltip"
+  title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
+  enableTooltips();
+}
+
+//Enable tooltips as a reusable function as most are made dynamically.
+function enableTooltips(){
+  $('[data-toggle="tooltip"]').tooltip({
+      container: 'body'
+  });
 }
 
 // Update the compound names and any details for the side panel.
-function updatePathwayInfo(returned_data){
+function updatePathwayInfo(returned_data, pathway_name){
   let cmpd_details = returned_data.cmpd_details
   let cmpds = Object.keys(cmpd_details)
   let no_cmpds = cmpds.length;
@@ -219,9 +224,14 @@ function updatePathwayInfo(returned_data){
 
   //Set the header with a link to all metabolites in the cmpd_list
   let url_pwm = `met_ex_all/${cmpd_list}`; //pathway metabolites
-  let metabolite_header = `<a href="${url_pwm}">Metabolites in FlyMet`;
+
+  let met_tooltip =  `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
+
+  let metabolite_header = `<a href="${url_pwm}"${met_tooltip}>Metabolites in FlyMet`;
   headerDiv.innerHTML =  metabolite_header;
   sideDiv.appendChild(headerDiv);
+
+  enableTooltips()
 
   //List all the metabolites in the pathway individually.
   for (var i = 0; i < no_cmpds; i++) {
@@ -249,7 +259,9 @@ function updateReactomePathway(pathway_id, pathway_name){
       dTitleDiv.innerHTML = "";
       //
       let pwyDiv = document.createElement(`p`);
-      let pwy_info =  `<a href="https://reactome.org/content/detail/${pathway_id}" target="_blank">Reactome Pathway: ${pathway_name}</a>`;
+      let pwy_tooltip =  `data-toggle="tooltip" title="${pathway_name} in Reactome"`
+
+      let pwy_info =  `<a href="https://reactome.org/content/detail/${pathway_id}" ${pwy_tooltip} target="_blank">${pathway_name}: Reactome</a>`;
       pwyDiv.innerHTML = pwy_info
       dTitleDiv.appendChild(pwyDiv);
 
@@ -260,7 +272,6 @@ function updateReactomePathway(pathway_id, pathway_name){
       });
 
       diagram.loadDiagram(pathway_id);
-
 
       //This allows exansion of the Reactome Diagram to the page using width_100
       let diagram_holder = document.getElementsByClassName("pwp-DiagramVisualiser")
@@ -273,8 +284,7 @@ function updateReactomePathway(pathway_id, pathway_name){
 
       }
 
-  // });
-
+      enableTooltips();
 
 }
 
@@ -286,4 +296,5 @@ $(document).ready(function() {
       pals_table.on( 'click', 'tr', function () {
         updatePathwaySidePanel(this);
       } );
+
 });
