@@ -563,3 +563,16 @@ table.dataTable .maxpx300 {
   display: inline;
   padding: 3px 3px 3px 3px;
 }
+
+.pwp-DiagramVisualiser{
+  width: 100%;
+}
+
+.width_100 {
+  width:100% !important;
+}
+
+#diagramHolder{
+  width: 100%;
+  overflow: scroll;
+}

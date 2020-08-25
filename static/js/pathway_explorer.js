@@ -186,8 +186,11 @@ function updatePathwaySidePanel(obj){
 
   const handleUpdate = function(returned_data) {
     updatePathwayInfo(returned_data)
+    updateReactomePathway(reactome_id, pathway_name)
+
 
 };
+//Update the bottom panel with a diagram using the Reactome ID.
 
 const url = `/met_explore/metabolite_pathway_data/${reactome_id}`
 fetch(url)
@@ -216,7 +219,7 @@ function updatePathwayInfo(returned_data){
 
   //Set the header with a link to all metabolites in the cmpd_list
   let url_pwm = `met_ex_all/${cmpd_list}`; //pathway metabolites
-  let metabolite_header = `<a href="${url_pwm}">Metabolites in FlyMet</a>`;
+  let metabolite_header = `<a href="${url_pwm}">Metabolites in FlyMet`;
   headerDiv.innerHTML =  metabolite_header;
   sideDiv.appendChild(headerDiv);
 
@@ -230,13 +233,50 @@ function updatePathwayInfo(returned_data){
       let name = cmpd_details[cmpds[i]].name
       let formula = cmpd_details[cmpds[i]].formula
 
-       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (${formula})</span></div>`
+       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (${formula})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 
 }
 }
 
+
+function updateReactomePathway(pathway_id, pathway_name){
+
+  console.log("In the reactome update ", pathway_id)
+
+      let dTitleDiv = document.getElementById("diagramTitle"); //diagram_title_div
+      dTitleDiv.innerHTML = "";
+      //
+      let pwyDiv = document.createElement(`p`);
+      let pwy_info =  `<a href="https://reactome.org/content/detail/${pathway_id}" target="_blank">Reactome Pathway: ${pathway_name}</a>`;
+      pwyDiv.innerHTML = pwy_info
+      dTitleDiv.appendChild(pwyDiv);
+
+      var diagram = Reactome.Diagram.create({
+          "placeHolder": "diagramHolder",
+          // "width": 1000,
+          // "height": 500
+      });
+
+      diagram.loadDiagram(pathway_id);
+
+
+      //This allows exansion of the Reactome Diagram to the page using width_100
+      let diagram_holder = document.getElementsByClassName("pwp-DiagramVisualiser")
+      let diagram_holder2 = document.getElementsByClassName("pwp-ViewerContainer")
+
+      var i;
+      for (i = 0; i < diagram_holder.length; i++) {
+        diagram_holder[i].setAttribute('class', "pwp-DiagramVisualiser width_100");
+        diagram_holder2[i].setAttribute('class', "pwp-ViewerContainer pwp-DiagramViewer width_100")
+
+      }
+
+  // });
+
+
+}
 
 $(document).ready(function() {
     $("fieldset[class^='pathway_details']").hide();

@@ -5,7 +5,9 @@
 
 {% block head_block %}
   {% render_bundle 'pathway_explorer' 'css' %}
+  <script type="text/javascript" language="javascript" src="https://reactome.org/DiagramJs/diagram/diagram.nocache.js"></script>
 {% endblock %}
+
 
 {% block body_block %}
   <!-- div for main body-->
@@ -56,6 +58,13 @@
               </tr>
             </thead>
           </table>
+
+          <hr class="my-3">
+          <div id="diagramTitle">
+          </div>
+              <div id="diagramHolder">
+              </div>
+
         </div>
 
         <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
@@ -74,16 +83,24 @@
 
               <hr class="my-3">
               <!-- <legend class="sidebar">Metabolites</legend> -->
-              <div class = "p-2" id='dataDiv'>
+              <div id='dataDiv' class = "p-2" >
 
               </div>
               </fieldset>
 
             </div>
 
+
     </div>
+
     </div>
+
     </div>
+
+    <!-- <div id="reactomeWidgetDialog" title="Reactome Viewer" style="display: none">
+        <div id="diagramHolder"></div>
+    </div> -->
+
     </div>
 
   <!--end of main div-->
