@@ -121,7 +121,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                       let tissue ="";
                       let string ="";
                       let ls="";
-                    
+
                       if (head_split[0]=="m/z"){
                         string = "mass-to-charge ratio";
                       }
@@ -216,8 +216,7 @@ function updateAdducts(returned_data){
   let radio_all_check = radio_all.checked
   updatePeakData(returned_data, radio_all_check);
 }
-//
-//
+
 // Update the compound names and any details we want on the side panel
 function updatePeakData(returned_data, radio_all_check){
 
@@ -226,6 +225,7 @@ function updatePeakData(returned_data, radio_all_check){
   const conf_fact = returned_data.conf_fact;
   const neutral_mass = returned_data.neutral_mass;
   const no_other_cmpds = returned_data.no_other_cmpds;
+  const cmpd_ids = returned_data.cmpd_ids;
 
   console.log(cmpd_names)
 
@@ -241,9 +241,12 @@ function updatePeakData(returned_data, radio_all_check){
       const name = cmpd_names[i];
       const ion = adducts[i];
       const conf = conf_fact[i];
+      const cmpd_id = cmpd_ids[i];
+
 
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
+      var url_met = `met_ex_all/${cmpd_id}`
 
       let success ="";
       let identified="";
@@ -270,7 +273,7 @@ function updatePeakData(returned_data, radio_all_check){
         peakDiv.setAttribute('class', 'p-2');
 
         let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-        <span id="cmpd_name" class="peak_data">${name}</span><div class="row pt-2">
+        <span id="cmpd_name" class="peak_data"><a href="${url_met}">${name}</a></span><div class="row pt-2">
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
         console.log("here")
@@ -282,7 +285,6 @@ function updatePeakData(returned_data, radio_all_check){
     }
 }
 
-// Add table header tooltips --these are temporary.
 //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
 function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});

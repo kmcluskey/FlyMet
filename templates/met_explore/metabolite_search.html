@@ -158,10 +158,10 @@
                   {% if references.identified == 'True' %}
                   <span id="I" class="badge badge-pill badge-success">I</span>
                   {% elif references.frank_annots %}
-                  <span id ="F" class="badge badge-pill badge-primary">F</span>
+                  <span id ="F" class="badge badge-pill badge-warning">F</span>
                   {{references.frank_annots.probability}}
                   {% else %}
-                  <span id="A" class="badge badge-pill badge-warning">A15</span>
+                  <span id="A" class="badge badge-pill badge-danger">A15</span>
                   {% endif %}
                   <hr>
                   <div class="row">
