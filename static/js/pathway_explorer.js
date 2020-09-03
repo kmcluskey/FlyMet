@@ -294,11 +294,13 @@ function updateReactomePathway(pathway_id, pathway_name){
 
       }
 
+      $("#diagram_info").show();
       enableTooltips();
 }
 
 $(document).ready(function() {
     $("fieldset[class^='pathway_details']").hide();
+    $("#diagram_info").hide();
 
     let pals_table = initialise_pals_table("pals_data", min_value, mean_value, max_value);
 

@@ -111,6 +111,11 @@ body
       height: 8vh;
   }
 
+  .tiny_img{
+    max-width: 20%;
+    height: 2vh;
+  }
+
   .footer_text{
     color: #5D2627;
     font-family: 'Sue Ellen Francisco', sans-serif;
