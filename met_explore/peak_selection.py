@@ -841,7 +841,7 @@ class PeakSelector(object):
         :param peak_df: The dataframe to check for duplicates in
         :param mz: The mz of the peak
         :param rt: The retention time of the peak
-        :return: duplicates - A boolean stating wether or not the peak_df contains duplicates for this given (mz,rt) peak.
+        :return: duplicates - A boolean stating whether or not the peak_df contains duplicates for this given (mz,rt) peak.
         """
         duplicates = False
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 
@@ -185,7 +186,20 @@ class SamplePeak(models.Model):
 
 
 
+class UniqueToken(models.Model):
+    """
+    Model class to store unique and often temporary tokens
+    """
+    name = models.CharField(max_length=250, unique=True, blank=False)
+    description =  models.CharField(max_length=250, blank = True)
+    token = models.CharField(max_length=100)
+    datetime = models.DateTimeField(default=timezone.now)  # for token expiration
 
+    def  __str__(self):
+        """
+        Method to return a representation of the Token
+        """
+        return "Token " + self.name +" token " + self.token
 
 
 

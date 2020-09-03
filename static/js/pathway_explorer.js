@@ -241,9 +241,10 @@ function updatePathwayInfo(returned_data, pathway_name){
 
       let url_cmpd = `met_ex_all/${cmpds[i]}`;
       let name = cmpd_details[cmpds[i]].name
-      let formula = cmpd_details[cmpds[i]].formula
+      //let formula = cmpd_details[cmpds[i]].formula
+      let chebi_id = cmpd_details[cmpds[i]].chebi_id
 
-       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (${formula})</a></span></div>`
+       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 
@@ -254,6 +255,8 @@ function updatePathwayInfo(returned_data, pathway_name){
 function updateReactomePathway(pathway_id, pathway_name){
 
   console.log("In the reactome update ", pathway_id)
+  console.log("reactome_token ", reactome_token)
+
 
       let dTitleDiv = document.getElementById("diagramTitle"); //diagram_title_div
       dTitleDiv.innerHTML = "";
@@ -272,6 +275,13 @@ function updateReactomePathway(pathway_id, pathway_name){
       });
 
       diagram.loadDiagram(pathway_id);
+      // diagram.highlightItem('')
+      diagram.onDiagramLoaded(function (loaded) {
+            console.info("Loaded ", loaded);
+
+        });
+
+        diagram.setAnalysisToken(reactome_token,'TOTAL')
 
       //This allows exansion of the Reactome Diagram to the page using width_100
       let diagram_holder = document.getElementsByClassName("pwp-DiagramVisualiser")
@@ -285,7 +295,6 @@ function updateReactomePathway(pathway_id, pathway_name){
       }
 
       enableTooltips();
-
 }
 
 $(document).ready(function() {

@@ -67,7 +67,7 @@
 
         </div>
 
-        <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+        <div class="myspan20 sticky-top pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
           <fieldset id="click_info" class="fieldset-details">
             <legend class="sidebar">Reactome Pathway</legend>
             <div class="p-2">
@@ -116,8 +116,9 @@
   var min_value = {{min_value}}
   var max_value = {{max_value}}
   var mean_value = {{mean_value}}
-  // var pals_data = "{{pals_data | safe}}"
-  console.log(min_value, max_value, mean_value)
+  var reactome_token = "{{reactome_token | safe}}"
+
+  console.log(min_value, max_value, mean_value, reactome_token)
 
   </script>
 

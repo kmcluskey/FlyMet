@@ -5,6 +5,9 @@ import sys
 import logging
 # sys.path.append('/Users/Karen/PALS/')
 
+import requests
+import json
+
 import pals
 from pals.pimp_tools import get_pimp_API_token_from_env, PIMP_HOST, download_from_pimp, get_ms1_peaks
 from pals.feature_extraction import DataSource
@@ -13,7 +16,10 @@ from pals.ORA import ORA
 from pals.common import *
 from scipy.sparse import coo_matrix
 from django.core.cache import cache, caches
+from urllib.parse import quote
+from datetime import timedelta
 
+from django.shortcuts import get_object_or_404
 
 from met_explore.models import *
 from met_explore.compound_selection import CompoundSelector
@@ -352,7 +358,6 @@ def get_pals_experimenal_design():
 
 def get_control_from_case(case):
     """
-
     :param case: The group name of the sample that are the casein the study
     :return:
     """
@@ -369,7 +374,68 @@ def get_control_from_case(case):
 
     return control
 
+def get_highlight_token():
+    """
+    A method to create or get the token for highlighting Reactome pathways using their Chebi IDS.
+    This method would be easily adapted for other tokens.
+    :return: The highlight token from the DB for use in Reactome pathways
+    """
 
+    time_now = timezone.now()
+    highlight_token, token_created = UniqueToken.objects.get_or_create(name="reactome_highlight")
 
+    if token_created:  # Add a description and save.
+        highlight_token.description = "A token to highlight cmpds on a Reactome pathway based on their Chebi IDs"
+        highlight_token.token = get_reactome_highlight_token()
+        logger.info("A new token %s was created %s", highlight_token)
+        highlight_token.save()
+    else:
+        if highlight_token.datetime < (time_now - timedelta(days=7)): #if the toen has expired.
+
+            logger.info("Reactome highlight token_expired requesting a new one")
+            token = get_reactome_highlight_token()
+            if token:  # If reactome returns a token update it, otherwsie do nothing and try next time.
+                logger.info("updating token retrieval time so we know when it expires")
+                highlight_token.token = token
+                highlight_token.datetime = time_now
+                highlight_token.save()
+            else:
+                logger.info("Reactome returned nothing so skipping token update for now")
+        else:
+            logger.info("Reactome token valid so no request for a new one required")
+    logger.info("returning %s", highlight_token.token)
+    return highlight_token.token
+
+def get_reactome_highlight_token():
+    """
+    Get the a token from Reactome that will highlight the metabolites present by their
+    Chebi_IDs
+    :return: token from the Reactome server that expires every 7 or so days or None if we don't get anything back from the server.
+    """
+
+    SPECIES = 'Drosophila melanogaster'
+
+    cmpd_list = list(Compound.objects.values_list('chebi_id', flat=True).distinct())
+    unq_chebi_ids = [x for x in cmpd_list if x is not None]
+
+    data = '\t'.join(unq_chebi_ids)
+    encoded_species = quote(SPECIES)
+
+    url = 'https://reactome.org/AnalysisService/identifiers/?interactors=false&species=' + encoded_species + '&pageSize=20&page=1&sortBy=ENTITIES_PVALUE&order=ASC&resource=TOTAL&pValue=1&includeDisease=true'
+    response = requests.post(url, headers={'Content-Type': 'text/plain'}, data=data.encode('utf-8'))
+
+    status_code = response.status_code
+
+    logger.debug("The response status code from Reactome %d", status_code)
+
+    if status_code == 200:
+        json_response = json.loads(response.text)
+        token = json_response['summary']['token']
+    else:
+        logger.warning("The response status code from Reactome suggests it failed %d", status_code)
+        token = None
+    logger.info ("Returning the Reactome token %s ", token)
+
+    return token
 
 

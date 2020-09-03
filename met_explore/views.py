@@ -591,8 +591,11 @@ def pathway_explorer(request):
     stop = timeit.default_timer()
 
     logger.info("Returning the pals data took: %s S", str(stop - start))
+
+    reactome_token = get_highlight_token()
+
     response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
-                'mean_value': pals_mean}
+                'mean_value': pals_mean, 'reactome_token': reactome_token }
 
 
     return render(request, 'met_explore/pathway_explorer.html', response)
@@ -910,7 +913,7 @@ def met_search_highchart_data(request, tissue, metabolite):
 
 def get_pals_view_data():
     """
-    :return: The pals DF and the min, mean and max values for the databale colouring.
+    :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
 
     pals_df = get_cache_df()
@@ -931,8 +934,6 @@ def get_pals_view_data():
     ordered_df = df_to_order.reindex(sorted(df_to_order.columns), axis=1)
 
     final_df = pd.concat([df_unordered, ordered_df], axis=1)
-
-    # fly_pals_df = fly_pals_df.reindex(sorted(fly_pals_df.columns[2:]), axis=1)
 
     return final_df,  pals_min_value,  pals_mean_value,  pals_max_value
 
