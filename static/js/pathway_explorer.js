@@ -241,10 +241,10 @@ function updatePathwayInfo(returned_data, pathway_name){
 
       let url_cmpd = `met_ex_all/${cmpds[i]}`;
       let name = cmpd_details[cmpds[i]].name
-      //let formula = cmpd_details[cmpds[i]].formula
+      let formula = cmpd_details[cmpds[i]].formula
       let chebi_id = cmpd_details[cmpds[i]].chebi_id
 
-       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id})</a></span></div>`
+       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id}, formula: ${formula})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 

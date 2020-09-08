@@ -70,6 +70,48 @@ def get_cache_df():
 
     return pals_df
 
+
+def get_chebi_relations_dict():
+    """
+    A method to parse the chebi relation tsv and store the relationship we want in a dictionary
+    :return: Dict with structure Chebi_id: related_chebi_ids
+    """
+    logger.info("Getting the chebi_relations_dict")
+    chebi_relation_df = pd.read_csv("data/relation.tsv", delimiter="\t")
+
+    # List of relationship we want in the dictionary
+    select_list = ["is_conjugate_base_of", "is_conjugate_acid_of", "is_tautomer_of"]
+    chebi_select_df = chebi_relation_df[chebi_relation_df.TYPE.isin(select_list)]
+
+    chebi_relation_dict = {}
+
+    for ix, row in chebi_select_df.iterrows():
+        init_id = str(row.INIT_ID)
+        final_id =str(row.FINAL_ID)
+        if init_id in chebi_relation_dict.keys():
+            # Append the final_id onto the existing values
+            chebi_relation_dict[init_id].append(final_id)
+        else:  # make a new key entry for the dict
+            chebi_relation_dict[init_id] = [final_id]
+
+    return chebi_relation_dict
+
+
+def get_related_chebi_ids(chebi_ids):
+    """
+
+    :param chebi_ids: A list of chebi IDS
+    :return: A list of related chebi_IDs that are not already in the list
+    """
+    chebi_relation_dict = get_chebi_relations_dict()
+    related_chebis = set()
+
+    for c_id in chebi_ids:
+        if c_id in chebi_relation_dict:
+            related_chebis.update(chebi_relation_dict[c_id])
+
+    return related_chebis
+
 def get_pathway_id_names_dict():
 
     pals_df = get_cache_df()
@@ -390,7 +432,7 @@ def get_highlight_token():
         logger.info("A new token %s was created %s", highlight_token)
         highlight_token.save()
     else:
-        if highlight_token.datetime < (time_now - timedelta(days=7)): #if the toen has expired.
+        if highlight_token.datetime < (time_now - timedelta(days=7)): #if the token has expired.
 
             logger.info("Reactome highlight token_expired requesting a new one")
             token = get_reactome_highlight_token()
@@ -416,7 +458,13 @@ def get_reactome_highlight_token():
     SPECIES = 'Drosophila melanogaster'
 
     cmpd_list = list(Compound.objects.values_list('chebi_id', flat=True).distinct())
-    unq_chebi_ids = [x for x in cmpd_list if x is not None]
+    chebi_ids = [x for x in cmpd_list if x is not None]
+
+    related_chebis = get_related_chebi_ids(chebi_ids)
+    related_chebis.update(chebi_ids)
+
+    unq_chebi_ids = list(related_chebis)
+
 
     data = '\t'.join(unq_chebi_ids)
     encoded_species = quote(SPECIES)
