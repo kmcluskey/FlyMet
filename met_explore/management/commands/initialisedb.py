@@ -41,6 +41,7 @@ class Command(BaseCommand):
             construct_peak_df = peak_select.construct_all_peak_df(pre_peak_df)
             peak_df = peak_select.remove_duplicates(construct_peak_df)
             populate_peaks_cmpds_annots(peak_df)
+            add_related_chebis()
 
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
 

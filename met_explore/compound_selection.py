@@ -315,7 +315,7 @@ class CompoundSelector(object):
         cmpd = Compound.objects.get(id=cmpd_id)
         annot = Annotation.objects.get(peak=peak,compound=cmpd)
 
-        compound_details = {'inchikey': cmpd.inchikey, 'smiles': cmpd.smiles, 'cas_code': cmpd.cas_code, 'chebi_id': cmpd.chebi_id, 'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),'mz':peak.m_z, 'mass': annot.neutral_mass,
+        compound_details = {'inchikey': cmpd.inchikey, 'smiles': cmpd.smiles, 'cas_code': cmpd.cas_code, 'chebi_id': cmpd.chebi_id, 'related_chebi': cmpd.related_chebi, 'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),'mz':peak.m_z, 'mass': annot.neutral_mass,
                             'rt': peak.rt, 'formula': cmpd.cmpd_formula, 'adduct': annot.adduct, 'name': cmpd.cmpd_name,
                             'identified': annot.identified, 'frank_annots': annot.frank_anno}
 
@@ -326,7 +326,7 @@ class CompoundSelector(object):
 
         cmpd = Compound.objects.get(id=cmpd_id)
 
-        cmpd_details = {'inchikey': cmpd.inchikey, 'smiles': cmpd.smiles, 'cas_code': cmpd.cas_code, 'chebi_id': cmpd.chebi_id, 'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),
+        cmpd_details = {'inchikey': cmpd.inchikey, 'smiles': cmpd.smiles, 'cas_code': cmpd.cas_code, 'chebi_id': cmpd.chebi_id, 'related_chebi': cmpd.related_chebi, 'hmdb_id':cmpd.get_hmdb_id(), 'kegg_id':cmpd.get_kegg_id(),
                         'formula': cmpd.cmpd_formula,  'name': cmpd.cmpd_name}
 
         return cmpd_details

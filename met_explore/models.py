@@ -53,6 +53,7 @@ class Compound(models.Model):
     smiles =  models.CharField(null=True, max_length=250)
     cas_code = models.CharField(null=True, max_length=30)
     peaks = models.ManyToManyField(Peak, through='Annotation')
+    related_chebi = models.CharField(null=True, max_length=100) #Chebi IDs of acid/base conjugated or tautomers of the original chebi_id
 
 
     @property

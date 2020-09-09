@@ -212,6 +212,7 @@ function enableTooltips(){
 // Update the compound names and any details for the side panel.
 function updatePathwayInfo(returned_data, pathway_name){
   let cmpd_details = returned_data.cmpd_details
+  console.log (returned_data.cmpd_details)
   let cmpds = Object.keys(cmpd_details)
   let no_cmpds = cmpds.length;
 
@@ -243,8 +244,17 @@ function updatePathwayInfo(returned_data, pathway_name){
       let name = cmpd_details[cmpds[i]].name
       let formula = cmpd_details[cmpds[i]].formula
       let chebi_id = cmpd_details[cmpds[i]].chebi_id
+      let r_chebi = cmpd_details[cmpds[i]].related_chebi
 
-       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id}, formula: ${formula})</a></span></div>`
+      if ( r_chebi != null) {
+        console.log(r_chebi)
+        related_chebi = `or ${r_chebi}`
+      }
+      else {
+        related_chebi = ''
+      }
+
+       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id} ${related_chebi}; formula: ${formula})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 

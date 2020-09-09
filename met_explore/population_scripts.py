@@ -1,4 +1,5 @@
 from met_explore.serializers import *
+from met_explore.pathway_analysis import get_chebi_relation_dict
 from django.db import IntegrityError
 import numpy as np
 import logging
@@ -115,6 +116,41 @@ def populate_peaks_cmpds_annots(peak_df):
 
 
     logger.info("The filtered peaks, compounds and annotations have been populated")
+
+
+def add_related_chebis():
+    """
+    Method to add the related chebi ids from Reactome to the compounds.
+    :return:
+    """
+    compounds = Compound.objects.all()
+    for c in compounds:
+        if c.chebi_id:
+            related_chebi = get_related_chebis(c.chebi_id)
+            if related_chebi:
+                c.related_chebi = related_chebi
+                c.save()
+
+
+def get_related_chebis(chebi_id):
+    """
+    A method to return related Chebi_IDs - these are alternative Chebis for acid/base conjugates and tautomers used by Reactome.
+    :param chebi_id:
+    :return: related_chebi_ids
+    """
+
+    chebi_rel_dict = get_chebi_relation_dict()
+    if chebi_id in chebi_rel_dict.keys():
+
+        related_chebis = chebi_rel_dict[chebi_id]
+
+    else:
+        related_chebis = None
+
+    return related_chebis
+
+
+
 
 
 #Takes a peak intensity DF and a pimp peak id / secondary id dictionary to populate the PeakSamples.

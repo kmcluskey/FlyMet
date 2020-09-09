@@ -21,10 +21,13 @@ from datetime import timedelta
 
 from django.shortcuts import get_object_or_404
 
+from met_explore.helpers import *
 from met_explore.models import *
 from met_explore.compound_selection import CompoundSelector
 
 logger = logging.getLogger(__name__)
+
+CHEBI_RELATION_DICT = "chebi_relation_dict"
 
 def get_pals_ds():
 
@@ -71,28 +74,52 @@ def get_cache_df():
     return pals_df
 
 
-def get_chebi_relations_dict():
+def get_chebi_relation_dict():
     """
     A method to parse the chebi relation tsv and store the relationship we want in a dictionary
     :return: Dict with structure Chebi_id: related_chebi_ids
     """
-    logger.info("Getting the chebi_relations_dict")
-    chebi_relation_df = pd.read_csv("data/relation.tsv", delimiter="\t")
 
-    # List of relationship we want in the dictionary
-    select_list = ["is_conjugate_base_of", "is_conjugate_acid_of", "is_tautomer_of"]
-    chebi_select_df = chebi_relation_df[chebi_relation_df.TYPE.isin(select_list)]
+    try:
+        chebi_relation_dict = load_object("./data/" + CHEBI_RELATION_DICT +".pkl")
 
-    chebi_relation_dict = {}
+    except Exception as e:
 
-    for ix, row in chebi_select_df.iterrows():
-        init_id = str(row.INIT_ID)
-        final_id =str(row.FINAL_ID)
-        if init_id in chebi_relation_dict.keys():
-            # Append the final_id onto the existing values
-            chebi_relation_dict[init_id].append(final_id)
-        else:  # make a new key entry for the dict
-            chebi_relation_dict[init_id] = [final_id]
+        logger.info("Constructing %s ", CHEBI_RELATION_DICT + ".pkl")
+
+        try:
+            chebi_relation_df = pd.read_csv("data/relation.tsv", delimiter="\t")
+
+        except FileNotFoundError as e:
+
+            logger.error("data/relation.tsv must be present")
+            raise e
+
+            # List of relationship we want in the dictionary
+        select_list = ["is_conjugate_base_of", "is_conjugate_acid_of", "is_tautomer_of"]
+        chebi_select_df = chebi_relation_df[chebi_relation_df.TYPE.isin(select_list)]
+
+        chebi_relation_dict = {}
+
+        for ix, row in chebi_select_df.iterrows():
+            init_id = str(row.INIT_ID)
+            final_id =str(row.FINAL_ID)
+            if init_id in chebi_relation_dict.keys():
+                # Append the final_id onto the existing values
+                id_1 = chebi_relation_dict[init_id]
+                joined_string = ", ".join([id_1, final_id])
+                chebi_relation_dict[init_id] = joined_string
+            else:  # make a new key entry for the dict
+                chebi_relation_dict[init_id] = final_id
+        logger.info("HERE")
+
+        try:
+            logger.info("saving chebi_relation_dict")
+            save_object(chebi_relation_dict, "./data/" + CHEBI_RELATION_DICT + ".pkl")
+
+        except Exception as e:
+            logger.error("Pickle didn't work because of %s ", e)
+            pass
 
     return chebi_relation_dict
 
@@ -103,7 +130,7 @@ def get_related_chebi_ids(chebi_ids):
     :param chebi_ids: A list of chebi IDS
     :return: A list of related chebi_IDs that are not already in the list
     """
-    chebi_relation_dict = get_chebi_relations_dict()
+    chebi_relation_dict = get_chebi_relation_dict()
     related_chebis = set()
 
     for c_id in chebi_ids:
