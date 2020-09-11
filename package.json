@@ -72,7 +72,7 @@
     "datatables.net-select-bs4": "^1.2.7",
     "datatables.net-select-dt": "^1.2.7",
     "highcharts": "^7.2.2",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.1",
     "pdfmake": "^0.1.39",
     "popper.js": "^1.14.4",
     "react": "^16.5.2",
