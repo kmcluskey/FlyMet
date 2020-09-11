@@ -451,7 +451,7 @@ class CompoundSelector(object):
 
         # This dictionary is used when we have std_cmpds without DB Ids - if a compound not in this dictionary this should be flagged
         # and the KEGG ID added to the dictionary if possible.
-        missing_cmpd_dict = {"O-Acetylcarnitine": "C02571"}
+        missing_cmpd_dict = {"O-Acetylcarnitine": "C02571", "L-homoserine": "C00263"}
 
         KEGG = 2 #DB identifier for kegg - currenly the only missing entry has a KEGG ID - this may need to be changed.
 
