@@ -415,7 +415,7 @@ class PreprocessCompounds(object):
                 chebi_id = None
 
         elif identifier.startswith('Std'):
-            logger.info("This is a standard DB compound identifer and is no use to chebi ", identifier)
+            logger.info("This is a standard DB compound identifer and is no use to chebi %s", identifier)
             chebi_id = None
         else:
             logger.warning("We have a new and unusual identifier - do something!!")
