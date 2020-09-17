@@ -39,9 +39,9 @@ def get_pals_ds():
     return ds
 
 def get_cache_ds():
-
+    # cache.delete('pals_ds')
     if cache.get('pals_ds') is None:
-        logger.info("we dont have cache so running the function")
+        logger.info("we dont have cache so running the pals_ds function")
         cache.set('pals_ds', get_pals_ds(), 60 * 180000)
         pals_ds = cache.get('pals_ds')
     else:
@@ -64,7 +64,7 @@ def get_cache_df():
 
     # cache.delete('pals_df')
     if cache.get('pals_df') is None:
-        logger.info("we dont have cache so running the function")
+        logger.info("we dont have cache so running the pals_df function")
         cache.set('pals_df', get_pals_df(), 60 * 180000)
         pals_df = cache.get('pals_df')
     else:
