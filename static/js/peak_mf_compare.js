@@ -39,7 +39,7 @@ $('[data-toggle="tooltip"]').tooltip({
   $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();
 
-    let nd_title = " M or F data is missing for this peak";
+    let nd_title = " M and/or F data was not detected for this peak";
     let ajax_url = "peak_mf_compare_data";
     let peak_table = initialise_pcompare_table("peak_compare_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
