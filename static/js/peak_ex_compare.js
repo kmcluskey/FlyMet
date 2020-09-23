@@ -1,4 +1,4 @@
-import {initialise_pcompare_table, updatePeakSidePanel} from './peak_compare_general.js';
+import {initialise_pcompare_table, updatePeakSidePanel} from './peak_tables_general.js';
 
 function headerTips(settings) {
 
