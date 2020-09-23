@@ -447,16 +447,18 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df()
+    view_df, min, mean, max = get_peak_mf_compare_df()
     column_names = view_df.columns.tolist()
+
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
     column_headers = []
     for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+        new_header = group_names[c]
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)',"(F/M)")
+        column_headers.append(new_header)
 
     stop = timeit.default_timer()
 
@@ -464,9 +466,7 @@ def peak_mf_compare(request):
     response = {'columns': column_headers, 'max_value': max, 'min_value': min,
                 'mean_value': mean}
 
-    return render(request, 'met_explore/peak_ex_compare.html', response)
-
-
+    return render(request, 'met_explore/peak_mf_compare.html', response)
 
 
 
@@ -575,13 +575,13 @@ def peak_mf_compare_data(request):
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    view_df1, _, _, _ = get_peak_compare_df()
+    view_df1, _, _, _ = get_peak_mf_compare_df()
     view_df = view_df1.fillna("-")
     #
-    peak_compare_data = view_df.values.tolist()
+    peak_compare_mf_data = view_df.values.tolist()
 
-    logger.info("returning the peak comparison data ", peak_compare_data)
-    return JsonResponse({'data': peak_compare_data})
+    logger.info("returning the peak comparison data ", peak_compare_mf_data)
+    return JsonResponse({'data': peak_compare_mf_data})
 
 
 
@@ -1025,7 +1025,7 @@ def get_peak_mf_compare_df():
 
     # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
 
-    group_df = group_df.replace(np.nan, WF_MIN)
+    # group_df = group_df.replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1035,7 +1035,7 @@ def get_peak_mf_compare_df():
     filter_columns = [col_name for col_name in group_df.columns if not col_name.endswith('l')]
 
     # male_female dataframe
-    mf_df = group_df.copy([filter_columns])
+    mf_df = group_df[filter_columns].copy()
 
     # divide by the whole fly amount for the sex/life-stage.
     for c in filter_columns:
@@ -1045,11 +1045,13 @@ def get_peak_mf_compare_df():
                 mf_df[c] = mf_df[c].div(mf_df[tissue + '_m'])
             except KeyError:
                 # There is no male equivalent for this tissue so drop this from the column names
-                filter_columns.remove(tissue + '_f')
+                mf_df = mf_df.drop(columns=c, axis=1)
 
+    female_columns = [col_name for col_name in mf_df.columns if not col_name.endswith('m')]
 
+    f_df = mf_df[female_columns].copy()
     drop_list = ['id']
-    log_df, min_value, mean_value, max_value = get_log_df(mf_df, drop_list)
+    log_df, min_value, mean_value, max_value = get_log_df(f_df, drop_list)
 
     peak_compare_mf = pd.merge(peak_df, log_df, on='id')
 

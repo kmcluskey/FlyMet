@@ -18,6 +18,7 @@ module.exports = {
         pathway_search: './static/js/pathway_search',
         peak_explorer: './static/js/peak_explorer',
         peak_ex_compare: './static/js/peak_ex_compare',
+        peak_mf_compare: './static/js/peak_mf_compare',
         pathway_explorer: './static/js/pathway_explorer',
         index:'./static/js/index',
     },

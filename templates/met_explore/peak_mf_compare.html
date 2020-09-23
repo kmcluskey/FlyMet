@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Peak Tissue Compare {% endblock %}
+{% block title %} Peak M/F Tissue Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'peak_ex_compare' 'css' %}
+    {% render_bundle 'peak_mf_compare' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -28,14 +28,11 @@
           <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_ex_compare' %}">Tissue Comparisons</a>
+          <a class="nav-link" href="{% url 'peak_ex_compare' %}">Tissue Comparisons</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
+          <a class="nav-link active" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
-        </li> -->
         </ul>
         <div class="top-right" >
           <p class ="title_text">Peak Explorer</p>
@@ -44,7 +41,7 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> tissues and the whole flies
+    The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> male and female flies
     </p>
   </div>
 
@@ -118,10 +115,10 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_compare_list = "{{peak_compare_list | safe}}"
+    var peak_compare_list = "{{peak_mf_list | safe}}"
     console.log(min_value, mean_value, max_value)
 
     </script>
 
-  {% render_bundle 'peak_ex_compare' 'js' %}
+  {% render_bundle 'peak_mf_compare' 'js' %}
   {% endblock %}
