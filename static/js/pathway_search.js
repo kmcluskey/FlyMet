@@ -248,7 +248,7 @@ function updatePeakData(returned_data, radio_all_check){
         peakDiv.setAttribute('class', 'p-2');
 
         let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-        <span id="cmpd_name" class="peak_data"><a href="${url_met}">${name}</a></span><div class="row pt-2">
+        <span id="cmpd_name" class="peak_data"><a href="${url_met}" target="_blank">${name}</a></span><div class="row pt-2">
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
         peakDiv.innerHTML =  peak_info;

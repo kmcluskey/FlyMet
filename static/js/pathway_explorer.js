@@ -228,7 +228,7 @@ function updatePathwayInfo(returned_data, pathway_name){
 
   let met_tooltip =  `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
 
-  let metabolite_header = `<a href="${url_pwm}"${met_tooltip}>Metabolites in FlyMet`;
+  let metabolite_header = `<a href="${url_pwm}"${met_tooltip} target=_"blank">Metabolites in FlyMet`;
   headerDiv.innerHTML =  metabolite_header;
   sideDiv.appendChild(headerDiv);
 
@@ -254,7 +254,7 @@ function updatePathwayInfo(returned_data, pathway_name){
         related_chebi = ''
       }
 
-       let cmpd_info = `<div><span><a href="${url_cmpd}">${name} (ChEBI: ${chebi_id} ${related_chebi}; formula: ${formula})</a></span></div>`
+       let cmpd_info = `<div><span><a href="${url_cmpd}" target = _"blank">${name} (ChEBI: ${chebi_id} ${related_chebi}; formula: ${formula})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
 
