@@ -2,18 +2,16 @@ require('./init_datatables.js');
 const d3 = require('d3');
 require('bootstrap/js/dist/tooltip');
 
-
+const MIN_VAL = 3000;
 
 function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_title, ajax_url, headerTips){
     let t0 = performance.now();
     const tName = '#'+tableName;
     console.log("tablename", tName)
     console.log (lowpoint, midpoint, highpoint)
-    // const MIN_VAL = -7;
-    const peak_data = document.getElementById('peak_compare_list').getAttribute('url');
-//
-//     console.log("Peak data ", peak_data)
-//
+
+    const peak_data = document.getElementById('peak_list').getAttribute('url');
+
     let table = $(tName).DataTable({
 
       drawCallback: function(settings){
@@ -59,18 +57,34 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
                     let $td = $(td);
                     let $th = $(".col").eq($td.index());
 
-                    const colorScale = d3.scaleLinear()
-                        .domain([lowpoint, midpoint, highpoint])
-                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+                      // Different colour scales depending on wether we have log (linearscale) or
+                      // exponential (logScale) data
+                      let colourLog = d3.scaleLog()
+                      .domain([lowpoint, midpoint, highpoint])
+                      .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                      let colourLinear = d3.scaleLinear()
+                      .domain([lowpoint, midpoint, highpoint])
+                      .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
 
                     if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
-                            const colour = colorScale(cellData);
+                            if (lowpoint > 100){
+                              if (cellData==0.00){
+                                cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                              };
+                            const colour = colourLog(cellData);
                             $(td).css('background-color', colour)
+                          }
+                          else {
+                            const colour = colourLinear(cellData);
+                            $(td).css('background-color', colour)
+                          }
                         }
                     }
+
                     // Format the column numbers
                     //Ignore for the peak ID
                     if ($th.text().includes('Peak ID')){
@@ -96,23 +110,29 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
                       if (value == '-') {
                         $(td).addClass("NotDetected");
                       }
+                      else if (value > 100){ //it is intensity data
+                          const num = parseFloat(value).toExponential(2)
+                          $td.empty();
+                          $td.append(num);
+                          $(td).addClass("data");
+                        }
                       else {
-                      const num = parseFloat(value).toFixed(2)
-                      $td.empty();
-                      $td.append(num);
-                      $(td).addClass("data");
+                        const num = parseFloat(value).toFixed(2)
+                        $td.empty();
+                        $td.append(num);
+                        $(td).addClass("data");
+
                     }
                     }
                     }
-                  }
+                    }
+
         ],
         // Add the tooltips to the dataTable header
         "initComplete": headerTips
 
     })
 
-//     // add data here
-//
 //Return the table so that the it is resuable.
 
     let t1 = performance.now();
@@ -121,9 +141,6 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
     return table;
 }
 
-
-//
-//
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updatePeakSidePanel(obj){
@@ -154,9 +171,21 @@ fetch(url)
 .then(handleUpdate);
 //
 // find all the paragraphs with id peak in the side panel
+let pk_url = `peak_explorer/${peak_id}`
+
+
 $("fieldset[id='click_info']").hide();
 $("fieldset[class^='peak_details']").show();
-$("p[id^='peak_id']").text('Peak ' + peak_id);
+// $("p[id^='peak_id']").text('Peak ' + peak_id);
+console.log ("peak_id ", peak_id)
+$("p[id^='peak_id']").html(`<a href="${pk_url}">Peak ${peak_id}</a>`);
+
+// let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
+// group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
+// group = group_header+group_table;
+// groupDiv.innerHTML =  group;
+// sideDiv.appendChild(groupDiv);
+
 
 }
 //
@@ -224,10 +253,9 @@ function updatePeakData(returned_data, radio_all_check){
         peakDiv.setAttribute('class', 'p-2');
 
         let peak_info = `<span class="${identified} badge badge-pill badge-${success}">${badge_info}</span>
-        <span id="cmpd_name" class="peak_data"><a href="${url_met}">${name}</a></span><div class="row pt-2">
+        <span id="cmpd_name" class="peak_data"><a href="${url_met}" target="_blank">${name}</a></span><div class="row pt-2">
         <div id ="Ion" class="col-sm-5 peak_data"><b>Ion: </b>${ion}</div>
         <div id ="NM" class="col-sm-7 peak_data"><b>Mass: </b>${nm}</div><br></div>`;
-        console.log("here")
         peakDiv.innerHTML =  peak_info;
         sideDiv.appendChild(peakDiv);
 

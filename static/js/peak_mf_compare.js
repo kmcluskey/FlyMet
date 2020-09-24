@@ -41,7 +41,7 @@ $('[data-toggle="tooltip"]').tooltip({
 
     let nd_title = " M and/or F data was not detected for this peak";
     let ajax_url = "peak_mf_compare_data";
-    let peak_table = initialise_pcompare_table("peak_compare_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
+    let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
         peak_table.on( 'click', 'tr', function () {
           updatePeakSidePanel(this);

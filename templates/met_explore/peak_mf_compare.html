@@ -41,7 +41,7 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> male and female flies
+    The log<sub>2</sub> fold-change (FC) in peak intesity levels between tissues in Male and Female <i>Drosophila</i>.
     </p>
   </div>
 
@@ -50,7 +50,7 @@
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
           <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="peak_compare_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
@@ -73,7 +73,7 @@
           <fieldset class="peak_details fieldset-details">
             <legend class="sidebar">Peak Annotations</legend>
             <div class="p-2">
-              <p id ="peak_id" class="m-2"></p>
+              <p id ="peak_id"></p>
 
               <div class="row">
                 <div class ="col-6">
@@ -115,7 +115,7 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_compare_list = "{{peak_mf_list | safe}}"
+    var peak_mf_list = "{{peak_mf_list | safe}}"
     console.log(min_value, mean_value, max_value)
 
     </script>

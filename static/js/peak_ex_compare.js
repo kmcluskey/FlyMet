@@ -58,7 +58,7 @@ $(document).ready(function() {
 
     let nd_title = "This MS peak was not detected for this tissue/life stage combination";
     let ajax_url = "peak_compare_data";
-    let peak_table = initialise_pcompare_table("peak_compare_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
+    let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
       peak_table.on( 'click', 'tr', function () {
         updatePeakSidePanel(this);
