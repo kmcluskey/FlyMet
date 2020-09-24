@@ -439,6 +439,36 @@ def peak_ex_compare(request):
 
     return render(request, 'met_explore/peak_ex_compare.html', response)
 
+def peak_mf_compare(request):
+    """
+       :param request: The peak Explorer page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    logger.info("Peak m/f comparison table requested")
+    start = timeit.default_timer()
+    view_df, min, mean, max = get_peak_mf_compare_df()
+    column_names = view_df.columns.tolist()
+
+
+    group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+    column_headers = []
+    for c in column_names:
+        new_header = group_names[c]
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)',"(F/M)")
+        column_headers.append(new_header)
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S", str(stop - start))
+    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
+
+    return render(request, 'met_explore/peak_mf_compare.html', response)
+
+
 
 def peak_explorer(request, peak_list):
 
@@ -536,6 +566,24 @@ def peak_compare_data(request):
 
     logger.info("returning the peak comparison data ", peak_compare_data)
     return JsonResponse({'data': peak_compare_data})
+
+
+def peak_mf_compare_data(request):
+
+    """
+    :param request: Request for the peak data for the Peak Explorer page
+    :return: The cached url of the ajax data for the peak data table.
+    """
+
+    view_df1, _, _, _ = get_peak_mf_compare_df()
+    view_df = view_df1.fillna("-")
+    #
+    peak_compare_mf_data = view_df.values.tolist()
+
+    logger.info("returning the peak comparison data ", peak_compare_mf_data)
+    return JsonResponse({'data': peak_compare_mf_data})
+
+
 
 def peak_data(request, peak_list):
 
@@ -966,25 +1014,62 @@ def change_pals_col_names(pals_df):
 
     return pals_df
 
+
+def get_peak_mf_compare_df():
+
+    peaks = Peak.objects.all()
+    required_data = peaks.values('id', 'm_z', 'rt')
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    group_df = get_group_df(peaks)
+
+    # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
+
+    # group_df = group_df.replace(np.nan, WF_MIN)
+
+    # Add an index so that we can export the peak as one of the values.
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    # Remove all larvae samples
+    filter_columns = [col_name for col_name in group_df.columns if not col_name.endswith('l')]
+
+    # male_female dataframe
+    mf_df = group_df[filter_columns].copy()
+
+    # divide by the whole fly amount for the sex/life-stage.
+    for c in filter_columns:
+        if c.endswith('f'):
+            tissue = c.replace("_f", "")
+            try:
+                mf_df[c] = mf_df[c].div(mf_df[tissue + '_m'])
+            except KeyError:
+                # There is no male equivalent for this tissue so drop this from the column names
+                mf_df = mf_df.drop(columns=c, axis=1)
+
+    female_columns = [col_name for col_name in mf_df.columns if not col_name.endswith('m')]
+
+    f_df = mf_df[female_columns].copy()
+    drop_list = ['id']
+    log_df, min_value, mean_value, max_value = get_log_df(f_df, drop_list)
+
+    peak_compare_mf = pd.merge(peak_df, log_df, on='id')
+
+    return peak_compare_mf, min_value, mean_value, max_value
+
+
 def get_peak_compare_df():
+    """
+    Get the DF needed for the peak-tissue-compare page
+    :return: peak_df, min, mean, max values needed for colouring the table.
+    """
 
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
     # Get all of the peaks and all of the intensities of the sample files
-
-    if cache.get('full_group_df') is None:
-        print("we dont have cache so running the function")
-        cache.set('full_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
-        group_df = cache.get('full_group_df')
-    else:
-        print("we have cache so retrieving it")
-        group_df = cache.get('full_group_df')
-
-    # group_df = cmpd_selector.get_group_df(peaks)
-
-    # Calculate the log fold change values for the table.
+    group_df = get_group_df(peaks)
 
     # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
@@ -999,7 +1084,6 @@ def get_peak_compare_df():
 
     column_names = group_df.columns
 
-
     # divide by the whole fly amount for the sex/life-stage.
     for c in column_names:
         if c.endswith('f'):
@@ -1009,17 +1093,11 @@ def get_peak_compare_df():
         elif c.endswith('m'):  # it starts with m
             group_df[c] = group_df[c].div(group_df['Whole_m'])
 
-    # Exclude the ID column for the calculation and then add it back to merge the DFs
-    temp_df = group_df['id']
-    group_df = group_df.drop(['id'], axis=1)
-    log_df = np.log2(group_df)
-    log_df.insert(0, 'id', temp_df)
 
-    calc_df = log_df.drop(['id', 'Whole_f', 'Whole_m', 'Whole_l'], axis=1)
+    drop_list = ['id', 'Whole_f', 'Whole_m', 'Whole_l']
 
-    max_value = np.nanmax(calc_df)
-    min_value = np.nanmin(calc_df)
-    mean_value = np.nanmean(calc_df)
+    # Calculate the log fold change values for the table.
+    log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
 
@@ -1063,6 +1141,49 @@ def get_drilldown_data():
     print ("Returning drilldown_data", drilldown_data)
 
     return drilldown_data
+
+
+def get_log_df(df, drop_list):
+    """
+
+    :param df: DF that you want the log df calculated from, contains only values and an id column
+    :param drop_list: list of columns to be dropped from the final dataframe
+    :return: log_df, min, mean, max values found in this df
+    """
+    # Exclude the ID column for the calculation and then add it back to merge the DFs
+
+    temp_df = df['id']
+    df = df.drop(['id'], axis=1) #remove id column
+    log_df = np.log2(df)
+    log_df.insert(0, 'id', temp_df) #put id column back
+
+    calc_df = log_df.drop(drop_list, axis=1)
+
+    max_value = np.nanmax(calc_df)
+    min_value = np.nanmin(calc_df)
+    mean_value = np.nanmean(calc_df)
+
+    return log_df, min_value, mean_value, max_value
+
+def get_group_df(peaks):
+    """
+
+    :param peaks: The peaks required
+    :return: group_df All of the groups for the required peaks
+    """
+
+    # Get all of the peaks and all of the intensities of the sample files
+
+    if cache.get('full_group_df') is None:
+        print("we dont have cache so running the function")
+        cache.set('full_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
+        group_df = cache.get('full_group_df')
+    else:
+        print("we have cache so retrieving it")
+        group_df = cache.get('full_group_df')
+
+    return group_df
+
 
 class MetaboliteListView(ListView):
 

@@ -1,3 +1,4 @@
+// require('./peak_tables_general.js');
 import {initialise_pcompare_table, updatePeakSidePanel} from './peak_tables_general.js';
 
 function headerTips(settings) {
@@ -21,11 +22,7 @@ function headerTips(settings) {
       string ="Retention Time";
     }
     else {
-      tissue =`Fold change between ${head_split[0]} tissue from`;
-      const header_words = head_split.length;
-      const ls_check = header_words-1;
-      ls = get_lifestage(head_split[ls_check])
-      string = `${tissue} ${ls} and Whole ${ls} flies`
+      string =`Fold change between Female and Male ${head_split[0]} tissue`;
     }
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string}`});
@@ -39,29 +36,14 @@ $('[data-toggle="tooltip"]').tooltip({
 
 };
 
+  $(document).ready(function() {
+  $("fieldset[class^='peak_details']").hide();
 
-function get_lifestage(ls_string){
-
-  let ls = "";
-  if (ls_string=="(F)")
-    ls ="Females";
-  else if (ls_string=="(M)")
-      ls ="Males";
-  else if (ls_string=="(L)")
-        ls ="Larvae";
-
-  return ls
-};
-
-$(document).ready(function() {
-    $("fieldset[class^='peak_details']").hide();
-
-    let nd_title = "This MS peak was not detected for this tissue/life stage combination";
-    let ajax_url = "peak_compare_data";
+    let nd_title = " M and/or F data was not detected for this peak";
+    let ajax_url = "peak_mf_compare_data";
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
-      peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this);
-      } );
-
-});
+        peak_table.on( 'click', 'tr', function () {
+          updatePeakSidePanel(this);
+        } );
+  });

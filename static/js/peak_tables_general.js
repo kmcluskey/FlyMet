@@ -1,19 +1,22 @@
-require('./init_datatables')
-require('bootstrap/js/dist/tooltip');
+require('./init_datatables.js');
 const d3 = require('d3');
+require('bootstrap/js/dist/tooltip');
 
-Awesomplete = require('awesomplete');
-require('awesomplete/awesomplete.css');
-require('../css/awesomechanges.css')
+const MIN_VAL = 3000;
 
-function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
-    // let t0 = performance.now();
+function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_title, ajax_url, headerTips){
+    let t0 = performance.now();
     const tName = '#'+tableName;
+    console.log("tablename", tName)
+    console.log (lowpoint, midpoint, highpoint)
+
+    const peak_data = document.getElementById('peak_list').getAttribute('url');
+
     let table = $(tName).DataTable({
 
       drawCallback: function(settings){
           /* Add some tooltips for demonstration purposes */
-          $('.NotDetected2').tooltip({title: "This MS peak was not detected for this tissue/life stage combination", placement: "top", position:"relative"})
+          $('.NotDetected').tooltip({title: nd_title, placement: "top"})
       },
 
         // responsive: true,
@@ -22,6 +25,11 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
         "scrollX": true,
         fixedheader: true,
         colReorder: true,
+        ajax: {
+          url: `/met_explore/${ajax_url}`,
+          cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
+        },
+
         select: {
             style: 'single'
         },
@@ -29,12 +37,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
-        buttons: [ 'copy',
-
-        {
-            extend: 'colvis',
-            columns: ':gt(0)' //do not include first column in list of columns to remove
-        },
+        buttons: [ 'colvis', 'copy',
 
             {
                 extend: 'collection',
@@ -52,24 +55,36 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                 "createdCell": function (td, cellData, rowData, row, col) {
 
                     let $td = $(td);
-                    // console.log($td.text())
                     let $th = $(".col").eq($td.index());
 
-                    const colorScale = d3.scaleLinear()
-                        .domain([lowpoint, midpoint, highpoint])
-                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+                      // Different colour scales depending on wether we have log (linearscale) or
+                      // exponential (logScale) data
+                      let colourLog = d3.scaleLog()
+                      .domain([lowpoint, midpoint, highpoint])
+                      .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                      let colourLinear = d3.scaleLinear()
+                      .domain([lowpoint, midpoint, highpoint])
+                      .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
 
                     if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
-                            // if (cellData==0.00){
-                            //   cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
-                            // };
-                            const colour = colorScale(cellData);
+                            if (lowpoint > 100){
+                              if (cellData==0.00){
+                                cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                              };
+                            const colour = colourLog(cellData);
                             $(td).css('background-color', colour)
+                          }
+                          else {
+                            const colour = colourLinear(cellData);
+                            $(td).css('background-color', colour)
+                          }
                         }
                     }
+
                     // Format the column numbers
                     //Ignore for the peak ID
                     if ($th.text().includes('Peak ID')){
@@ -93,66 +108,41 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                     else {
                       const value = $td.text()
                       if (value == '-') {
-                        $(td).addClass("NotDetected2");
+                        $(td).addClass("NotDetected");
                       }
+                      else if (value > 100){ //it is intensity data
+                          const num = parseFloat(value).toExponential(2)
+                          $td.empty();
+                          $td.append(num);
+                          $(td).addClass("data");
+                        }
                       else {
-                      const num = parseFloat(value).toFixed(2)
-                      $td.empty();
-                      $td.append(num);
-                      $(td).addClass("data");
+                        const num = parseFloat(value).toFixed(2)
+                        $td.empty();
+                        $td.append(num);
+                        $(td).addClass("data");
+
                     }
                     }
                     }
-                  }
+                    }
+
         ],
         // Add the tooltips to the dataTable header
-        // Add the tooltips to the dataTable header
-        "initComplete": function(settings){
+        "initComplete": headerTips
 
-                    $(".col").each(function(){
-
-                      let $td = $(this);
-                      let header = $td.text();
-                      let head_split = header.split(" ");
-                      let tissue ="";
-                      let string ="";
-                      let ls="";
-
-                      if (head_split[0]=="m/z"){
-                        string = "mass-to-charge ratio";
-                      }
-                      else if (head_split[0]=="Peak"){
-                        string ="";
-                      }
-                      else if (head_split[0]=="RT"){
-                        string ="Retention Time";
-                      }
-                      else {
-                        tissue =`Fold change between ${head_split[0]} tissue from`;
-                        const header_words = head_split.length;
-                        const ls_check = header_words-1;
-                        ls = get_lifestage(head_split[ls_check])
-                        string = `${tissue} ${ls} and Whole ${ls} flies`
-                      }
-                        //Change the title attribute of the column to the string/tooltip info
-                      $td.attr({title: `${string}`});
-                      $td.attr('data-toggle', "tooltip");
-                      $td.attr('data-placement', "top" );
-                  });
-                  /* Apply the tooltips */
-                  $('[data-toggle="tooltip"]').tooltip({
-                      container: 'body'
-                  });
-              },
     })
 
+//Return the table so that the it is resuable.
+
+    let t1 = performance.now();
+    console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
+    console.log("returning table")
     return table;
 }
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-// KMCL*** This code is copied directly from the peak_explorer - can this be made reusable??
-//---------------------------------------------------------------------------------------
 function updatePeakSidePanel(obj){
   let peak_id = $(obj).children().first().text();
 
@@ -179,14 +169,26 @@ const url = `/met_explore/peak_explore_annotation_data/${peak_id}`
 fetch(url)
 .then(res => res.json())//response type
 .then(handleUpdate);
-
+//
 // find all the paragraphs with id peak in the side panel
+let pk_url = `peak_explorer/${peak_id}`
+
+
 $("fieldset[id='click_info']").hide();
 $("fieldset[class^='peak_details']").show();
-$("p[id^='peak_id']").text('Peak ' + peak_id);
+// $("p[id^='peak_id']").text('Peak ' + peak_id);
+console.log ("peak_id ", peak_id)
+$("p[id^='peak_id']").html(`<a href="${pk_url}">Peak ${peak_id}</a>`);
+
+// let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
+// group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
+// group = group_header+group_table;
+// groupDiv.innerHTML =  group;
+// sideDiv.appendChild(groupDiv);
+
 
 }
-
+//
 function updateAdducts(returned_data){
 
   console.log("Updating adducts")
@@ -194,7 +196,6 @@ function updateAdducts(returned_data){
   let radio_all_check = radio_all.checked
   updatePeakData(returned_data, radio_all_check);
 }
-
 
 // Update the compound names and any details we want on the side panel
 function updatePeakData(returned_data, radio_all_check){
@@ -204,7 +205,9 @@ function updatePeakData(returned_data, radio_all_check){
   const conf_fact = returned_data.conf_fact;
   const neutral_mass = returned_data.neutral_mass;
   const no_other_cmpds = returned_data.no_other_cmpds;
-  const cmpd_ids = returned_data.cmpd_ids
+  const cmpd_ids = returned_data.cmpd_ids;
+
+  console.log(cmpd_names)
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
@@ -220,9 +223,10 @@ function updatePeakData(returned_data, radio_all_check){
       const conf = conf_fact[i];
       const cmpd_id = cmpd_ids[i];
 
-      var url_met = `met_ex_all/${cmpd_id}`
+
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
+      var url_met = `met_ex_all/${cmpd_id}`
 
       let success ="";
       let identified="";
@@ -243,7 +247,8 @@ function updatePeakData(returned_data, radio_all_check){
         badge_info =`A${no_other_cmpds}`;
         success="danger";
       }
-        if (radio_all_check || ion=='M+H' || ion=='M-H'|| ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
+        if (radio_all_check || ion=='M+H' || ion=='M-H' || ion=='M'){ //draw if ion = M+H or M-H or if all adducts are chosen
+
         let peakDiv = document.createElement('div');
         peakDiv.setAttribute('class', 'p-2');
 
@@ -257,93 +262,17 @@ function updatePeakData(returned_data, radio_all_check){
       }
       add_side_tooltips(id_name, frag_name, no_other_cmpds); //Add the tooltips after all divs created.
     }
-}
+};
 
-// Add table header tooltips --these are temporary.
 //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
 function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
   $('.F').tooltip({title: `MS/MS Fragmentation data suggests that this peak is likely to be ${frag_name}`, placement: "top"});
   $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
-};
-
-
-//-----------------------------------------------------------------------------------
-
-
-
-async function loadData(viewUrl) {
-  try {
-    const result = await $.getJSON(viewUrl);
-    return result;
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-function get_lifestage(ls_string){
-
-  let ls = "";
-  if (ls_string=="(F)")
-    ls ="Females";
-  else if (ls_string=="(M)")
-      ls ="Males";
-  else if (ls_string=="(L)")
-        ls ="Larvae";
-
-  return ls
 }
 
 
-$(document).ready(function() {
-  $("fieldset[class^='peak_details']").hide();
-  //Method to add an autocomplete search function to the DB
-  loadData((url)).then(function(data) {
-    new Awesomplete(pathway_search, {list: data.pathwayNames});
-  });
-
-  try {
-    for (var i = 0; i < num_metabolites; i++) {
-
-      let pwy_met_table = initialise_pcompare_table(`pwy_met_table_${i}`, min, mid, max);
-
-      pwy_met_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this);
-      } );
-
-    }
-
+export {
+    initialise_pcompare_table,
+    updatePeakSidePanel
   }
-  catch(e) {
-
-    if (e instanceof ReferenceError) {
-    // Handle error as necessary
-    console.log("waiting on table, caught", e);
-    }
-  }
-
-  //Retrieve the datatables in order to have the columns delete throughout the page.
-  var tables = $('table.display').DataTable( {
-     retrieve: true,
-     paging: false
-
-    } );
-    // When the column visibility changes on the first table, also change it on the others
-    tables.table(0).on('column-visibility', function ( e, settings, colIdx, visibility ) {
-        tables.tables(':gt(0)').columns( colIdx ).visible( visibility );
-    } );
-
-    //
-    // Create ColVis on the first table only
-    // let colvis = new $.fn.dataTable.ColVis(tables.table(0));
-  //$( colvis.button() ).insertAfter('div.info');
-
-  $('#DSF').tooltip({title: "Matching Formulae in found Flymet", placement: "top"});
-  $('#PWF').tooltip({title: "Unique Formulae in the Pathway", placement: "top"});
-  $('#Cov').tooltip({title: "Dataset/Pathway formulae coverage", placement: "top"});
-
-  console.log('number of metabolites', num_metabolites)
-  console.log('pathway passed', pathway_name);
-  console.log('url', url)
-
-});

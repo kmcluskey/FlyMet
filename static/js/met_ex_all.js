@@ -71,16 +71,16 @@ function initialise_met_table(tableName){
 
                       cell_data = str_array[i].trim() // Remove the white spaces from the DB references
                       if (cell_data.startsWith('CHEBI')){
-                        link = link+'<a href=https://www.ebi.ac.uk/chebi/searchId.do?chebiId='+cell_data+'>'+cell_data+'</a>'+linker
+                        link = link+'<a href=https://www.ebi.ac.uk/chebi/searchId.do?chebiId='+cell_data+' target=_blank>'+cell_data+'</a>'+linker
                       }
                       else if (cell_data.startsWith('HMDB')){
-                        link = link+'<a href=http://www.hmdb.ca/metabolites/'+cell_data+'>'+cell_data+'</a>'+linker
+                        link = link+'<a href=http://www.hmdb.ca/metabolites/'+cell_data+' target=_blank>'+cell_data+'</a>'+linker
                       }
                       else if (cell_data.startsWith('C')){
-                        link = link+'<a href=https://www.genome.jp/dbget-bin/www_bget?cpd:'+cell_data+'>'+cell_data+'</a>'+linker
+                        link = link+'<a href=https://www.genome.jp/dbget-bin/www_bget?cpd:'+cell_data+' target=_blank>'+cell_data+'</a>'+linker
                       }
                       else if (cell_data.startsWith('LM')){
-                        link = link+'<a href=http://www.lipidmaps.org/data/LMSDRecord.php?LMID='+cell_data+'>'+cell_data+'</a>'+linker
+                        link = link+'<a href=http://www.lipidmaps.org/data/LMSDRecord.php?LMID='+cell_data+' target=_blank>'+cell_data+'</a>'+linker
                       }
                       }
                       return link;
@@ -188,7 +188,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name){
         console.log("peak_ids are now", peak_ids)
         peak_group_no = peak_group_no+1;
         var url_pg = `peak_explorer/${peak_list}`
-        let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
+        let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}" target="_blank">Peak Group: ${peak_group_no}</a></p>`
         group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
         group = group_header+group_table;
         groupDiv.innerHTML =  group;
@@ -254,7 +254,7 @@ function get_peak_gp_table(columns, peak_group, cmpd_name){
           }
 
 
-          group_table = group_table +`<tr><td class="badge badge-pill badge-${success}">${badge_info}</td><td><a href="${peak_url}">${peak_id}<a></td>`
+          group_table = group_table +`<tr><td class="badge badge-pill badge-${success}">${badge_info}</td><td><a href="${peak_url} "target="_blank">${peak_id}<a></td>`
           data_list=[ion, nm, rt]
           // group_table = group_table+`<tr>`
           for (var d = 0; d < data_list.length; d++) {

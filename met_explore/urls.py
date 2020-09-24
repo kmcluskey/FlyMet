@@ -24,6 +24,7 @@ urlpatterns = [
     path('pathway_explorer', views.pathway_explorer, name='pathway_explorer'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
     path('peak_ex_compare', views.peak_ex_compare, name='peak_ex_compare'),
+    path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
     path('peak_explorer/<str:peak_list>', cache_page(60 * 18000)(views.peak_explorer), name='peak_explorer'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
@@ -34,6 +35,7 @@ urlpatterns = [
     path('metabolite_data/<str:cmpd_ids>', cache_page(60 * 18000) (views.metabolite_data), name='metabolite_data'),
     path('metabolite_peak_data/<int:cmpd_id>', views.metabolite_peak_data, name='metabolite_peak_data'),
     path('peak_compare_data', cache_page(60 * 18000) (views.peak_compare_data), name='peak_compare_data'),
+    path('peak_mf_compare_data', cache_page(60 * 18000)(views.peak_mf_compare_data), name='peak__mf_compare_data'),
     path('pals_data', cache_page(60 * 18000) (views.pals_data), name='pals_data'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
 ]
