@@ -123,3 +123,4 @@ django_cache
 db.sqlite3_old
 db.sqlite3_march20
 pathway_search_old.html
+yarn.lock
