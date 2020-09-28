@@ -1,10 +1,9 @@
-import pandas as pd
 import re
-import numpy as np
-import logging
-# from met_explore.peak_selection import PeakSelector
+import traceback
 
-logger = logging.getLogger(__name__)
+import numpy as np
+import pandas as pd
+from loguru import logger
 
 # Names to pickle the files as we go along so changes can be made without running all of the methods again.
 CHEBI_DF_NAME = "chebi_ontology_df_PERMANENT"
@@ -23,7 +22,6 @@ class PreprocessCompounds(object):
 
         self.peak_df = peak_df
         self.chebi_df = self.construct_chebi_ontology_df()
-
 
     def get_preprocessed_cmpds(self):
 
@@ -53,12 +51,13 @@ class PreprocessCompounds(object):
         logger.info("Adding the chebi_ids")
 
         try:
-            self.peak_df = pd.read_pickle("./data/" + ADDED_CHEBI_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file %s has been found: ", ADDED_CHEBI_NAME)
+            self.peak_df = pd.read_pickle(
+                "./data/" + ADDED_CHEBI_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
+            logger.info("The file %s has been found: " % ADDED_CHEBI_NAME)
 
         except FileNotFoundError:
 
-            self.peak_df["chebi_id"] = None # Add empty column to fill in.
+            self.peak_df["chebi_id"] = None  # Add empty column to fill in.
             self.peak_df["chebi_name"] = None
 
             for index, row in self.peak_df.iterrows():
@@ -69,27 +68,27 @@ class PreprocessCompounds(object):
                 formula = row.formula
 
                 if not set_chebi_id:
-                    print("The identifier/inchi/formula are ", identifier, inchi, formula)
+                    logger.debug("The identifier/inchi/formula are %s %s %s" % (identifier, inchi, formula))
 
                     chebi_id, chebi_id_inchi = self.get_chebi_id(identifier, inchi, formula)
 
-                    print ("ID and ID_INCHI", chebi_id, chebi_id_inchi)
+                    logger.debug("ID and ID_INCHI %s %s" % (chebi_id, chebi_id_inchi))
 
                     # If both exist add the chebi_id (based on the DB identifier) to the DF
                     if chebi_id and chebi_id_inchi:
-                        logger.info("The ID and chebi_id are both found: %s %s", chebi_id, chebi_id_inchi)
-                        logger.info("Adding the chebi_id %s", chebi_id)
+                        logger.info("The ID and chebi_id are both found: %s %s" % chebi_id, chebi_id_inchi)
+                        logger.info("Adding the chebi_id %s" % chebi_id)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
 
                         # Get the chebi inchi if it exists & If it's not null add it to the DF.
                         inchi = self.chebi_df[self.chebi_df.chebi_id == chebi_id].inchikey.values[0]
-                        print ("The inchi that we found is ", inchi)
+                        logger.debug("The inchi that we found is %s " % inchi)
                         if not pd.isnull(inchi):
-                            print ("in the wee setting bit")
+                            logger.debug("in the wee setting bit")
                             self.peak_df.loc[index, 'inchikey'] = inchi
 
                     elif chebi_id and not chebi_id_inchi:
-                        logger.info('chebi_id and not chebi_id_inchi, adding %s', chebi_id)
+                        logger.info('chebi_id and not chebi_id_inchi, adding %s' % chebi_id)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
 
                         # Grab the inchi from the chebi_id if it exists.
@@ -98,9 +97,9 @@ class PreprocessCompounds(object):
                             self.peak_df.loc[index, 'inchikey'] = inchi
 
                     elif chebi_id_inchi and not chebi_id:
-                        print('chebi_id_inchi and not chebi_id adding chebi_id_inchi ', chebi_id_inchi)
+                        logger.debug('chebi_id_inchi and not chebi_id adding chebi_id_inchi %s' % chebi_id_inchi)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id_inchi
-                        #As the chebi_id was obtained using the inchi we can leave that inchi as the original one.
+                        # As the chebi_id was obtained using the inchi we can leave that inchi as the original one.
 
                     elif not chebi_id_inchi and not chebi_id:
                         chebi_id = None
@@ -117,18 +116,17 @@ class PreprocessCompounds(object):
                         0]
                     cas_code = self.chebi_df[self.chebi_df.chebi_id == chebi_id].cas_code.values[
                         0]
-                    print(chebi_id, chebi_name)
+                    logger.debug('%s %s' % (chebi_id, chebi_name))
                     self.peak_df.loc[index, 'chebi_name'] = chebi_name
                     self.peak_df.loc[index, 'cas_code'] = cas_code
                     self.peak_df.loc[index, 'smiles'] = smiles
 
-
             try:
-                self.peak_df.to_pickle("./data/"+ ADDED_CHEBI_NAME+".pkl")
+                self.peak_df.to_pickle("./data/" + ADDED_CHEBI_NAME + ".pkl")
             except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
+                logger.error("Pickle didn't work because of %s " % e)
+                traceback.print_exc()
                 pass
-
 
     def give_each_chebi_same_id(self):
         """
@@ -138,7 +136,7 @@ class PreprocessCompounds(object):
         try:
             self.peak_df = pd.read_pickle(
                 "./data/" + CHEBI_CMPD_MATCH + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file %s has been found: ", CHEBI_CMPD_MATCH)
+            logger.info("The file %s has been found: " % CHEBI_CMPD_MATCH)
 
         except FileNotFoundError:
 
@@ -153,15 +151,15 @@ class PreprocessCompounds(object):
 
                 if no_cmpd_ids > 1:
                     cmpd_id = cmpd_ids[0]  # Take the first cmpd_id and rename all the rows with the same chebi Id
-                    print("should be replacing all with this cmpd_id ", cmpd_id)
+                    logger.debug("should be replacing all with this cmpd_id %s" % cmpd_id)
                     self.peak_df.loc[indexes, 'cmpd_id'] = cmpd_id
 
             try:
                 self.peak_df.to_pickle("./data/" + CHEBI_CMPD_MATCH + ".pkl")
             except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
+                logger.error("Pickle didn't work because of %s " % e)
+                traceback.print_exc()
                 pass
-
 
     def give_chebi_inchi_unique_id(self):
         """
@@ -173,7 +171,7 @@ class PreprocessCompounds(object):
         try:
             self.peak_df = pd.read_pickle(
                 "./data/" + CHEBI_UNIQUE_IDS + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file %s has been found: ", CHEBI_UNIQUE_IDS)
+            logger.info("The file %s has been found: " % CHEBI_UNIQUE_IDS)
 
         except FileNotFoundError:
             max_cmpd_id = self.peak_df['cmpd_id'].max()
@@ -202,7 +200,7 @@ class PreprocessCompounds(object):
                 # Same compound IDs, different CheBi_ids - give the row a new cmpd_id = Max cmpd_id +1
                 if len(present_chebi_ids) > 1:  # If the inchi keys are 1 and None just leave.
 
-                    logger.info("This compound id %s has more than one chebi_id %s",cmpd, chebi_ids )
+                    logger.info("This compound id %s has more than one chebi_id %s" % (cmpd, chebi_ids))
 
                     if len(present_chebi_ids) == len(chebi_ids):  # There are no missing/None chebi_ids
 
@@ -228,7 +226,7 @@ class PreprocessCompounds(object):
                     stds_df = single_cmpd_df[single_cmpd_df.db == 'stds_db']
                     change_indexes = stds_df.index.values
                     neutral_mass = stds_df.mass.values[0]
-                    print(change_indexes)
+                    logger.debug(change_indexes)
 
                     non_stds_df = single_cmpd_df[single_cmpd_df.db != 'stds_db']
                     formula = non_stds_df.formula.values[0]
@@ -237,21 +235,21 @@ class PreprocessCompounds(object):
                     adduct = 'M'
 
                     self.peak_df.loc[change_indexes, ['formula', 'chebi_id', 'chebi_name', 'adduct',
-                                                        'neutral_mass']] = formula, chebi_id, chebi_name, adduct, neutral_mass
+                                                      'neutral_mass']] = formula, chebi_id, chebi_name, adduct, neutral_mass
 
                 # Same compound IDs but different formulas and no std compound - change the cmpd id.
-                elif no_formulas > 1 :
-                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, formulas )
-                    for f in formulas[1:]: #Keep the first formula, change the rest
-                        max_cmpd_id +=1
-                        scmpd_id_df = single_cmpd_df[single_cmpd_df.formula==f]
+                elif no_formulas > 1:
+                    logger.info("This compound id %s has more than one inchi_key %s" % (cmpd, formulas))
+                    for f in formulas[1:]:  # Keep the first formula, change the rest
+                        max_cmpd_id += 1
+                        scmpd_id_df = single_cmpd_df[single_cmpd_df.formula == f]
                         change_indexes = scmpd_id_df.index.values
-                        self.peak_df.loc[change_indexes,'cmpd_id']= max_cmpd_id
+                        self.peak_df.loc[change_indexes, 'cmpd_id'] = max_cmpd_id
 
                 # Check for dulicate inchikeys
                 # If the inchi keys are 1 and None just leave alone - more than one non null value and if one chebi_id leave as one cmpd
-                if len(present_inchis) > 1 and len(chebi_ids) !=1:
-                    logger.info("This compound id %s has more than one inchi_key %s",cmpd, inchi_keys )
+                if len(present_inchis) > 1 and len(chebi_ids) != 1:
+                    logger.info("This compound id %s has more than one inchi_key %s" % (cmpd, inchi_keys))
                     if len(present_inchis) == no_inchi_keys:  # There are no missing/None values for inchikeys
 
                         for i in present_inchis[1:]:
@@ -273,9 +271,9 @@ class PreprocessCompounds(object):
             try:
                 self.peak_df.to_pickle("./data/" + CHEBI_UNIQUE_IDS + ".pkl")
             except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
+                logger.error("Pickle didn't work because of %s " % e)
+                traceback.print_exc()
                 pass
-
 
     def collect_dup_cmpds_no_chebi(self):
         """
@@ -287,8 +285,9 @@ class PreprocessCompounds(object):
         logger.info("Collecting compounds with same names/identifiers that have no chebi_id")
 
         try:
-            self.peak_df = pd.read_pickle("./data/" + CMPDS_FINAL + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file %s has been found: ", CMPDS_FINAL)
+            self.peak_df = pd.read_pickle(
+                "./data/" + CMPDS_FINAL + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
+            logger.info("The file %s has been found: " % CMPDS_FINAL)
 
         except FileNotFoundError:
 
@@ -313,14 +312,16 @@ class PreprocessCompounds(object):
                         no_cmpd_ids = len(single_id_cmpd_ids)
                         # For each compound of the same identifier - make it a single cmpd.
                         if no_cmpd_ids > 1:
-                            cmpd_id = cmpd_ids[0]  # Take the first cmpd_id and rename all the rows with the same chebi Id
-                            print("should be replacing all with this cmpd_id ", cmpd_id)
+                            cmpd_id = cmpd_ids[
+                                0]  # Take the first cmpd_id and rename all the rows with the same chebi Id
+                            logger.debug("should be replacing all with this cmpd_id %s " % cmpd_id)
                             self.peak_df.loc[indexes, 'cmpd_id'] = cmpd_id
 
             try:
                 self.peak_df.to_pickle("./data/" + CMPDS_FINAL + ".pkl")
             except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
+                logger.error("Pickle didn't work because of %s " % e)
+                traceback.print_exc()
                 pass
 
     def change_std_cmpds_no_chebi(self):
@@ -330,7 +331,7 @@ class PreprocessCompounds(object):
         """
         stds_db = self.peak_df['db'] == 'stds_db'
         no_chebi = self.peak_df['chebi_id'].isnull()
-        stds_no_chebi = self.peak_df[stds_db & no_chebi] #DF that contains standard compounds with no chebi_ids
+        stds_no_chebi = self.peak_df[stds_db & no_chebi]  # DF that contains standard compounds with no chebi_ids
 
         unique_inchis = stds_no_chebi.inchikey.unique()
 
@@ -343,15 +344,14 @@ class PreprocessCompounds(object):
                 # give them all the same cmpd_id?
                 for c in cmpd_ids:
                     cmpd_id_df = self.peak_df[self.peak_df['cmpd_id'] == c]
-                    no_chebi_id = cmpd_id_df['chebi_id'].isnull().unique()[0] #Check if this is the cmpd without the chebi_id
+                    no_chebi_id = cmpd_id_df['chebi_id'].isnull().unique()[
+                        0]  # Check if this is the cmpd without the chebi_id
                     std_db = (cmpd_id_df.db == 'stds_db').values[0]
 
-                    if (no_chebi_id and std_db): #If it's the standard cmpd with no chebi id
-                        new_cmpd_id = [x for x in cmpd_ids if x != c] #Remove c (without the chebi_id from the list)
+                    if (no_chebi_id and std_db):  # If it's the standard cmpd with no chebi id
+                        new_cmpd_id = [x for x in cmpd_ids if x != c]  # Remove c (without the chebi_id from the list)
                         indexes_to_change = cmpd_id_df.index
                         self.peak_df.loc[indexes_to_change, 'cmpd_id'] = new_cmpd_id
-
-
 
     def get_chebi_id(self, identifier, inchikey, formula):
         """
@@ -375,24 +375,22 @@ class PreprocessCompounds(object):
                     chebi_inchi_id = self.get_formula_match(chebi_match, formula, None)
 
             except KeyError as e:
-                logger.info("No match to chebi for this inchi %s ", inchikey)
+                logger.info("No match to chebi for this inchi %s " % inchikey)
                 chebi_inchi_id = None
                 # Return the value and not the array
 
         if chebi_inchi_id:
             chebi_inchi_id = chebi_inchi_id[0]
 
-
-
         if identifier.startswith('C'):  # Kegg identifier
             try:
                 chebi_match = self.chebi_df[self.chebi_df['kegg_id'] == identifier]
                 if not chebi_match.empty:
-                    chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id )
-                    print ("HERE2 ", chebi_id)
+                    chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id)
+                    logger.debug("HERE2 %s" % chebi_id)
 
             except KeyError as e:
-                logger.info("No match to chebi for this kegg id %s", identifier)
+                logger.info("No match to chebi for this kegg id %s" % identifier)
                 chebi_id = None
 
         elif identifier.startswith('HMDB'):
@@ -402,7 +400,7 @@ class PreprocessCompounds(object):
                 if not chebi_match.empty:
                     chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id)
             except KeyError as e:
-                logger.info("No match to chebi for this hmdb id %s", identifier)
+                logger.info("No match to chebi for this hmdb id %s" % identifier)
                 chebi_id = None
 
         elif identifier.startswith('LM'):
@@ -411,21 +409,19 @@ class PreprocessCompounds(object):
                 if not chebi_match.empty:
                     chebi_id = self.get_formula_match(chebi_match, formula, chebi_inchi_id)
             except KeyError as e:
-                logger.info("No match to chebi for this lmaps %s", identifier)
+                logger.info("No match to chebi for this lmaps %s" % identifier)
                 chebi_id = None
 
         elif identifier.startswith('Std'):
-            logger.info("This is a standard DB compound identifer and is no use to chebi %s", identifier)
+            logger.info("This is a standard DB compound identifer and is no use to chebi %s" % identifier)
             chebi_id = None
         else:
             logger.warning("We have a new and unusual identifier - do something!!")
 
-
         if chebi_id:
             chebi_id = chebi_id[0]
 
-
-        print ("Returning chebi_id and chebi_inchi_id", chebi_id, chebi_inchi_id)
+        logger.debug("Returning chebi_id %s and chebi_inchi_id %s" % (chebi_id, chebi_inchi_id))
         return chebi_id, chebi_inchi_id
 
     def get_formula_match(self, chebi_match, formula, chebi_inchi_id):
@@ -446,7 +442,7 @@ class PreprocessCompounds(object):
                 chebi_id = formula_match.chebi_id.values
                 if len(chebi_id) > 1:
                     if chebi_inchi_id and (chebi_inchi_id in chebi_id):
-                        print ("Chebi_id_inchi and chebi_ids", chebi_inchi_id, chebi_id)
+                        logger.debug("Chebi_id_inchi and chebi_ids %s %s" % (chebi_inchi_id, chebi_id))
                         # Check if this matches the one of the chebi_inchis
                         chebi_id = [chebi_inchi_id]
                     else:
@@ -457,19 +453,16 @@ class PreprocessCompounds(object):
                             id_lst = str(c_id_df[column_ids].values[0])
                             no_db_ids = len(column_ids) - id_lst.count('nan')  # No identifiers that are not NaN
                             chebi_db_ids[c_id] = no_db_ids
-                        print (chebi_db_ids)
+                        logger.debug(chebi_db_ids)
                         chebi_id = [max(chebi_db_ids, key=chebi_db_ids.get)]  # Id with the most identifiers
-                        print ("HERE ", chebi_id)
+                        logger.debug("HERE %s" % chebi_id)
 
 
         except KeyError as e:
-            print("No match to chebi for this formula ", formula)
+            logger.warning("No match to chebi for this formula %s" % formula)
             chebi_id = None
 
         return chebi_id
-
-
-
 
     def construct_chebi_ontology_df(self):
         """
@@ -479,12 +472,12 @@ class PreprocessCompounds(object):
         """
         logger.info("Getting the chebi_ontology df")
         try:
-            chebi_df = pd.read_pickle("./data/"+CHEBI_DF_NAME+".pkl")
-            logger.info("The file %s has been found: ", ADDED_CHEBI_NAME)
+            chebi_df = pd.read_pickle("./data/" + CHEBI_DF_NAME + ".pkl")
+            logger.info("The file has been found: %s" % ADDED_CHEBI_NAME)
 
 
 
-        except FileNotFoundError: #If the file is not found then it can be constructed using the code below.
+        except FileNotFoundError:  # If the file is not found then it can be constructed using the code below.
 
             found_name = False
             new_compound = False
@@ -499,7 +492,7 @@ class PreprocessCompounds(object):
                 for line in f:
                     # Get the chebi_id
                     if 'owl:Class' in line and 'rdf:about' in line:
-                        print (index)
+                        print(index)
                         index += 1
                         chebi_line = line.strip()
                         res = re.search('CHEBI_(.*)"', chebi_line)
@@ -589,11 +582,11 @@ class PreprocessCompounds(object):
             try:
                 chebi_df.to_pickle("./data/" + CHEBI_DF_NAME + ".pkl")
             except Exception as e:
-                logger.error("Pickle didn't work because of %s ", e)
+                logger.error("Pickle didn't work because of %s " % e)
+                traceback.print_exc()
                 pass
 
         return chebi_df
-
 
     def get_hmdb_no(self, identifier):
         """

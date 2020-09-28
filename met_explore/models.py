@@ -47,7 +47,7 @@ class Compound(models.Model):
 
     cmpd_formula = models.CharField(max_length=100)
     pc_sec_id = models.IntegerField(unique=False) #The pimp compound secondary ID - it's unique in the populating df,
-    chebi_id = models.CharField(null=True,max_length=30, unique=True)
+    chebi_id = models.CharField(null=True, max_length=30, unique=True)
     chebi_name = models.CharField(null=True, max_length=250)
     inchikey = models.CharField(null = True, max_length=27)
     smiles =  models.CharField(null=True, max_length=250)

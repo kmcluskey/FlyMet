@@ -1,12 +1,12 @@
 import gzip
-import logging
 import os
 import pathlib
 import pickle
 
+from loguru import logger
+
 
 def get_filename_from_string(fname):
-
     """
     A wee method to return a filename from a string without the extension.
     :param fname: a string containing a filename
@@ -19,9 +19,10 @@ def get_filename_from_string(fname):
 
     return file_name
 
+
 def create_if_not_exist(out_dir):
     if not os.path.exists(out_dir) and len(out_dir) > 0:
-        logging.info('Created %s' % out_dir)
+        logger.info('Created %s' % out_dir)
         pathlib.Path(out_dir).mkdir(parents=True, exist_ok=True)
 
 
@@ -34,7 +35,7 @@ def save_object(obj, filename):
     """
     out_dir = os.path.dirname(filename)
     create_if_not_exist(out_dir)
-    logging.info('Saving %s to %s' % (type(obj), filename))
+    logger.info('Saving %s to %s' % (type(obj), filename))
     with gzip.GzipFile(filename, 'w') as f:
         pickle.dump(obj, f, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -47,5 +48,3 @@ def load_object(filename):
     """
     with gzip.GzipFile(filename, 'rb') as f:
         return pickle.load(f)
-
-

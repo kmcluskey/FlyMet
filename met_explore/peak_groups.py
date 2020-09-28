@@ -1,15 +1,10 @@
-import logging
-from met_explore.models import *
-from met_explore.peak_selection import PeakSelector
-import pandas as pd
-import numpy as np
 import itertools
+from decimal import Decimal
 
-from met_explore.compound_selection import CompoundSelector
-from IPython.display import display, HTML
-from decimal import *
+import pandas as pd
+from loguru import logger
 
-logger = logging.getLogger(__name__)
+from met_explore.models import Annotation
 
 NAME_MATCH_SIG = 0.5
 MASS_TOL = Decimal(0.01)
@@ -19,7 +14,6 @@ RT_TOL = 5
 # Methods to select groups of peaks
 
 class PeakGroups(object):
-
     """
     A class to Generate groups of peaks associated with a compound given the cmpd_id
     """
@@ -30,12 +24,12 @@ class PeakGroups(object):
 
         self.peak_dict = {}
         for a in self.annotations:
-            self.peak_dict[int(a.peak_id)]= {"adduct":a.adduct, "nm":a.neutral_mass, "rt":a.peak.rt, "conf":a.confidence}
+            self.peak_dict[int(a.peak_id)] = {"adduct": a.adduct, "nm": a.neutral_mass, "rt": a.peak.rt,
+                                              "conf": a.confidence}
         self.peak_list = [(int(a.peak.id), a.adduct, a.neutral_mass, a.peak.rt, a.confidence) for a in self.annotations]
         self.no_peaks = len(self.peak_list)
 
-        logger.info ("Getting groups of peaks for cmpd with ID %s", cmpd_id)
-
+        logger.info("Getting groups of peaks for cmpd with ID %s" % cmpd_id)
 
     def get_peak_groups(self):
 
@@ -48,19 +42,19 @@ class PeakGroups(object):
         """
 
         # Looking at the compound peaks iterate over collecting peaks that are near in RT/nm
-        initial_peak_groups =self.get_close_peaks()
+        initial_peak_groups = self.get_close_peaks()
         # Single peaks are peaks that are not founf to have other nm/RT peaks
         single_peaks_df = self.get_single_peaks(initial_peak_groups)
 
         # If there are an initial group then collect them into adduct group lists
         if len(initial_peak_groups) >= 1:
-            #Similar to a network, collect all of the peaks that are linked to one another
+            # Similar to a network, collect all of the peaks that are linked to one another
             collected_peaks = self.collect_connected_peaks(initial_peak_groups)
             # For the collected peaks split into adduct groups so that there are no duplicate adducts in a group.
             adduct_groups_list = self.select_adduct_groups(collected_peaks)
-        else: #Initialise an empty list for the single groups.
-            adduct_groups_list=[]
-        #Add single peaks to the groups
+        else:  # Initialise an empty list for the single groups.
+            adduct_groups_list = []
+        # Add single peaks to the groups
 
         for index, row in single_peaks_df.iterrows():
             adduct_groups_list.append(pd.DataFrame(single_peaks_df.loc[index]).transpose())
@@ -73,8 +67,7 @@ class PeakGroups(object):
         #
         return adduct_groups_list
 
-        #Make sure we check that we start and end with the same number of peaks.
-
+        # Make sure we check that we start and end with the same number of peaks.
 
     def get_close_peaks(self):
         """
@@ -96,9 +89,8 @@ class PeakGroups(object):
                     else:
                         # The key exists
                         peak_groups[pk].append(p)
-        logger.info("Peaks within an RT/nm tolerance of one another are: %s ", peak_groups)
+        logger.info("Peaks within an RT/nm tolerance of one another are: %s " % peak_groups)
         return peak_groups
-
 
     def get_single_peaks(self, peak_groups):
         """
@@ -117,7 +109,7 @@ class PeakGroups(object):
                 # Add a none to the list
                 single_peaks.append(p)
 
-        logger.info("Peaks that don't match any others with a RT/nm tolerance: %s ", single_peaks)
+        logger.info("Peaks that don't match any others with a RT/nm tolerance: %s " % single_peaks)
 
         single_peak_details = [self.peak_dict[k] for k in single_peaks]
         single_peaks_df = pd.DataFrame(single_peak_details, dtype=object)
@@ -125,9 +117,7 @@ class PeakGroups(object):
 
         single_peaks_df = single_peaks_df.astype(object)
 
-
         return single_peaks_df
-
 
     def collect_connected_peaks(self, peak_groups):
         """
@@ -163,7 +153,9 @@ class PeakGroups(object):
                                 peak_groups[k].append(ky)
                             for peak in peak_groups[ky]:
                                 # Check if the values match those in the orginal k,v set and if not add them.
-                                if (not peak in peak_groups[k]):  # If one of these peaks is not in the original peak list
+                                if (
+                                        not peak in peak_groups[
+                                            k]):  # If one of these peaks is not in the original peak list
                                     peak_groups[k].append(peak)  # Add the value to the dictionary
                                 # Remove the key (ky) as we have added all the peaks to another key
                                 peak_groups.pop(ky, None)
@@ -171,11 +163,9 @@ class PeakGroups(object):
                 # print("popping peak ", val)
                 peak_groups.pop(val, None)  # Delete the key if it exist (or return None if it doesnt')
 
-        logger.info("Returning a collection of connected peak groups %s", peak_groups)
+        logger.info("Returning a collection of connected peak groups %s" % peak_groups)
 
         return peak_groups
-
-
 
     def select_adduct_groups(self, peak_groups):
         """
@@ -197,9 +187,9 @@ class PeakGroups(object):
             peak_df = pd.DataFrame(peak_details, dtype=object)
 
             peak_df.insert(loc=0, column='peak_id', value=keys_to_select)
-            peak_df = peak_df.astype(object) #Remove int64 at this point
+            peak_df = peak_df.astype(object)  # Remove int64 at this point
 
-            logger.info("THE RELATED ADDUCT DF IS %s", peak_df)
+            logger.info("THE RELATED ADDUCT DF IS %s" % peak_df)
 
             single_adduct_df, leftover_peaks_df = self.collect_single_adducts(peak_df)
             peak_df_list.append(single_adduct_df)
@@ -209,7 +199,7 @@ class PeakGroups(object):
                 peak_df_list.append(single_adduct_df)
 
         for p in peak_df_list:
-            logger.info("returning the group split in to %s ", p)
+            logger.info("returning the group split in to %s " % p)
         return peak_df_list
 
     def collect_single_adducts(self, peak_df):
@@ -219,7 +209,7 @@ class PeakGroups(object):
         """
         all_adducts = set(peak_df.adduct.values)
         leftover_peaks_df = None
-        saved_peaks = None #Save single adduct peaks if they are not close in RT to other single adduct peaks
+        saved_peaks = None  # Save single adduct peaks if they are not close in RT to other single adduct peaks
 
         if (peak_df.shape[0] == len(all_adducts)):
             single_adduct_df = peak_df
@@ -231,7 +221,7 @@ class PeakGroups(object):
             # If there are no single adducts we just have duplicates.
             # If these are exactly the same delete one and if not split into two groups.
             if single_adduct_df.shape[0] > 1:
-                #check if the rt are within a sensible toterance
+                # check if the rt are within a sensible toterance
                 remove_list = []
                 diff_dict = {}  # Key = index, value = diff in RT from the 0 index
 
@@ -249,12 +239,11 @@ class PeakGroups(object):
 
                 single_adduct_df = single_adduct_df.drop(remove_list)
 
-
             dup_adduct_rows = peak_df[
                 peak_df['adduct'].duplicated(keep=False)]  # keep = false - mark all duplicates as true
             dup_adducts = set(dup_adduct_rows.adduct.values)
 
-            logger.info("THE duplicate adduct rows are %s ", dup_adduct_rows)
+            logger.info("THE duplicate adduct rows are %s " % dup_adduct_rows)
 
             for adduct in dup_adducts:
 
@@ -271,7 +260,8 @@ class PeakGroups(object):
             leftover_peaks_df = peak_df.drop(single_adduct_df.index)
 
             if saved_peaks is not None:
-                if (leftover_peaks_df is not None) and (not leftover_peaks_df.empty): #If we have leftover peaks add to that.
+                if (leftover_peaks_df is not None) and (
+                        not leftover_peaks_df.empty):  # If we have leftover peaks add to that.
                     leftover_peaks_df = leftover_peaks_df + saved_peaks
                 else:
                     # print ("leftover is empty saving saved_peals")
@@ -282,7 +272,7 @@ class PeakGroups(object):
         #     print ("in this empty loop")
         #     leftover_peaks_df=None
 
-        logger.info("returning the single peak df %s and the leftover peaks %s", single_adduct_df, leftover_peaks_df)
+        logger.info("returning the single peak df %s and the leftover peaks %s" % (single_adduct_df, leftover_peaks_df))
         return single_adduct_df, leftover_peaks_df
 
     # Which one is closest in value to other adducts?
@@ -295,7 +285,7 @@ class PeakGroups(object):
         :param single_adduct_df: The peaks for single adducts for this group. which we want to test the adduct rows against - i.e. which are nearest in RT
         :return: closest index - A list of the indexes of the rows cloests to those in  the single_adduct df
         """
-        closest_indexes =[]
+        closest_indexes = []
 
         if single_adduct_df.empty:
 
@@ -311,12 +301,12 @@ class PeakGroups(object):
 
             else:
                 # print("WE HAVE DUPLICATE PEAKS!!!")
-                closest_indexes.append(dup_adduct_rows.index.values) #Send back both peaks.
+                closest_indexes.append(dup_adduct_rows.index.values)  # Send back both peaks.
 
         else:
             min_rt_keys = self.return_min_difference(dup_adduct_rows, single_adduct_df, 'rt')
             # print ("THE Min RT keys are ", min_rt_keys)
-            if len(min_rt_keys) >1: #If There is more that one peak with this RT - check the nm
+            if len(min_rt_keys) > 1:  # If There is more that one peak with this RT - check the nm
                 min_nm_keys = self.return_min_difference(dup_adduct_rows, single_adduct_df, 'nm')
                 closest_indexes = min_nm_keys
             else:
@@ -325,7 +315,6 @@ class PeakGroups(object):
         # print("returning the closest index ", closest_indexes)
 
         return closest_indexes
-
 
     def return_min_difference(self, dup_adduct_rows, single_adduct_df, param):
         """
@@ -351,7 +340,6 @@ class PeakGroups(object):
         min_keys = [k for k, v in compare_dict.items() if v == min_val]
 
         return min_keys
-
 
     def get_keys_by_value(self, peak_dict, value):
         """

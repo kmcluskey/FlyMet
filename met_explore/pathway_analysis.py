@@ -1,42 +1,35 @@
-import os
+import json
+import traceback
+from datetime import timedelta
+from urllib.parse import quote
+
 import numpy as np
 import pandas as pd
-import sys
-import logging
-# sys.path.append('/Users/Karen/PALS/')
-
 import requests
-import json
-
-import pals
-from pals.pimp_tools import get_pimp_API_token_from_env, PIMP_HOST, download_from_pimp, get_ms1_peaks
-from pals.feature_extraction import DataSource
+from django.core.cache import cache
+from django.utils import timezone
+from loguru import logger
 from pals.PLAGE import PLAGE
-from pals.ORA import ORA
-from pals.common import *
+from pals.common import DATABASE_REACTOME_CHEBI, REACTOME_SPECIES_DROSOPHILA_MELANOGASTER
+from pals.feature_extraction import DataSource
 from scipy.sparse import coo_matrix
-from django.core.cache import cache, caches
-from urllib.parse import quote
-from datetime import timedelta
 
-from django.shortcuts import get_object_or_404
-
-from met_explore.helpers import *
-from met_explore.models import *
 from met_explore.compound_selection import CompoundSelector
-
-logger = logging.getLogger(__name__)
+from met_explore.helpers import load_object, save_object
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
 
 CHEBI_RELATION_DICT = "chebi_relation_dict"
 
-def get_pals_ds():
 
+def get_pals_ds():
     fly_int_df = get_pals_int_df()
     fly_exp_design = get_pals_experimenal_design()
     chebi_df = get_single_db_entity_df('chebi_id')
 
-    ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,reactome_species=REACTOME_SPECIES_DROSOPHILA_MELANOGASTER)
+    ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,
+                    reactome_species=REACTOME_SPECIES_DROSOPHILA_MELANOGASTER)
     return ds
+
 
 def get_cache_ds():
     # cache.delete('pals_ds')
@@ -50,8 +43,8 @@ def get_cache_ds():
 
     return pals_ds
 
-def get_pals_df():
 
+def get_pals_df():
     ds = get_cache_ds()
 
     pals = PLAGE(ds)
@@ -60,8 +53,8 @@ def get_pals_df():
 
     return pw_df_chebi
 
-def get_cache_df():
 
+def get_cache_df():
     # cache.delete('pals_df')
     if cache.get('pals_df') is None:
         logger.info("we dont have cache so running the pals_df function")
@@ -81,11 +74,11 @@ def get_chebi_relation_dict():
     """
 
     try:
-        chebi_relation_dict = load_object("./data/" + CHEBI_RELATION_DICT +".pkl")
+        chebi_relation_dict = load_object("./data/" + CHEBI_RELATION_DICT + ".pkl")
 
     except Exception as e:
 
-        logger.info("Constructing %s ", CHEBI_RELATION_DICT + ".pkl")
+        logger.info("Constructing %s.pkl " % CHEBI_RELATION_DICT)
 
         try:
             chebi_relation_df = pd.read_csv("data/relation.tsv", delimiter="\t")
@@ -103,7 +96,7 @@ def get_chebi_relation_dict():
 
         for ix, row in chebi_select_df.iterrows():
             init_id = str(row.INIT_ID)
-            final_id =str(row.FINAL_ID)
+            final_id = str(row.FINAL_ID)
             if init_id in chebi_relation_dict.keys():
                 # Append the final_id onto the existing values
                 id_1 = chebi_relation_dict[init_id]
@@ -118,7 +111,8 @@ def get_chebi_relation_dict():
             save_object(chebi_relation_dict, "./data/" + CHEBI_RELATION_DICT + ".pkl")
 
         except Exception as e:
-            logger.error("Pickle didn't work because of %s ", e)
+            logger.error("Pickle didn't work because of %s " % e)
+            traceback.print_exc()
             pass
 
     return chebi_relation_dict
@@ -139,17 +133,14 @@ def get_related_chebi_ids(chebi_ids):
 
     return related_chebis
 
+
 def get_pathway_id_names_dict():
-
     pals_df = get_cache_df()
-    pathway_id_names_dict ={}
+    pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
-
         pathway_id_names_dict[row.pw_name] = ix
 
     return pathway_id_names_dict
-
-
 
 
 def get_pals_int_df():
@@ -174,12 +165,11 @@ def get_pals_int_df():
     int_df.replace(0, np.nan, inplace=True)
     int_df.index.name = "row_id"
 
-    int_df = int_df.fillna(0) #Change the NaN values to zero
+    int_df = int_df.fillna(0)  # Change the NaN values to zero
 
     logger.info("Returning the peak/sample intensity df")
 
     return int_df
-
 
 
 def get_pals_annot_df():
@@ -234,7 +224,6 @@ def add_num_fly_formulas(pals_ds, pals_df):
     logger.info("Updating the DS F to those identified bu Chebi Ids in Fly")
     pathway_ids = pals_df.index.values
 
-
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
 
@@ -246,7 +235,7 @@ def add_num_fly_formulas(pals_ds, pals_df):
         pals_df.loc[index, 'tot_ds_F'] = len(fly_pw_formula)
 
     # pals_df_fly = pals_df.drop('tot_ds_F', axis=1).copy() #Drop the calculation of DF formula
-    pals_df['tot_ds_F'] = pals_df['tot_ds_F'].astype(int) #Make sure this new column has int values
+    pals_df['tot_ds_F'] = pals_df['tot_ds_F'].astype(int)  # Make sure this new column has int values
 
     # Recalculate the coverage for the new values.
     pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
@@ -262,24 +251,24 @@ def get_fly_pw_cmpd_formula(pw_id):
     """
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df() #possibly member variables
-    pals_ds = get_cache_ds() #possibly member variables
+    pals_df = get_cache_df()  # possibly member variables
+    pals_ds = get_cache_ds()  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     # For all of the pathways in reactome get the uniue cmpd_ids
-    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids) #Possibly an member variable
+    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)  # Possibly an member variable
 
     reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
     fly_pw_cmpds = reactome_pw_cmpds.intersection(fly_chebi_ids)
 
     for cmpd in fly_pw_cmpds:
-
-        formula = get_formula_set([cmpd]) #if only one element we still have to send as a list
-        fly_pw_cmpd_for_dict[cmpd]=formula
+        formula = get_formula_set([cmpd])  # if only one element we still have to send as a list
+        fly_pw_cmpd_for_dict[cmpd] = formula
 
     return fly_pw_cmpd_for_dict
+
 
 def get_reactome_pw_metabolites(pw_id):
     """
@@ -295,13 +284,12 @@ def get_reactome_pw_metabolites(pw_id):
     # Pass the summary table for the pathway from another function.
     # pwy_summ_table = pals_df.index
 
-    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids) #Possibly an member variable
+    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)  # Possibly an member variable
     reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
 
-    print ("CMPDS", reactome_pw_cmpds)
+    logger.debug("CMPDS %s" % reactome_pw_cmpds)
 
     return reactome_pw_cmpds
-
 
 
 def get_formula_set(cmpd_list):
@@ -329,7 +317,7 @@ def get_pals_single_entity_annot_df():
     annot_cmpd_df = get_pals_annot_df()
 
     no_identifiers = []
-    annot_cmpd_df["entity_id"] = np.nan # This will be the single, chosen identifier for the compound
+    annot_cmpd_df["entity_id"] = np.nan  # This will be the single, chosen identifier for the compound
     for ix, row in annot_cmpd_df.iterrows():
         if row.chebi_id is not None:
             annot_cmpd_df.loc[ix, 'entity_id'] = row.chebi_id
@@ -347,7 +335,7 @@ def get_pals_single_entity_annot_df():
         num_cmpds_no_id = len(no_identifiers)
         assert (num_cmpds_no_id == 0), "All compounds should have an identifier"
     except AssertionError as msg:
-        logger.error("There is a compound without a DB identfier %s", msg)
+        logger.error("There is a compound without a DB identfier %s" % msg)
         raise
 
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]
@@ -368,7 +356,7 @@ def get_single_db_entity_df(id_type):
     """
 
     annot_cmpd_df = get_pals_annot_df()
-    logger.info("Getting the annotation_df for %s", id_type)
+    logger.info("Getting the annotation_df for %s" % id_type)
     annot_cmpd_df["entity_id"] = np.nan  # This will be the single, chosen identifier for the compound
 
     for ix, row in annot_cmpd_df.iterrows():
@@ -424,7 +412,6 @@ def get_pals_experimenal_design():
     return experiment_design
 
 
-
 def get_control_from_case(case):
     """
     :param case: The group name of the sample that are the casein the study
@@ -443,6 +430,7 @@ def get_control_from_case(case):
 
     return control
 
+
 def get_highlight_token():
     """
     A method to create or get the token for highlighting Reactome pathways using their Chebi IDS.
@@ -456,10 +444,10 @@ def get_highlight_token():
     if token_created:  # Add a description and save.
         highlight_token.description = "A token to highlight cmpds on a Reactome pathway based on their Chebi IDs"
         highlight_token.token = get_reactome_highlight_token()
-        logger.info("A new token %s was created %s", highlight_token)
+        logger.info("A new token was created %s" % highlight_token)
         highlight_token.save()
     else:
-        if highlight_token.datetime < (time_now - timedelta(days=7)): #if the token has expired.
+        if highlight_token.datetime < (time_now - timedelta(days=7)):  # if the token has expired.
 
             logger.info("Reactome highlight token_expired requesting a new one")
             token = get_reactome_highlight_token()
@@ -472,8 +460,9 @@ def get_highlight_token():
                 logger.info("Reactome returned nothing so skipping token update for now")
         else:
             logger.info("Reactome token valid so no request for a new one required")
-    logger.info("returning %s", highlight_token.token)
+    logger.info("returning %s" % highlight_token.token)
     return highlight_token.token
+
 
 def get_reactome_highlight_token():
     """
@@ -492,7 +481,6 @@ def get_reactome_highlight_token():
 
     unq_chebi_ids = list(related_chebis)
 
-
     data = '\t'.join(unq_chebi_ids)
     encoded_species = quote(SPECIES)
 
@@ -501,16 +489,14 @@ def get_reactome_highlight_token():
 
     status_code = response.status_code
 
-    logger.debug("The response status code from Reactome %d", status_code)
+    logger.debug("The response status code from Reactome %d" % status_code)
 
     if status_code == 200:
         json_response = json.loads(response.text)
         token = json_response['summary']['token']
     else:
-        logger.warning("The response status code from Reactome suggests it failed %d", status_code)
+        logger.warning("The response status code from Reactome suggests it failed %d" % status_code)
         token = None
-    logger.info ("Returning the Reactome token %s ", token)
+    logger.info("Returning the Reactome token %s " % token)
 
     return token
-
-

@@ -1,16 +1,16 @@
-from django.test import TestCase
-
 # Create your tests here.
 
-from met_explore.peak_selection import PeakSelector
-from met_explore.preprocessing import PreprocessCompounds
 import os
+
+from loguru import logger
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+from met_explore.peak_selection import PeakSelector
+from met_explore.preprocessing import PreprocessCompounds
+
 
 # model = cobra.io.read_sbml_model('/Users/Karen/flymet_webstuff/notebooks/fly_pwt.xml')
-
 
 
 def test_email():
@@ -29,10 +29,10 @@ def test_email():
         print(response.body)
         print(response.headers)
     except Exception as e:
-        print(e.message)
+        logger.warning(e.message)
+
 
 def run_preprocessing_script():
-
     """
     Method to run the population script
     """
@@ -43,8 +43,8 @@ def run_preprocessing_script():
 
     return peak_df
 
-def test_processing_cmpds(peak_df):
 
+def test_processing_cmpds(peak_df):
     process_cmpds = PreprocessCompounds(peak_df)
 
     peak_df = process_cmpds.get_preprocessed_cmpds()
@@ -66,5 +66,5 @@ def cmpd_param_check(param, peak_chebi_df):
         no_cmpd_ids = len(cmpd_ids)
 
         if no_cmpd_ids > 1:
-            print("More than one cmpd_id with this", param)
-            print(single_cmpd_df)
+            logger.debug("More than one cmpd_id with this %s" % param)
+            logger.debug(single_cmpd_df)
