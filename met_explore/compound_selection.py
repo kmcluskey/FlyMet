@@ -488,6 +488,9 @@ class CompoundSelector(object):
                     except AssertionError as e:
                         logger.error("This is not a KEGG ID so code should be refactored, error %s " % e)
                         raise
+                    except KeyError:
+                        # TODO: do an online search for the compound_name?
+                        logger.warning('Cannot find KEGG ID for compound %s' % c.cmpd_name)
 
                     if created_cmpd_details:
                         logger.info("New cmpd details were created %s" % new_cmpd_details)
