@@ -40,6 +40,7 @@ loguru = "*"
 "neo4j-driver" = "*"
 pyparsing = "*"
 pals-pathway = "*"
+tqdm = "*"
 
 [dev-packages]
 
