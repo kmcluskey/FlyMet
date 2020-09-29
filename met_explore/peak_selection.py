@@ -4,6 +4,7 @@ from difflib import SequenceMatcher
 import numpy as np
 import pandas as pd
 from loguru import logger
+from tqdm import tqdm
 
 from met_explore.preprocessing import PreprocessCompounds
 
@@ -73,7 +74,7 @@ class PeakSelector(object):
         try:
             nm_inchi_df = pd.read_pickle(
                 "./data/" + PREPARED_DF + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file has been found: %s " % PREPARED_DF)
+            logger.info("The file %s has been found" % PREPARED_DF)
 
         except FileNotFoundError:
             neutral_mass_df = self.add_neutral_masses(original_peak_df)
@@ -95,6 +96,7 @@ class PeakSelector(object):
         :return: unique_sec_ids
 
         """
+        logger.info("Getting the selected DF")
 
         # Filter on adduct types
         selected_adducts = (peak_details_df['adduct'] == 'M+H') | (peak_details_df['adduct'] == 'M-H') | (
@@ -121,13 +123,13 @@ class PeakSelector(object):
         """
 
         logger.info(
-            "Constructing a DF where each compound for a unique peak is given a single row (collecting Identifiers and DBs")
+            "Constructing a DF where each compound for a unique peak is given a single row")
 
         try:
             all_peak_df = pd.read_pickle(
                 "./data/" + PEAK_FILE_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
 
-            logger.info("The file %s has been found: " % PEAK_FILE_NAME)
+            logger.info("The file %s has been found" % PEAK_FILE_NAME)
 
         except FileNotFoundError:
 
@@ -136,7 +138,7 @@ class PeakSelector(object):
             all_unique_sec_ids = all_peaks['sec_id'].unique()
 
             # For each unique peak based on pimp Sec_id
-            for sid in all_unique_sec_ids:
+            for sid in tqdm(all_unique_sec_ids):
 
                 sid_df = all_peaks[all_peaks.sec_id == sid]
                 unique_cmpd_ids = sid_df['cmpd_id'].unique()
@@ -171,7 +173,7 @@ class PeakSelector(object):
         try:
             single_id_df = pd.read_pickle(
                 "./data/" + NO_DUP_PEAK_NAME + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
-            logger.info("The file %s has been found: " % NO_DUP_PEAK_NAME)
+            logger.info("The file %s has been found" % NO_DUP_PEAK_NAME)
 
 
         except FileNotFoundError:
@@ -181,7 +183,7 @@ class PeakSelector(object):
             # dup_df = pd.DataFrame(columns=columns)
             single_id_df = pd.DataFrame(columns=columns)
 
-            for sid in sec_ids:
+            for sid in tqdm(sec_ids):
                 sid_df_row = peak_df[peak_df.sec_id == sid].iloc[0]  # First row of the sid DF
                 mz = sid_df_row.mass
                 rt = sid_df_row.rt
@@ -215,21 +217,19 @@ class PeakSelector(object):
 
         :return: peak_df- a DF of unique peak IDs
         """
-
+        logger.info(("Getting the high confidence peak DF"))
         headers = list(selected_df.columns.values)
         peak_df = pd.DataFrame(columns=headers)
-
-        print("Constructing the High Conf peak DF")
 
         try:
             peak_df = pd.read_pickle(
                 "./data/" + HIGH_CONF_DF + ".pkl")  # KMCL - this file should be named after the input files so not to repeat.
 
-            logger.info("The file %s has been found: " % HIGH_CONF_DF)
+            logger.info("The file %s has been found" % HIGH_CONF_DF)
 
         except FileNotFoundError:
 
-            for sid in unique_sec_ids:
+            for sid in tqdm(unique_sec_ids):
                 # Collect a single sec_id into a DF
                 sid_df = selected_df[selected_df.sec_id == sid]
                 logger.debug("The single SID DF is %s" % sid_df)
@@ -309,7 +309,6 @@ class PeakSelector(object):
         return peak_df
 
     def construct_int_df(self, peak_df):
-
         """
         A method to return a sample/intensity DF for each peak in the peak_df
         :param peak_df: All of the peaks we want to sample intensities for
@@ -342,11 +341,12 @@ class PeakSelector(object):
         First look for the matching name/opposite-adduct pairs based on RT and neutral mass.
         If one is found that matches, delete the other duplicate peaks.
         """
+        logger.info('Remove duplicates on mass RT')
         duplicate_df = peak_df[peak_df.sec_id.duplicated()]
         dup_ids = duplicate_df['sec_id'].values
         logger.debug("dup_ids are %s" % dup_ids)
 
-        for dupid in dup_ids:
+        for dupid in tqdm(dup_ids):
             dup_peaks = peak_df[peak_df.sec_id == dupid]
             logger.debug("duplicate peaks are: ")
             logger.debug(dup_peaks)
@@ -425,6 +425,7 @@ class PeakSelector(object):
         Keep the compound with the closest RT to that found in the standard csv file (run with the mass spec)
         Delete the other compound(s) from the peak
         """
+        logger.info('Remove double duplicates')
         logger.debug(
             "Checking for peaks with duplicate compounds that match (compound name/adduct) other duplicate peaks")
         duplicate_df = peak_df[peak_df.sec_id.duplicated()]
@@ -471,7 +472,7 @@ class PeakSelector(object):
         """
         If any of the compounds in the duplicate peaks match on name and adduct to others stored then delete them
         """
-
+        logger.info('Remove duplicate on name adduct')
         duplicate_df = peak_df[peak_df.sec_id.duplicated()]
         dup_ids = duplicate_df['sec_id'].values
 
@@ -515,13 +516,14 @@ class PeakSelector(object):
         For a peak with duplicate compounds - keep the one with the closest RT to the STD DB expected value.
         Delete the others.
         """
+        logger.info('Remove duplicates on RT')
         duplicate_df = peak_df[peak_df['sec_id'].duplicated(keep=False)]
         logger.debug("the duplicates at this stage are: ")
         logger.debug(duplicate_df)
         dup_ids = set(duplicate_df['sec_id'].values)
         name_rt_dict = {}
 
-        for dupid in dup_ids:
+        for dupid in tqdm(dup_ids):
 
             name_rt_dict = {}
             dup_indexes = []
@@ -638,7 +640,7 @@ class PeakSelector(object):
                 name_match_dic[pimp_cmpd_name] = m.ratio()
 
         if name_match_dic:
-            print(name_match_dic)
+            logger.debug(name_match_dic)
             max_value = max(name_match_dic.values())  # maximum value
             max_keys = [k for k, v in name_match_dic.items() if v == max_value]
             max_key = max_keys[0]

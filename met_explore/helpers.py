@@ -1,7 +1,9 @@
 import gzip
+import logging
 import os
 import pathlib
 import pickle
+import sys
 
 from loguru import logger
 
@@ -48,3 +50,18 @@ def load_object(filename):
     """
     with gzip.GzipFile(filename, 'rb') as f:
         return pickle.load(f)
+
+
+def set_log_level_warning():
+    logger.remove()
+    logger.add(sys.stderr, level=logging.WARNING)
+
+
+def set_log_level_info():
+    logger.remove()
+    logger.add(sys.stderr, level=logging.INFO)
+
+
+def set_log_level_debug():
+    logger.remove()
+    logger.add(sys.stderr, level=logging.DEBUG)

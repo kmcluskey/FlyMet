@@ -3,6 +3,7 @@ import json
 import numpy as np
 from django.db import IntegrityError
 from loguru import logger
+from tqdm import tqdm
 
 from met_explore.pathway_analysis import get_chebi_relation_dict
 from met_explore.serializers import SampleSerializer, Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, \
@@ -43,20 +44,17 @@ def populate_peaks_cmpds_annots(peak_df):
     """
 
     # For each row of the DF grab the peak, compound and annotation that relates them.
-
-    for index, row in peak_df.iterrows():
+    logger.info('Populating peak, compound and annotation database')
+    for index, row in tqdm(peak_df.iterrows(), total=peak_df.shape[0]):
 
         # Populating the peak
-
-        logger.info("We are populating row %s" % index)
+        logger.debug("We are populating row %s" % index)
         db_peak, peak_created = Peak.objects.get_or_create(psec_id=row.sec_id, m_z=format(row.mass, '.9f'),
                                                            rt=format(row.rt, '.9f'), polarity=row.polarity)
 
         if peak_created:
-            logger.info("A new peak %s was created %s" % (db_peak, peak_created))
+            logger.debug("A new peak %s was created %s" % (db_peak, peak_created))
             db_peak.save()
-        else:
-            logger.info("Got1 %s" % db_peak)
 
         # Populating the compound and it's DB entries from the row.
         # Get or create the compound associated with the peak
@@ -92,7 +90,7 @@ def populate_peaks_cmpds_annots(peak_df):
             store_db_name, store_dbname_created = DBNames.objects.get_or_create(db_name=db_name)
 
             if store_dbname_created:
-                logger.info("Saving the DB name object %s " % (store_db_name))
+                logger.debug("Saving the DB name object %s " % (store_db_name))
                 store_db_name.save()
 
             # Assuming we just want to create a new compound DB details entry for each compound
@@ -102,7 +100,7 @@ def populate_peaks_cmpds_annots(peak_df):
                                                                                                compound=store_cmpd)
 
             if created_cmpd_details:
-                logger.info("New cmpd details were created %s" % (store_cmpd_details))
+                logger.debug("New cmpd details were created %s" % (store_cmpd_details))
                 store_cmpd_details.save()
 
         # Populating the Annotation to relate the peak to the compound and vice-versa
@@ -113,10 +111,8 @@ def populate_peaks_cmpds_annots(peak_df):
                                                                        frank_anno=frank_annot, adduct=row.adduct)
 
         if created_annot:
-            logger.info("Storing the annotation %s" % stored_annot)
+            logger.debug("Storing the annotation %s" % stored_annot)
             stored_annot.save()
-        else:
-            logger.info("Got4 %s" % stored_annot)
 
     logger.info("The filtered peaks, compounds and annotations have been populated")
 
@@ -126,8 +122,9 @@ def add_related_chebis():
     Method to add the related chebi ids from Reactome to the compounds.
     :return:
     """
+    logger.info('Add related Chebis')
     compounds = Compound.objects.all()
-    for c in compounds:
+    for c in tqdm(compounds):
         if c.chebi_id:
             related_chebi = get_related_chebis(c.chebi_id)
             if related_chebi:
@@ -157,12 +154,18 @@ def get_related_chebis(chebi_id):
 # The dictionary is passed in as the Peak model only stores the psec id and not the pid from PiMP.
 
 def populate_peaksamples(intensity_df, pids_sids_dict):
+    logger.info('Populate peak samples')
+
     columns = list(intensity_df.columns)
-    for col in columns:
+    for i in range(len(columns)):
+        col = columns[i]
+        logger.info('Processing %d/%d: %s' % (i, len(columns), col))
         sample = Sample.objects.get(name=col)
         this_col = intensity_df[col]
+
         # Get the data for the SamplePeak
-        for index, value in this_col.iteritems():
+        # for index, value in this_col.iteritems():
+        for index, value in tqdm(this_col.iteritems(), total=this_col.shape[0]):
             sec_id = pids_sids_dict[index]
             intensity = value
             peak = Peak.objects.get(psec_id=sec_id)

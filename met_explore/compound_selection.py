@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from django.db.models import Q
 from loguru import logger
+from tqdm import tqdm
 
 from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames
-
 
 INTENSITY_FILE_NAME = 'current_int_df'
 HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
@@ -34,14 +34,10 @@ class CompoundSelector(object):
 
         try:
             int_df = pd.read_pickle("./data/" + HC_INTENSITY_FILE_NAME + ".pkl")
-
-            logger.info("The file has been found: %s " % HC_INTENSITY_FILE_NAME)
-            print("WE have the DF", int_df.head())
+            logger.info("The file %s has been found" % HC_INTENSITY_FILE_NAME)
 
         except Exception as e:
-
-            logger.info("The file has not been found: %s " % HC_INTENSITY_FILE_NAME)
-
+            logger.info("The file %s has not been found" % HC_INTENSITY_FILE_NAME)
             raise e
 
         return int_df
@@ -51,7 +47,7 @@ class CompoundSelector(object):
         try:
             hc_int_df_concat = pd.read_pickle("./data/" + HC_INTENSITY_FILE_NAME + ".pkl")
 
-            logger.info("The file has been found: %s" % HC_INTENSITY_FILE_NAME)
+            logger.info("The file %s has been found" % HC_INTENSITY_FILE_NAME)
 
         except FileNotFoundError:
 
@@ -75,7 +71,7 @@ class CompoundSelector(object):
             cmpd_df = pd.DataFrame(index=df_index, columns=cmpd_columns)
 
             # KMcL this has to be used with the peak ids for any sense.
-            for p in peaks:
+            for p in tqdm(peaks):
 
                 logger.debug("working on peak: ", p)
                 peak = high_conf_df[high_conf_df.sec_id == p.psec_id]
@@ -264,7 +260,7 @@ class CompoundSelector(object):
         duplicate_compounds = [item for item, count in collections.Counter(compound_names).items() if count > 1]
         sec_ids_to_delete = []
 
-        for dc in duplicate_compounds:
+        for dc in tqdm(duplicate_compounds):
 
             dup_peak_list = hc_int_df[hc_int_df.Metabolite == dc].index.values
             dup_peaks = Peak.objects.filter(id__in=dup_peak_list)
