@@ -1,0 +1,142 @@
+sample,group,life_stage,tissue,mutant
+,,,,
+sak_a_1.mzXML ,Whole_f,F,Whole,NULL
+sak_a_2.mzXML ,Whole_f,F,Whole,NULL
+sak_a_3.mzXML ,Whole_f,F,Whole,NULL
+sak_a_4.mzXML ,Whole_f,F,Whole,NULL
+sak_b_1.mzXML ,Whole_m,M,Whole,NULL
+sak_b_2.mzXML ,Whole_m,M,Whole,NULL
+sak_b_3.mzXML ,Whole_m,M,Whole,NULL
+sak_b_4.mzXML ,Whole_m,M,Whole,NULL
+sak_c_1.mzXML ,Head_f,F,Head,NULL
+sak_c_2.mzXML ,Head_f,F,Head,NULL
+sak_c_3.mzXML ,Head_f,F,Head,NULL
+sak_c_4.mzXML ,Head_f,F,Head,NULL
+sak_d_1.mzXML ,Head_m,M,Head,NULL
+sak_d_2.mzXML ,Head_m,M,Head,NULL
+sak_d_3.mzXML ,Head_m,M,Head,NULL
+sak_d_4.mzXML ,Head_m,M,Head,NULL
+sak_e_1.mzXML ,Mid_f,F,Midgut,NULL
+sak_e_2.mzXML ,Mid_f,F,Midgut,NULL
+sak_e_3.mzXML ,Mid_f,F,Midgut,NULL
+sak_e_4.mzXML ,Mid_f,F,Midgut,NULL
+sak_f_1.mzXML ,Mid_m,M,Midgut,NULL
+sak_f_2.mzXML ,Mid_m,M,Midgut,NULL
+sak_f_3.mzXML ,Mid_m,M,Midgut,NULL
+sak_f_4.mzXML ,Mid_m,M,Midgut,NULL
+sak_g_1.mzXML ,Ovary_f,F,Ovaries,NULL
+sak_g_2.mzXML ,Ovary_f,F,Ovaries,NULL
+sak_g_3.mzXML ,Ovary_f,F,Ovaries,NULL
+sak_g_4.mzXML ,Ovary_f,F,Ovaries,NULL
+sak_h_1.mzXML ,Testes_m,M,Testes,NULL
+sak_h_2.mzXML ,Testes_m,M,Testes,NULL
+sak_h_3.mzXML ,Testes_m,M,Testes,NULL
+sak_h_4.mzXML ,Testes_m,M,Testes,NULL
+FM_BRN_F1.mzXML,Brain_f,F,Brain,NULL
+FM_BRN_F2.mzXML,Brain_f,F,Brain,NULL
+FM_BRN_F3.mzXML,Brain_f,F,Brain,NULL
+FM_BRN_F4.mzXML,Brain_f,F,Brain,NULL
+FM_BRN_L1.mzXML,Brain_l,L,Brain,NULL
+FM_BRN_L2.mzXML,Brain_l,L,Brain,NULL
+FM_BRN_L3.mzXML,Brain_l,L,Brain,NULL
+FM_BRN_L4.mzXML,Brain_l,L,Brain,NULL
+FM_BRN_M1.mzXML,Brain_m,M,Brain,NULL
+FM_BRN_M2.mzXML,Brain_m,M,Brain,NULL
+FM_BRN_M3.mzXML,Brain_m,M,Brain,NULL
+FM_BRN_M4.mzXML,Brain_m,M,Brain,NULL
+FM_CAR_L1.mzXML,Carcass_l,L,Carcass,NULL
+FM_CAR_L2.mzXML,Carcass_l,L,Carcass,NULL
+FM_CAR_L3.mzXML,Carcass_l,L,Carcass,NULL
+FM_CAR_L4.mzXML,Carcass_l,L,Carcass,NULL
+FM_EYE_F1.mzXML,Eye_f,F,Eye,NULL
+FM_EYE_F2.mzXML,Eye_f,F,Eye,NULL
+FM_EYE_F3.mzXML,Eye_f,F,Eye,NULL
+FM_EYE_F4.mzXML,Eye_f,F,Eye,NULL
+FM_EYE_M1.mzXML,Eye_m,M,Eye,NULL
+FM_EYE_M2.mzXML,Eye_m,M,Eye,NULL
+FM_EYE_M3.mzXML,Eye_m,M,Eye,NULL
+FM_EYE_M4.mzXML,Eye_m,M,Eye,NULL
+FM_FTB_L1.mzXML,Fatbody_l,L,Fat Body,NULL
+FM_FTB_L2.mzXML,Fatbody_l,L,Fat Body,NULL
+FM_FTB_L3.mzXML,Fatbody_l,L,Fat Body,NULL
+FM_FTB_L4.mzXML,Fatbody_l,L,Fat Body,NULL
+FM_HIND_L1.mzXML,Hind_l,L,Hindgut,NULL
+FM_HIND_L2.mzXML,Hind_l,L,Hindgut,NULL
+FM_HIND_L3.mzXML,Hind_l,L,Hindgut,NULL
+FM_HIND_L4.mzXML,Hind_l,L,Hindgut,NULL
+FM_MID_L1.mzXML,Mid_l,L,Midgut,NULL
+FM_MID_L2.mzXML,Mid_l,L,Midgut,NULL
+FM_MID_L3.mzXML,Mid_l,L,Midgut,NULL
+FM_MID_L4.mzXML,Mid_l,L,Midgut,NULL
+FM_SLGN_L1.mzXML,SalG_l,L,Salivary Gland,NULL
+FM_SLGN_L2.mzXML,SalG_l,L,Salivary Gland,NULL
+FM_SLGN_L3.mzXML,SalG_l,L,Salivary Gland,NULL
+FM_SLGN_L4.mzXML,SalG_l,L,Salivary Gland,NULL
+FM_TRA_L1.mzXML,Trachea_l,L,Trachea,NULL
+FM_TRA_L2.mzXML,Trachea_l,L,Trachea,NULL
+FM_TRA_L3.mzXML,Trachea_l,L,Trachea,NULL
+FM_TRA_L4.mzXML,Trachea_l,L,Trachea,NULL
+FM_TUB_L1.mzXML,Tubules_l,L,Tubules,NULL
+FM_TUB_L2.mzXML,Tubules_l,L,Tubules,NULL
+FM_TUB_L3.mzXML,Tubules_l,L,Tubules,NULL
+FM_TUB_L4.mzXML,Tubules_l,L,Tubules,NULL
+FM_whl_F1.mzXML,Whole_f,F,Whole,NULL
+FM_whl_F2.mzXML,Whole_f,F,Whole,NULL
+FM_whl_F3.mzXML,Whole_f,F,Whole,NULL
+FM_whl_F4.mzXML,Whole_f,F,Whole,NULL
+FM_WHL_L1.mzXML,Whole_l,L,Whole,NULL
+FM_WHL_L2.mzXML,Whole_l,L,Whole,NULL
+FM_WHL_L3.mzXML,Whole_l,L,Whole,NULL
+FM_WHL_L4.mzXML,Whole_l,L,Whole,NULL
+FM_WHL_M1.mzXML,Whole_m,M,Whole,NULL
+FM_WHL_M2.mzXML,Whole_m,M,Whole,NULL
+FM_WHL_M3.mzXML,Whole_m,M,Whole,NULL
+FM_WHL_M4.mzXML,Whole_m,M,Whole,NULL
+CAR_M1.mzXML,Carcass_m,M,Carcass,NULL
+CAR_M2.mzXML,Carcass_m,M,Carcass,NULL
+CAR_M3.mzXML,Carcass_m,M,Carcass,NULL
+CAR_M4.mzXML,Carcass_m,M,Carcass,NULL
+CAR_F1.mzXML,Carcass_f,F,Carcass,NULL
+CAR_F2.mzXML,Carcass_f,F,Carcass,NULL
+CAR_F3.mzXML,Carcass_f,F,Carcass,NULL
+CAR_F4.mzXML,Carcass_f,F,Carcass,NULL
+TUB_M1.mzXML,Tubules_m,M,Tubules,NULL
+TUB_M2.mzXML,Tubules_m,M,Tubules,NULL
+TUB_M3.mzXML,Tubules_m,M,Tubules,NULL
+TUB_M4.mzXML,Tubules_m,M,Tubules,NULL
+TUB_F1.mzXML,Tubules_f,F,Tubules,NULL
+TUB_F2.mzXML,Tubules_f,F,Tubules,NULL
+TUB_F3.mzXML,Tubules_f,F,Tubules,NULL
+TUB_F4.mzXML,Tubules_f,F,Tubules,NULL
+FTB_M1.mzXML,Fatbody_m,M,Fat Body,NULL
+FTB_M2.mzXML,Fatbody_m,M,Fat Body,NULL
+FTB_M3.mzXML,Fatbody_m,M,Fat Body,NULL
+FTB_M4.mzXML,Fatbody_m,M,Fat Body,NULL
+FTB_F1.mzXML,Fatbody_f,F,Fat Body,NULL
+FTB_F2.mzXML,Fatbody_f,F,Fat Body,NULL
+FTB_F3.mzXML,Fatbody_f,F,Fat Body,NULL
+FTB_F4.mzXML,Fatbody_f,F,Fat Body,NULL
+HEM_M1.mzXML,Hemolymph_m,M,Hemolymph,NULL
+HEM_M2.mzXML,Hemolymph_m,M,Hemolymph,NULL
+HEM_M3.mzXML,Hemolymph_m,M,Hemolymph,NULL
+HEM_M4.mzXML,Hemolymph_m,M,Hemolymph,NULL
+HEM_F1.mzXML,Hemolymph_f,F,Hemolymph,NULL
+HEM_F2.mzXML,Hemolymph_f,F,Hemolymph,NULL
+HEM_F3.mzXML,Hemolymph_f,F,Hemolymph,NULL
+HEM_F4.mzXML,Hemolymph_f,F,Hemolymph,NULL
+HEM_L1.mzXML,Hemolymph_l,L,Hemolymph,NULL
+HEM_L2.mzXML,Hemolymph_l,L,Hemolymph,NULL
+HEM_L3.mzXML,Hemolymph_l,L,Hemolymph,NULL
+HEM_L4.mzXML,Hemolymph_l,L,Hemolymph,NULL
+WHL_F5.mzXML,Whole_f,F,Whole,NULL
+WHL_F6.mzXML,Whole_f,F,Whole,NULL
+WHL_F7.mzXML,Whole_f,F,Whole,NULL
+WHL_F8.mzXML,Whole_f,F,Whole,NULL
+WHL_M5.mzXML,Whole_m,M,Whole,NULL
+WHL_M6.mzXML,Whole_m,M,Whole,NULL
+WHL_M7.mzXML,Whole_m,M,Whole,NULL
+WHL_M8.mzXML,Whole_m,M,Whole,NULL
+WHL_L5.mzXML,Whole_l,L,Whole,NULL
+WHL_L6.mzXML,Whole_l,L,Whole,NULL
+WHL_L7.mzXML,Whole_l,L,Whole,NULL
+WHL_L8.mzXML,Whole_l,L,Whole,NULL
