@@ -199,7 +199,7 @@ class PreprocessCompounds(object):
                 # Same compound IDs, different CheBi_ids - give the row a new cmpd_id = Max cmpd_id +1
                 if len(present_chebi_ids) > 1:  # If the inchi keys are 1 and None just leave.
 
-                    logger.info("This compound id %s has more than one chebi_id %s" % (cmpd, chebi_ids))
+                    logger.warning("This compound id %s has more than one chebi_id %s" % (cmpd, chebi_ids))
 
                     if len(present_chebi_ids) == len(chebi_ids):  # There are no missing/None chebi_ids
 
@@ -238,7 +238,7 @@ class PreprocessCompounds(object):
 
                 # Same compound IDs but different formulas and no std compound - change the cmpd id.
                 elif no_formulas > 1:
-                    logger.info("This compound id %s has more than one inchi_key %s" % (cmpd, formulas))
+                    logger.warning("This compound id %s has more than one inchi_key %s" % (cmpd, formulas))
                     for f in formulas[1:]:  # Keep the first formula, change the rest
                         max_cmpd_id += 1
                         scmpd_id_df = single_cmpd_df[single_cmpd_df.formula == f]
@@ -248,7 +248,7 @@ class PreprocessCompounds(object):
                 # Check for dulicate inchikeys
                 # If the inchi keys are 1 and None just leave alone - more than one non null value and if one chebi_id leave as one cmpd
                 if len(present_inchis) > 1 and len(chebi_ids) != 1:
-                    logger.info("This compound id %s has more than one inchi_key %s" % (cmpd, inchi_keys))
+                    logger.warning("This compound id %s has more than one inchi_key %s" % (cmpd, inchi_keys))
                     if len(present_inchis) == no_inchi_keys:  # There are no missing/None values for inchikeys
 
                         for i in present_inchis[1:]:

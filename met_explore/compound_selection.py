@@ -260,7 +260,7 @@ class CompoundSelector(object):
         duplicate_compounds = [item for item, count in collections.Counter(compound_names).items() if count > 1]
         sec_ids_to_delete = []
 
-        for dc in tqdm(duplicate_compounds):
+        for dc in duplicate_compounds:
 
             dup_peak_list = hc_int_df[hc_int_df.Metabolite == dc].index.values
             dup_peaks = Peak.objects.filter(id__in=dup_peak_list)
@@ -406,9 +406,7 @@ class CompoundSelector(object):
         Takes in  the single_cmpds_df which is the single high confidence peak:compound df.
         :return: Adds the high confidence annotations as preferred to the peaks in this single-peak:single-cmpd df.
         """
-
-        logger.info("adding auto-generated preferred annotations - this should only be done once")
-
+        logger.debug("adding auto-generated preferred annotations")
         peaks_ids = single_cmpds_df.index.values
         cmpd_ids = single_cmpds_df.cmpd_id.values
 
@@ -425,7 +423,7 @@ class CompoundSelector(object):
                 annot.confidence = self.AUTO_F
 
             annot.save()
-        logger.info("Auto generated, preferred annotations added")
+        logger.debug("Auto generated, preferred annotations added")
 
     def update_std_cmpds(self):
 
@@ -456,7 +454,7 @@ class CompoundSelector(object):
 
                     matching_cmpd_id = name_match[0].compound_id  # Take the first/only matching compound.
                     matching_cmpd = Compound.objects.get(id=matching_cmpd_id)
-                    logger.info("We have a name match for the cmpd %s, which is  %s" % (c, matching_cmpd))
+                    logger.debug("We have a name match for the cmpd %s, which is  %s" % (c, matching_cmpd))
 
                     cmpd_detail_matches = CompoundDBDetails.objects.filter(compound_id=matching_cmpd_id)
 
@@ -468,7 +466,7 @@ class CompoundSelector(object):
 
                 else:  # no name match
                     # Currenly we only have kegg IDs in the dictonary - this will need refactored if this changes.
-                    logger.info("We have no name match for the cmpd %s" % c)
+                    logger.debug("We have no name match for the cmpd %s" % c)
 
                     created_cmpd_details = False
                     try:
@@ -489,5 +487,5 @@ class CompoundSelector(object):
                         logger.warning('Cannot find KEGG ID for compound %s' % c.cmpd_name)
 
                     if created_cmpd_details:
-                        logger.info("New cmpd details were created %s" % new_cmpd_details)
+                        logger.debug("New cmpd details were created %s" % new_cmpd_details)
                         new_cmpd_details.save()

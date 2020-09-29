@@ -346,7 +346,7 @@ class PeakSelector(object):
         dup_ids = duplicate_df['sec_id'].values
         logger.debug("dup_ids are %s" % dup_ids)
 
-        for dupid in tqdm(dup_ids):
+        for dupid in dup_ids:
             dup_peaks = peak_df[peak_df.sec_id == dupid]
             logger.debug("duplicate peaks are: ")
             logger.debug(dup_peaks)
@@ -554,7 +554,7 @@ class PeakSelector(object):
                     abs_value = abs(dup_rt - rt)
                     abs_dic[index] = abs_value
 
-        logger.info("The abs dict is, %s " % abs_dic)
+        logger.debug("The abs dict is, %s " % abs_dic)
         keep_index = min(abs_dic, key=lambda x: abs_dic.get(x))
         logger.debug("The keep_index is %s" % keep_index)  # Return this and then use it as below.
 

@@ -48,14 +48,14 @@ class Command(BaseCommand):
             peak_df = peak_select.remove_duplicates(construct_peak_df)
 
             # Populate peak compound annotations to database
-            # populate_peaks_cmpds_annots(peak_df)
-            # add_related_chebis()
+            populate_peaks_cmpds_annots(peak_df)
+            add_related_chebis()
 
             # Construct intensity dataframe
             int_df, ids_dict = peak_select.construct_int_df(peak_df)
 
             # Populate peak intensity information to database for each sample. SLOW.
-            # populate_peaksamples(int_df, ids_dict)
+            populate_peaksamples(int_df, ids_dict)
 
             # Get peak df selected according to certain criteria
             selected_df, unique_sec_ids = peak_select.get_selected_df(peak_df)
@@ -69,6 +69,8 @@ class Command(BaseCommand):
             single_cmpds_df = compound_select.get_single_cmpd_df(hc_int_df)
             compound_select.add_preferred_annotations(single_cmpds_df)
             compound_select.update_std_cmpds()
+
+            logger.info('Completed')
 
         except Exception as e:
             traceback.print_exc()
