@@ -41,6 +41,7 @@ loguru = "*"
 pyparsing = "*"
 pals-pathway = "*"
 tqdm = "*"
+bioservices = "*"
 
 [dev-packages]
 

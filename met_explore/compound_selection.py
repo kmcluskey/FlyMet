@@ -8,6 +8,9 @@ import pandas as pd
 from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
+from bioservices import *
+from bioservices.kegg import KEGG
+k = KEGG()
 
 from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames
 
@@ -434,11 +437,7 @@ class CompoundSelector(object):
         """
         logger.info("Checking for Standard compounds without DB identifiers")
 
-        # This dictionary is used when we have std_cmpds without DB Ids - if a compound not in this dictionary this should be flagged
-        # and the KEGG ID added to the dictionary if possible.
-        missing_cmpd_dict = {"O-Acetylcarnitine": "C02571", "L-homoserine": "C00263", "2-phospho-D-glycerate": "C00631"}
-
-        KEGG = 2  # DB identifier for kegg - currenly the only missing entry has a KEGG ID - this may need to be changed.
+        KEGG = 2  # DB identifier for kegg - currenly the only search attempted for a  missing entry - this may need to be changed.
 
         cmpds = Compound.objects.all()
         # This was changed such that a std cmpd without other identifiers would be assigned the CompoundDBdetails
@@ -468,24 +467,43 @@ class CompoundSelector(object):
                     # Currenly we only have kegg IDs in the dictonary - this will need refactored if this changes.
                     logger.debug("We have no name match for the cmpd %s" % c)
 
-                    created_cmpd_details = False
-                    try:
-                        added_id = missing_cmpd_dict[c.cmpd_name]
-                        assert (added_id.startswith('C0'))
+                    kegg_id = get_kegg_id(c.cmpd_name)
+                    if kegg_id: #If the kegg_id is not none
                         db_name = DBNames.objects.get(id=KEGG)
                         new_cmpd_details, created_cmpd_details = CompoundDBDetails.objects.get_or_create(
-                            db_name=db_name,
-                            identifier=added_id,
-                            cmpd_name=c.cmpd_name,
-                            compound=c)
+                                db_name=db_name,
+                                identifier=kegg_id,
+                                cmpd_name=c.cmpd_name,
+                                compound=c)
 
-                    except AssertionError as e:
-                        logger.error("This is not a KEGG ID so code should be refactored, error %s " % e)
-                        raise
-                    except KeyError:
-                        # TODO: do an online search for the compound_name?
-                        logger.warning('Cannot find KEGG ID for compound %s' % c.cmpd_name)
-
-                    if created_cmpd_details:
                         logger.debug("New cmpd details were created %s" % new_cmpd_details)
                         new_cmpd_details.save()
+                    else:
+                        #If this warning happens often we may want to look for HMDB or lipid map matches.
+                        logger.warning("No KEGG ID could be found for %s. Consequently, ths std_cmpd "
+                                       "has no associated DB ID" % c.cmpd_name)
+
+
+def get_kegg_id(cmpd_name):
+    """
+    :param cmpd_name: The name of the compound for which we want to get the kegg_id
+    :return: The kegg_id associated with the compound name or None if an association doesn't exist
+    """
+
+    logger.info ('finding a ID for %s', cmpd_name)
+
+    try:
+        res = k.find('compound', cmpd_name)
+        res = res.strip()
+    except AttributeError as e:
+        logger.info("Error %s looking for kegg_id " % e)
+        res = None
+
+    if res:
+        tokens = res.split('\t')
+        front = tokens[0].split(':')
+        kegg_id = front[1]
+    else:
+        kegg_id = None
+
+    return kegg_id
