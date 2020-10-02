@@ -342,7 +342,9 @@ def pathway_search(request):
 
                 met_peak_list = []
 
-            view_df, min, mean, max = get_peak_compare_df()
+            peaks = Peak.objects.all()
+
+            view_df, min, mean, max = get_peak_compare_df(peaks)
             column_names = view_df.columns.tolist()
 
             group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -411,15 +413,25 @@ def met_ex_all(request, cmpd_list):
     return render(request, 'met_explore/met_ex_all.html', response)
 
 
-def peak_ex_compare(request):
+def peak_ex_compare(request, peak_compare_list):
     """
        :param request: The peak Explorer page
+       :param peak_list: The list of peaks required for the page
        :return: The template and required parameters for the peak explorer page.
        """
 
+    if peak_compare_list == "All":
+
+        peaks = Peak.objects.all()
+
+    else:
+        peak_list_split = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list_split))
+
+
     logger.info("Peak comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df()
+    view_df, min, mean, max = get_peak_compare_df(peaks)
     column_names = view_df.columns.tolist()
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -432,8 +444,9 @@ def peak_ex_compare(request):
 
     stop = timeit.default_timer()
 
+
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+    response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
                 'mean_value': mean}
 
     return render(request, 'met_explore/peak_ex_compare.html', response)
@@ -474,7 +487,7 @@ def peak_explorer(request, peak_list):
     :return: The template and required parameters for the peak explorer page.
     """
 
-    logger.debug("PEAK EXPLORER REQUEST %s" % peak_list)
+    logger.debug("PEAK EXPLORER REQUEST for peaks %s" % peak_list)
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
@@ -544,18 +557,28 @@ def pals_data(request):
     return JsonResponse({'data': pals_data})
 
 
-def peak_compare_data(request):
+def peak_compare_data(request, peak_compare_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    view_df1, _, _, _ = get_peak_compare_df()
+    if peak_compare_list == "All":
+
+        peaks = Peak.objects.all()
+
+    else:
+        peak_compare_list = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_compare_list))
+
+
+
+    view_df1, _, _, _ = get_peak_compare_df(peaks)
     view_df = view_df1.fillna("-")
     #
     peak_compare_data = view_df.values.tolist()
 
-    logger.info("returning the peak comparison data " % peak_compare_data)
+    logger.info("returning the peak comparison data")
     return JsonResponse({'data': peak_compare_data})
 
 
@@ -570,7 +593,7 @@ def peak_mf_compare_data(request):
     #
     peak_compare_mf_data = view_df.values.tolist()
 
-    logger.info("returning the peak comparison data " % peak_compare_mf_data)
+    logger.info("returning the peak comparison data")
     return JsonResponse({'data': peak_compare_mf_data})
 
 
@@ -603,7 +626,7 @@ def peak_data(request, peak_list):
     #
     peak_data = view_df.values.tolist()
 
-    logger.debug("returning peak data %s" % peak_data)
+    logger.info("returning the peak data")
     return JsonResponse({'data': peak_data})
 
 
@@ -1046,13 +1069,13 @@ def get_peak_mf_compare_df():
     return peak_compare_mf, min_value, mean_value, max_value
 
 
-def get_peak_compare_df():
+def get_peak_compare_df(peaks):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
 
-    peaks = Peak.objects.all()
+    # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 

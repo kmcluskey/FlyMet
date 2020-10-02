@@ -143,10 +143,10 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updatePeakSidePanel(obj){
+function updatePeakSidePanel(obj, pk_side_url, pk_side_text){
   let peak_id = $(obj).children().first().text();
-
-  console.log("updating for peak", peak_id)
+  console.log("pk_side_text", pk_side_text)
+  console.log("peak_side ", pk_side_url)
 
 
   const handleUpdate = function(returned_data) {
@@ -171,21 +171,10 @@ fetch(url)
 .then(handleUpdate);
 //
 // find all the paragraphs with id peak in the side panel
-let pk_url = `peak_explorer/${peak_id}`
-
-
+let pk_url = `${pk_side_url}${peak_id}`
 $("fieldset[id='click_info']").hide();
 $("fieldset[class^='peak_details']").show();
-// $("p[id^='peak_id']").text('Peak ' + peak_id);
-console.log ("peak_id ", peak_id)
-$("p[id^='peak_id']").html(`<a href="${pk_url}">Peak ${peak_id}</a>`);
-
-// let group_header = `<hr class="my-2"><p class= "sidebar"><a class="highlight" href="${url_pg}">Peak Group: ${peak_group_no}</a></p>`
-// group_table = get_peak_gp_table(columns, peak_group, cmpd_name);
-// group = group_header+group_table;
-// groupDiv.innerHTML =  group;
-// sideDiv.appendChild(groupDiv);
-
+$("p[id^='peak_id']").html(`<a href="${pk_url}" target="_blank" >${pk_side_text}${peak_id}</a>`);
 
 }
 //
@@ -206,8 +195,6 @@ function updatePeakData(returned_data, radio_all_check){
   const neutral_mass = returned_data.neutral_mass;
   const no_other_cmpds = returned_data.no_other_cmpds;
   const cmpd_ids = returned_data.cmpd_ids;
-
-  console.log(cmpd_names)
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";

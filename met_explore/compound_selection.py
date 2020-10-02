@@ -8,7 +8,6 @@ import pandas as pd
 from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
-from bioservices import *
 from bioservices.kegg import KEGG
 k = KEGG()
 

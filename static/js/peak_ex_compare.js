@@ -55,13 +55,18 @@ function get_lifestage(ls_string){
 
 $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
+    console.log("peak compare list", peak_compare_list)
 
     let nd_title = "This MS peak was not detected for this tissue/life stage combination";
-    let ajax_url = "peak_compare_data";
-    let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
+    let ajax_url = `peak_compare_data/${peak_compare_list}`;
+    let peak_side_url = `peak_explorer/`;
+    let peak_side_text =`Intensities for peak `;
+
+    let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
+    nd_title, ajax_url, headerTips);
 
       peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this);
+        updatePeakSidePanel(this, peak_side_url, peak_side_text);
       } );
 
 });

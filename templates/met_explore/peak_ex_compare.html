@@ -28,7 +28,7 @@
           <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_ex_compare' %}">Tissue Comparisons</a>
+          <a class="nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissue Comparisons</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
@@ -115,8 +115,8 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_list = "{{peak_compare_list | safe}}"
-    console.log(min_value, mean_value, max_value)
+    var peak_compare_list = "{{peak_compare_list | safe}}"
+    console.log(min_value, mean_value, max_value, peak_compare_list)
 
     </script>
 

@@ -55,11 +55,13 @@ $(document).ready(function() {
 
   let nd_title = "A MS peak was not detected for this tissue/life stage combination";
   let ajax_url = `peak_data/${peak_list}`;
+  let peak_side_url = `peak_ex_compare/`;
+  let peak_side_text =`Compare tissues for peak `
   let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
 
       peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this);
+        updatePeakSidePanel(this, peak_side_url, peak_side_text);
       } );
 
 });
