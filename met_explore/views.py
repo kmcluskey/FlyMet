@@ -726,8 +726,8 @@ def pathway_search_data(pwy_id):
     """
 
     cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
-
-    peak_compare_df, _, _, _ = get_peak_compare_df()
+    peaks = Peak.objects.all()
+    peak_compare_df, _, _, _ = get_peak_compare_df(peaks)
     peak_compare_df = peak_compare_df.fillna("-")
 
     met_name_list = []
