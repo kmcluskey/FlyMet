@@ -13,6 +13,7 @@ from pals.PLAGE import PLAGE
 from pals.common import DATABASE_REACTOME_CHEBI, REACTOME_SPECIES_DROSOPHILA_MELANOGASTER
 from pals.feature_extraction import DataSource
 from scipy.sparse import coo_matrix
+from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object
@@ -257,17 +258,24 @@ def add_num_fly_formulas(pals_ds, pals_df):
     :param pals_df: The original pals df
     :return: Pals DF with the unique formulas belonging to the annotated compound in a dataset
     """
-    logger.info("Updating the DS F to those identified bu Chebi Ids in Fly")
+    logger.info("Updating the DS F to those identified by Chebi Ids in Fly")
     pathway_ids = pals_df.index.values
 
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
+    related_chebis = set(Compound.objects.filter(related_chebi__isnull=False).values_list('related_chebi', flat=True))
+
+    # Split the string into indiviual chebi ids --> list of list
+    split_related_chebis = [s.replace(" ", "").split(",") for s in related_chebis]
+    # Change the above to a flat list
+    fly_related_chebis = {chebi for sublist in split_related_chebis for chebi in sublist}
+
+    all_chebi_ids = fly_chebi_ids.union(fly_related_chebis)
     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
 
     for index, row in pals_df.iterrows():
         reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[index]
-        fly_pw_cmpds = reactome_pw_cmpds.intersection(fly_chebi_ids)
+        fly_pw_cmpds = reactome_pw_cmpds.intersection(all_chebi_ids)
         fly_pw_formula = get_formula_set(list(fly_pw_cmpds))
-
         pals_df.loc[index, 'tot_ds_F'] = len(fly_pw_formula)
 
     # pals_df_fly = pals_df.drop('tot_ds_F', axis=1).copy() #Drop the calculation of DF formula
@@ -337,7 +345,12 @@ def get_formula_set(cmpd_list):
 
     formula_list = set()
     for cmpd_id in cmpd_list:
-        cmpd_formula = all_cmpds.get(chebi_id=cmpd_id).cmpd_formula
+        try:
+            cmpd_formula = all_cmpds.get(chebi_id=cmpd_id).cmpd_formula
+        except ObjectDoesNotExist:
+            cmpd_formula = all_cmpds.get(related_chebi__contains = cmpd_id).cmpd_formula
+        except Exception as e:
+            raise e
         formula_list.add(cmpd_formula)
 
     return formula_list
