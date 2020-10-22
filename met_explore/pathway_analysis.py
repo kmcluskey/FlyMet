@@ -18,7 +18,7 @@ from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
 
-CHEBI_RELATION_DICT = "chebi_relation_dict"
+CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
 
 
 def get_pals_ds():
@@ -70,15 +70,16 @@ def get_cache_df():
 def get_chebi_relation_dict():
     """
     A method to parse the chebi relation tsv and store the relationship we want in a dictionary
-    :return: Dict with structure Chebi_id: related_chebi_ids
+    :return: Dict with structure Chebi_id: [related_chebi_ids]
     """
 
     try:
-        chebi_relation_dict = load_object("./data/" + CHEBI_RELATION_DICT + ".pkl")
+        chebi_bfs_relation_dict = load_object("./data/" + CHEBI_BFS_RELATION_DICT + ".pkl")
+
 
     except Exception as e:
 
-        logger.info("Constructing %s.pkl " % CHEBI_RELATION_DICT)
+        logger.info("Constructing %s.pkl " % CHEBI_BFS_RELATION_DICT)
 
         try:
             chebi_relation_df = pd.read_csv("data/relation.tsv", delimiter="\t")
@@ -93,7 +94,7 @@ def get_chebi_relation_dict():
         chebi_select_df = chebi_relation_df[chebi_relation_df.TYPE.isin(select_list)]
 
         chebi_relation_dict = {}
-
+        # Gather all the INIT_IDs into a dictionary so that each INIT_ID is unique
         for ix, row in chebi_select_df.iterrows():
             init_id = str(row.INIT_ID)
             final_id = str(row.FINAL_ID)
@@ -104,25 +105,35 @@ def get_chebi_relation_dict():
                 chebi_relation_dict[init_id] = joined_string
             else:  # make a new key entry for the dict
                 chebi_relation_dict[init_id] = final_id
-        logger.info("HERE")
+
+        # Change string values to a list.
+        graph = {k: v.replace(" ", "").split(",") for k, v in chebi_relation_dict.items()}
+
+        chebi_bfs_relation_dict = {}
+        for k, v in graph.items():
+            r_chebis = bfs_get_related(graph, k)
+            r_chebis.remove(k) #remove original key from list
+
+            chebi_bfs_relation_dict[k] = r_chebis
 
         try:
             logger.info("saving chebi_relation_dict")
-            save_object(chebi_relation_dict, "./data/" + CHEBI_RELATION_DICT + ".pkl")
+            save_object(chebi_bfs_relation_dict, "./data/" + CHEBI_BFS_RELATION_DICT + ".pkl")
+
 
         except Exception as e:
             logger.error("Pickle didn't work because of %s " % e)
             traceback.print_exc()
             pass
 
-    return chebi_relation_dict
+
+    return chebi_bfs_relation_dict
 
 
 def get_related_chebi_ids(chebi_ids):
     """
-
     :param chebi_ids: A list of chebi IDS
-    :return: A list of related chebi_IDs that are not already in the list
+    :return: A set of related chebi_IDs that are not already in the list
     """
     chebi_relation_dict = get_chebi_relation_dict()
     related_chebis = set()
@@ -132,6 +143,31 @@ def get_related_chebi_ids(chebi_ids):
             related_chebis.update(chebi_relation_dict[c_id])
 
     return related_chebis
+
+
+def bfs_get_related(graph_dict, node):
+    """
+    :param graph: Dictionary of key: ['value'] pairs
+    :param node: the key for which all related values should be returned
+    :return: All related keys as a list
+    """
+    visited = [] # List to keep track of visited nodes.
+    queue = []     #Initialize a queue
+    related_keys = []
+
+    visited.append(node)
+    queue.append(node)
+
+    while queue:
+        k = queue.pop(0)
+        related_keys.append(k)
+
+        for neighbour in graph_dict[k]:
+          if neighbour not in visited:
+            visited.append(neighbour)
+            queue.append(neighbour)
+
+    return related_keys
 
 
 def get_pathway_id_names_dict():
@@ -480,6 +516,8 @@ def get_reactome_highlight_token():
     related_chebis.update(chebi_ids)
 
     unq_chebi_ids = list(related_chebis)
+
+    logger.info("we have %s unq_chebi_ids" % len(unq_chebi_ids))
 
     data = '\t'.join(unq_chebi_ids)
     encoded_species = quote(SPECIES)

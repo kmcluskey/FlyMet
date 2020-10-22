@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from loguru import logger
 from tqdm import tqdm
 
-from met_explore.pathway_analysis import get_chebi_relation_dict
+from met_explore.pathway_analysis import get_chebi_relation_dict, get_related_chebi_ids
 from met_explore.serializers import SampleSerializer, Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, \
     SamplePeakSerializer
 
@@ -122,32 +122,15 @@ def add_related_chebis():
     Method to add the related chebi ids from Reactome to the compounds.
     :return:
     """
-    logger.info('Add related Chebis')
+    logger.info('Adding related Chebis')
     compounds = Compound.objects.all()
     for c in tqdm(compounds):
         if c.chebi_id:
-            related_chebi = get_related_chebis(c.chebi_id)
+            r_chebi = get_related_chebi_ids([c.chebi_id])
+            related_chebi = ', '.join(r_chebi)
             if related_chebi:
                 c.related_chebi = related_chebi
                 c.save()
-
-
-def get_related_chebis(chebi_id):
-    """
-    A method to return related Chebi_IDs - these are alternative Chebis for acid/base conjugates and tautomers used by Reactome.
-    :param chebi_id:
-    :return: related_chebi_ids
-    """
-
-    chebi_rel_dict = get_chebi_relation_dict()
-    if chebi_id in chebi_rel_dict.keys():
-
-        related_chebis = chebi_rel_dict[chebi_id]
-
-    else:
-        related_chebis = None
-
-    return related_chebis
 
 
 # Takes a peak intensity DF and a pimp peak id / secondary id dictionary to populate the PeakSamples.
