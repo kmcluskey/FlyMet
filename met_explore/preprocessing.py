@@ -59,7 +59,10 @@ class PreprocessCompounds(object):
             logger.info("Adding chebi_ids to peak DF")
             self.peak_df["chebi_id"] = None  # Add empty column to fill in.
             self.peak_df["chebi_name"] = None
+            temp_dict = self.chebi_df.set_index('chebi_id').to_dict()
 
+            new_chebi_ids = []
+            new_inchikeys = []
             for index, row in tqdm(self.peak_df.iterrows(), total=self.peak_df.shape[0]):
 
                 set_chebi_id = row.chebi_id
@@ -68,40 +71,49 @@ class PreprocessCompounds(object):
                 formula = row.formula
 
                 if not set_chebi_id:
-                    # logger.debug("The identifier/inchi/formula are %s %s %s" % (identifier, inchi, formula))
                     chebi_id, chebi_id_inchi = self.get_chebi_id(identifier, inchi, formula)
-                    # logger.debug("ID and ID_INCHI %s %s" % (chebi_id, chebi_id_inchi))
 
                     # If both exist add the chebi_id (based on the DB identifier) to the DF
                     if chebi_id and chebi_id_inchi:
-                        logger.debug("The ID and chebi_id are both found: %s %s" % (chebi_id, chebi_id_inchi))
-                        self.peak_df.loc[index, 'chebi_id'] = chebi_id
+                        new_chebi_ids.append(chebi_id)
 
                         # Get the chebi inchi if it exists & If it's not null add it to the DF.
-                        inchi = self.chebi_df[self.chebi_df.chebi_id == chebi_id].inchikey.values[0]
-                        logger.debug("The inchi that we found is %s " % inchi)
+                        inchi = temp_dict['inchikey'][chebi_id]
                         if not pd.isnull(inchi):
-                            logger.debug("in the wee setting bit")
-                            self.peak_df.loc[index, 'inchikey'] = inchi
+                            new_inchikeys.append(inchi)
+                        else:
+                            new_inchikeys.append(None)
 
                     elif chebi_id and not chebi_id_inchi:
                         logger.debug('chebi_id and not chebi_id_inchi, adding %s' % chebi_id)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id
+                        new_chebi_ids.append(chebi_id)
 
                         # Grab the inchi from the chebi_id if it exists.
-                        inchi = self.chebi_df[self.chebi_df.chebi_id == chebi_id].inchikey.values[0]
+                        inchi = temp_dict['inchikey'][chebi_id]
                         if not pd.isnull(inchi):
-                            self.peak_df.loc[index, 'inchikey'] = inchi
+                            new_inchikeys.append(inchi)
+                        else:
+                            new_inchikeys.append(None)
 
                     elif chebi_id_inchi and not chebi_id:
                         logger.debug('chebi_id_inchi and not chebi_id adding chebi_id_inchi %s' % chebi_id_inchi)
                         self.peak_df.loc[index, 'chebi_id'] = chebi_id_inchi
                         # As the chebi_id was obtained using the inchi we can leave that inchi as the original one.
+                        new_chebi_ids.append(chebi_id_inchi)
+                        new_inchikeys.append(inchi)
 
                     elif not chebi_id_inchi and not chebi_id:
                         chebi_id = None
                         logger.debug("No chebi ID found so setting it to None")
-                        self.peak_df.loc[index, 'chebi_id'] = chebi_id
+                        new_chebi_ids.append(chebi_id)
+                        new_inchikeys.append(inchi)
+                else:
+                    new_chebi_ids(set_chebi_id)
+                    new_inchikeys(inchi)
+
+            self.peak_df['chebi_id'] = new_chebi_ids
+            self.peak_df['inchikey'] = new_inchikeys
 
             ## Add Chebi names, smile and cas-codes to the peak DF
             logger.info("Adding Chebi names, smile and cas-codes to the peak DF")
