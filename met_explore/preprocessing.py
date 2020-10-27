@@ -117,19 +117,28 @@ class PreprocessCompounds(object):
 
             ## Add Chebi names, smile and cas-codes to the peak DF
             logger.info("Adding Chebi names, smile and cas-codes to the peak DF")
+            new_chebi_names = []
+            new_cas_codes = []
+            new_smiles = []
             for index, row in tqdm(self.peak_df.iterrows(), total=self.peak_df.shape[0]):
                 if row.chebi_id:  # If not a null value
                     chebi_id = row.chebi_id
-                    chebi_name = self.chebi_df[self.chebi_df.chebi_id == chebi_id].chebi_name.values[
-                        0]
-                    smiles = self.chebi_df[self.chebi_df.chebi_id == chebi_id].smiles.values[
-                        0]
-                    cas_code = self.chebi_df[self.chebi_df.chebi_id == chebi_id].cas_code.values[
-                        0]
+                    chebi_name = temp_dict['cas_code'][chebi_id]
+                    smiles = temp_dict['chebi_name'][chebi_id]
+                    cas_code = temp_dict['smiles'][chebi_id]
                     logger.debug('%s %s' % (chebi_id, chebi_name))
-                    self.peak_df.loc[index, 'chebi_name'] = chebi_name
-                    self.peak_df.loc[index, 'cas_code'] = cas_code
-                    self.peak_df.loc[index, 'smiles'] = smiles
+                else:
+                    chebi_name = None
+                    smiles = None
+                    cas_code = None
+
+                new_chebi_names.append(chebi_name)
+                new_cas_codes.append(cas_code)
+                new_smiles.append(smiles)
+
+            self.peak_df['chebi_name'] = chebi_name
+            self.peak_df['cas_code'] = cas_code
+            self.peak_df['smiles'] = smiles
 
             try:
                 logger.info("Saving peak DF")
