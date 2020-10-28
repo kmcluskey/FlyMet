@@ -47,12 +47,10 @@ def get_cache_ds():
 
 def get_pals_df():
     ds = get_cache_ds()
-
-    pals = PLAGE(ds)
+    pals = PLAGE(ds, num_resamples=5000, seed=123)
     pathway_df_chebi = pals.get_pathway_df()
-    pw_df_chebi = add_num_fly_formulas(ds, pathway_df_chebi)
 
-    return pw_df_chebi
+    return pathway_df_chebi
 
 
 def get_cache_df():
@@ -66,6 +64,19 @@ def get_cache_df():
         pals_df = cache.get('pals_df')
 
     return pals_df
+
+def get_cache_annot_df():
+    # cache.delete('pals_annot_df')
+    if cache.get('pals_annot_df') is None:
+        logger.info("we dont have cache so running the pals_annot_df function")
+        cache.set('pals_annot_df', get_pals_annot_df(), 60 * 180000)
+        pals_annot_df = cache.get('pals_annot_df')
+    else:
+        logger.info("we have cache for the pals_annot_df, so retrieving it")
+        pals_annot_df = cache.get('pals_annot_df')
+
+    return pals_annot_df
+
 
 
 def get_chebi_relation_dict():
@@ -216,6 +227,7 @@ def get_pals_annot_df():
 
     :return: A full annotation dataframe for all the annotated peaks in Fly
     """
+
     logger.info("Getting the full annotation df")
     annotation_data = Annotation.objects.values_list('peak', 'compound')
     peaks, compounds = zip(*annotation_data)
@@ -224,9 +236,11 @@ def get_pals_annot_df():
     cmpd_ids = list(compounds)
 
     chebi_col = 'chebi_id'
+    r_chebi_col ="related_chebi"
     db_names = DBNames.objects.all()
     columns = [d.db_name for d in db_names if d.db_name != 'stds_db']
 
+    columns.insert(0, r_chebi_col)
     columns.insert(0, chebi_col)
 
     annotation_df = pd.DataFrame(columns=columns)
@@ -236,7 +250,10 @@ def get_pals_annot_df():
     for ix, row in annotation_df.iterrows():
         cmpd = Compound.objects.get(id=row.cmpd_ids)
         chebi_id = cmpd.chebi_id
+        related_chebi = cmpd.related_chebi
         annotation_df.loc[ix, 'chebi_id'] = chebi_id
+        annotation_df.loc[ix, 'related_chebi'] = related_chebi
+
 
         db_set = cmpd.compounddbdetails_set.all()
         for db in db_set:
@@ -251,15 +268,42 @@ def get_pals_annot_df():
     return annotation_df
 
 
-def add_num_fly_formulas(pals_ds, pals_df):
-    """
+# def add_num_fly_formulas(pals_ds, pals_df):
+#     """
+#
+#     :param pals_ds: The pals datasource for this experiment
+#     :param pals_df: The original pals df
+#     :return: Pals DF with the unique formulas belonging to the annotated compound in a dataset
+#     """
+#     logger.info("Updating the DS F to those identified by Chebi Ids in Fly")
+#     pathway_ids = pals_df.index.values
+#
+#     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
+#     related_chebis = set(Compound.objects.filter(related_chebi__isnull=False).values_list('related_chebi', flat=True))
+#
+#     # Split the string into indiviual chebi ids --> list of list
+#     split_related_chebis = [s.replace(" ", "").split(",") for s in related_chebis]
+#     # Change the above to a flat list
+#     fly_related_chebis = {chebi for sublist in split_related_chebis for chebi in sublist}
+#
+#     all_chebi_ids = fly_chebi_ids.union(fly_related_chebis)
+#     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
+#
+#     for index, row in pals_df.iterrows():
+#         reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[index]
+#         fly_pw_cmpds = reactome_pw_cmpds.intersection(all_chebi_ids)
+#         fly_pw_formula = get_formula_set(list(fly_pw_cmpds))
+#         pals_df.loc[index, 'tot_ds_F'] = len(fly_pw_formula)
+#
+#     # pals_df_fly = pals_df.drop('tot_ds_F', axis=1).copy() #Drop the calculation of DF formula
+#     pals_df['tot_ds_F'] = pals_df['tot_ds_F'].astype(int)  # Make sure this new column has int values
+#
+#     # Recalculate the coverage for the new values.
+#     pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
+#
+#     return pals_df
 
-    :param pals_ds: The pals datasource for this experiment
-    :param pals_df: The original pals df
-    :return: Pals DF with the unique formulas belonging to the annotated compound in a dataset
-    """
-    logger.info("Updating the DS F to those identified by Chebi Ids in Fly")
-    pathway_ids = pals_df.index.values
+def get_all_chebi_ids():
 
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     related_chebis = set(Compound.objects.filter(related_chebi__isnull=False).values_list('related_chebi', flat=True))
@@ -270,21 +314,9 @@ def add_num_fly_formulas(pals_ds, pals_df):
     fly_related_chebis = {chebi for sublist in split_related_chebis for chebi in sublist}
 
     all_chebi_ids = fly_chebi_ids.union(fly_related_chebis)
-    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
 
-    for index, row in pals_df.iterrows():
-        reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[index]
-        fly_pw_cmpds = reactome_pw_cmpds.intersection(all_chebi_ids)
-        fly_pw_formula = get_formula_set(list(fly_pw_cmpds))
-        pals_df.loc[index, 'tot_ds_F'] = len(fly_pw_formula)
+    return all_chebi_ids
 
-    # pals_df_fly = pals_df.drop('tot_ds_F', axis=1).copy() #Drop the calculation of DF formula
-    pals_df['tot_ds_F'] = pals_df['tot_ds_F'].astype(int)  # Make sure this new column has int values
-
-    # Recalculate the coverage for the new values.
-    pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
-
-    return pals_df
 
 
 def get_fly_pw_cmpd_formula(pw_id):
@@ -300,7 +332,8 @@ def get_fly_pw_cmpd_formula(pw_id):
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
-    fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
+    # fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
+    fly_chebi_ids = get_all_chebi_ids()
     # For all of the pathways in reactome get the uniue cmpd_ids
     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)  # Possibly an member variable
 
@@ -363,7 +396,7 @@ def get_pals_single_entity_annot_df():
     :return: Peak:entity ID DF - choses one DB ID for each peak compound
     """
     logger.info("Getting the single entity annotation df")
-    annot_cmpd_df = get_pals_annot_df()
+    annot_cmpd_df = get_cache_annot_df()
 
     no_identifiers = []
     annot_cmpd_df["entity_id"] = np.nan  # This will be the single, chosen identifier for the compound
@@ -404,13 +437,21 @@ def get_single_db_entity_df(id_type):
     :return: A dataframe containing peaks and all the compounds from a particular DB
     """
 
-    annot_cmpd_df = get_pals_annot_df()
+    annot_cmpd_df = get_cache_annot_df()
     logger.info("Getting the annotation_df for %s" % id_type)
     annot_cmpd_df["entity_id"] = np.nan  # This will be the single, chosen identifier for the compound
 
     for ix, row in annot_cmpd_df.iterrows():
-        if row.chebi_id is not None:
+        if row[id_type] is not None:
             annot_cmpd_df.loc[ix, 'entity_id'] = row[id_type]
+            if id_type == 'chebi_id' and row.related_chebi is not None:
+                chebi_list = row.related_chebi.split(', ')
+                for c in chebi_list:
+                    new_row = annot_cmpd_df.loc[ix].copy()  # copy of the current row
+                    new_row.entity_id = c #Add the related chebi to the entity list
+                    annot_cmpd_df = annot_cmpd_df.append(new_row, ignore_index=True)
+
+
 
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]
     annotation_df.set_index('peak_ids', inplace=True)

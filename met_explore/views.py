@@ -11,6 +11,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.list import ListView
+from django.core.exceptions import ObjectDoesNotExist
+
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
@@ -18,6 +20,7 @@ from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annota
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula
 from met_explore.peak_groups import PeakGroups
+
 
 # from met_explore.forms import ContactForm
 
@@ -811,7 +814,14 @@ def metabolite_pathway_data(request, pw_id):
     pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
     cmpd_details = {}
     for cmpd, formula in pw_cmpd_for_dict.items():
-        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+
+        try:
+            cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+        except ObjectDoesNotExist:
+            print ("in here")
+            cmpd_id = Compound.objects.filter(related_chebi__contains=cmpd)[0].id
+
+
         references = cmpd_selector.get_simple_compound_details(cmpd_id)
         logger.debug(references)
         cmpd_details[cmpd_id] = references
