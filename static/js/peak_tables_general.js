@@ -49,6 +49,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
 
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
+            {type: 'sort-numbers-ignore-text', targets : '_all' },
             {
 
                 "targets": '_all',
@@ -258,6 +259,24 @@ function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
 }
 
+
+function sortNumbersIgnoreText(a, b, high) {
+    var reg = /[+-]?((\d+(\.\d*)?)|\.\d+)([eE][+-]?[0-9]+)?/;
+    a = String(a).match(reg);
+    a = a !== null ? parseFloat(a[0]) : high;
+    b = String(b).match(reg);
+    b = b !== null ? parseFloat(b[0]) : high;
+    return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+}
+
+jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+    "sort-numbers-ignore-text-asc": function (a, b) {
+        return sortNumbersIgnoreText(a, b, Number.POSITIVE_INFINITY);
+    },
+    "sort-numbers-ignore-text-desc": function (a, b) {
+        return sortNumbersIgnoreText(a, b, Number.NEGATIVE_INFINITY) * -1;
+    }
+});
 
 export {
     initialise_pcompare_table,
