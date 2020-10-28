@@ -96,8 +96,8 @@ class PreprocessCompounds(object):
                             new_inchikeys.append(set_inchi) # unchanged?
 
                 else: # chebi id has been set, don't change it
-                    new_chebi_ids(set_chebi_id)
-                    new_inchikeys(set_inchi)
+                    new_chebi_ids.append(set_chebi_id)
+                    new_inchikeys.append(set_inchi)
 
             self.peak_df['chebi_id'] = new_chebi_ids
             self.peak_df['inchikey'] = new_inchikeys
@@ -107,6 +107,10 @@ class PreprocessCompounds(object):
             new_chebi_names = []
             new_cas_codes = []
             new_smiles = []
+            chebi_name = None
+            smiles = None
+            cas_code = None
+
             for index, row in tqdm(self.peak_df.iterrows(), total=self.peak_df.shape[0]):
                 if row.chebi_id:  # If not a null value
                     chebi_id = row.chebi_id
@@ -114,10 +118,6 @@ class PreprocessCompounds(object):
                     smiles = temp_dict['chebi_name'][chebi_id]
                     cas_code = temp_dict['smiles'][chebi_id]
                     logger.debug('%s %s' % (chebi_id, chebi_name))
-                else:
-                    chebi_name = None
-                    smiles = None
-                    cas_code = None
 
                 new_chebi_names.append(chebi_name)
                 new_cas_codes.append(cas_code)
