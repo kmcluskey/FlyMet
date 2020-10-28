@@ -21,3 +21,4 @@ require( 'datatables.net-responsive-bs4' );
 require( 'datatables.net-scroller-bs4' );
 require( 'datatables.net-select-bs4' );
 require( 'datatables.net-plugins/sorting/scientific.js' );
+require( 'datatables.net-plugins/sorting/absolute.js' );
