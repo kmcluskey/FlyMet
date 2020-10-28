@@ -134,8 +134,8 @@ class PeakSelector(object):
         except FileNotFoundError:
 
             headers = list(all_peaks.columns.values)
-            all_peak_df = pd.DataFrame(columns=headers)
             all_unique_sec_ids = all_peaks['sec_id'].unique()
+            all_rows = []
 
             # For each unique peak based on pimp Sec_id
             for sid in tqdm(all_unique_sec_ids):
@@ -146,8 +146,9 @@ class PeakSelector(object):
                 # For each of the unique compounds add a row to the DF
                 for cmpd_id in unique_cmpd_ids:
                     new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
-                    all_peak_df = all_peak_df.append(new_row)
+                    all_rows.append(new_row)
 
+            all_peak_df = pd.DataFrame(all_rows, columns=headers)
             try:
                 all_peak_df.to_pickle("./data/" + PEAK_FILE_NAME + ".pkl")
             except Exception as e:
