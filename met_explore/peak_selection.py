@@ -848,7 +848,10 @@ class PeakSelector(object):
         max_mass_check = peak_df['mass'].values < max_mass
         min_rt_check = min_rt < peak_df['rt'].values
         max_rt_check = peak_df['rt'].values < max_rt
+
+        # indices of the duplicate entries in the array
         dupe_idx = np.nonzero(min_mass_check & max_mass_check & min_rt_check & max_rt_check)[0]
 
         duplicates = True if len(dupe_idx) > 0 else False
+
         return duplicates
