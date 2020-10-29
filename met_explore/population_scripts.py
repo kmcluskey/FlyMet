@@ -1,33 +1,38 @@
 import json
 
-import numpy as np
+import pandas as pd
 from django.db import IntegrityError
 from loguru import logger
 from tqdm import tqdm
 
-from met_explore.pathway_analysis import get_chebi_relation_dict, get_related_chebi_ids
-from met_explore.serializers import SampleSerializer, Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, \
-    SamplePeakSerializer
+from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak
+from met_explore.pathway_analysis import get_related_chebi_ids
 
 
 def populate_samples(sample_csv):
     '''
     Give the sample CSV file to populate the samples.
-    KMcL: Working but need to consider the filepath.
     '''
-    sample_details = np.genfromtxt(sample_csv, delimiter=',', dtype=str)[2:]
-    logger.debug("sd_type %s" % sample_details)
-    for sample in sample_details:
-        # sample = s.split()
-        sample_serializer = SampleSerializer(
-            data={"name": sample[0], "group": sample[1], "life_stage": sample[2], "tissue": sample[3],
-                  "mutant": sample[4]})
-        if sample_serializer.is_valid():
-            db_sample = sample_serializer.save()
-            logger.debug("sample saved %s" % db_sample.name)
-        else:
-            logger.debug(sample_serializer.errors)
 
+    # Read sample csv
+    # Assume the first column is the sample
+    # Drop empty rows where it's all NaN if they're present
+    sample_details = pd.read_csv(sample_csv, index_col=0).dropna(how='all')
+
+    # Assume other columns are the experimental factors
+    factor_names = sample_details.columns.values
+
+    try:
+        for idx, row in sample_details.iterrows():
+            sample_name = idx.strip()
+            sample = Sample(name=sample_name)
+            sample.save()
+            for factor_name in factor_names:
+                factor_value = row[factor_name]
+                factor = Factor(sample=sample, name=factor_name, value=factor_value)
+                factor.save()
+    except IntegrityError:
+        logger.warning('Samples have been inserted, skipping')
 
 # This requires the input taken from the construct_peak_df method/
 # It requires all secondary_ids to be unique and reports any errors (throw?)
@@ -154,14 +159,8 @@ def populate_peaksamples(intensity_df, pids_sids_dict):
             intensity = value
             peak = Peak.objects.get(psec_id=sec_id)
             logger.debug("we are adding the data for: %s %s %f " % (sample, peak, intensity))
-
-            record = {"peak": peak.id, "sample": sample.id, "intensity": intensity}
-            data.append(record)
+            sample_peak = SamplePeak(peak=peak, sample=sample, intensity=intensity)
+            data.append(sample_peak)
 
         # Populate the DB
-        samplepeak_serializer = SamplePeakSerializer(data=data, many=True)
-        if samplepeak_serializer.is_valid():
-            samplepeak_serializer.save()
-            logger.debug("peak saved")
-        else:
-            logger.warning(samplepeak_serializer.errors)
+        SamplePeak.objects.bulk_create(data)

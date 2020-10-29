@@ -16,7 +16,7 @@ from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
-from met_explore.helpers import load_object, save_object
+from met_explore.helpers import load_object, save_object, get_samples_by_factor
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
@@ -481,7 +481,7 @@ def get_pals_experimenal_design():
 
     exp_groups = {}  # Experimental group dictionary for use in the pals exp_design dict.
     for g in groups:
-        sample = Sample.objects.filter(group=g)
+        sample = get_samples_by_factor('group', g)
         gp_files = list(sample.values_list('name', flat=True))
         exp_groups[group_dict[g]] = gp_files
 

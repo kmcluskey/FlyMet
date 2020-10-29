@@ -7,6 +7,8 @@ import sys
 
 from loguru import logger
 
+from met_explore.models import Factor
+
 
 def get_filename_from_string(fname):
     """
@@ -65,3 +67,9 @@ def set_log_level_info():
 def set_log_level_debug():
     logger.remove()
     logger.add(sys.stderr, level=logging.DEBUG)
+
+
+def get_samples_by_factor(name, value):
+    factors = Factor.objects.filter(name=name, value=value)
+    samples = [factor.sample for factor in factors]
+    return samples

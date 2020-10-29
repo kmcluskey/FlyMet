@@ -9,9 +9,12 @@ from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
+
+from met_explore.helpers import get_samples_by_factor
+
 k = KEGG()
 
-from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames
+from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, Factor
 
 INTENSITY_FILE_NAME = 'current_int_df'
 HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
@@ -187,7 +190,8 @@ class CompoundSelector(object):
 
         for group in sample_groups:
             logger.info("Working on group %s" % group)
-            gp_samples = Sample.objects.filter(group=group)
+            gp_samples = get_samples_by_factor('group', group)
+
             for i in df_index:
                 int_list = []
                 for g in gp_samples:
@@ -233,7 +237,7 @@ class CompoundSelector(object):
             elif g == 'id':
                 group_name_dict[g] = "Peak ID"
             else:
-                sample = Sample.objects.filter(group=g)[0]  # Get the first sample of this group.
+                sample = get_samples_by_factor('group', g)[0] # Get the first sample of this group.
                 tissue = sample.tissue
                 ls = sample.life_stage
                 group_name_dict[g] = tissue + " " + "(" + ls + ")"
@@ -327,7 +331,7 @@ class CompoundSelector(object):
         :param tissue: The tissue of interest
         :return: The groups that this tissue is found in
         """
-        filtered_sps = Sample.objects.filter(tissue=tissue)
+        filtered_sps = get_samples_by_factor('tissue', tissue)
         groups = set([f.group for f in filtered_sps])
         lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)
         life_stages = [ls[1] for ls in lifestage_dict.values()]
@@ -387,7 +391,7 @@ class CompoundSelector(object):
 
         met_int_df = int_df.loc[peak_id]
 
-        sample_group = Sample.objects.filter(group=group)
+        sample_group = get_samples_by_factor('group', group)
         sample_names = [s.name for s in sample_group]
 
         sample_ints = met_int_df[sample_names].values[0]
