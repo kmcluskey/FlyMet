@@ -148,17 +148,20 @@ def populate_peaksamples(intensity_df, pids_sids_dict):
 
         # Get the data for the SamplePeak
         # for index, value in this_col.iteritems():
+        data = []
         for index, value in tqdm(this_col.iteritems(), total=this_col.shape[0]):
             sec_id = pids_sids_dict[index]
             intensity = value
             peak = Peak.objects.get(psec_id=sec_id)
             logger.debug("we are adding the data for: %s %s %f " % (sample, peak, intensity))
 
-            # Populate the DB
-            samplepeak_serializer = SamplePeakSerializer(
-                data={"peak": peak.id, "sample": sample.id, "intensity": intensity})
-            if samplepeak_serializer.is_valid():
-                db_samplepeak = samplepeak_serializer.save()
-                logger.debug("peak saved %s" % db_samplepeak.peak)
-            else:
-                logger.warning(samplepeak_serializer.errors)
+            record = {"peak": peak.id, "sample": sample.id, "intensity": intensity}
+            data.append(record)
+
+        # Populate the DB
+        samplepeak_serializer = SamplePeakSerializer(data=data, many=True)
+        if samplepeak_serializer.is_valid():
+            samplepeak_serializer.save()
+            logger.debug("peak saved")
+        else:
+            logger.warning(samplepeak_serializer.errors)

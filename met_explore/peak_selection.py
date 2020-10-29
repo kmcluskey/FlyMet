@@ -133,8 +133,8 @@ class PeakSelector(object):
         except FileNotFoundError:
 
             headers = list(all_peaks.columns.values)
-            all_peak_df = pd.DataFrame(columns=headers)
             all_unique_sec_ids = all_peaks['sec_id'].unique()
+            all_rows = []
 
             # For each unique peak based on pimp Sec_id
             for sid in tqdm(all_unique_sec_ids):
@@ -145,8 +145,9 @@ class PeakSelector(object):
                 # For each of the unique compounds add a row to the DF
                 for cmpd_id in unique_cmpd_ids:
                     new_row = self.get_peak_by_cmpd_id(sid_df, cmpd_id)
-                    all_peak_df = all_peak_df.append(new_row)
+                    all_rows.append(new_row)
 
+            all_peak_df = pd.DataFrame(all_rows, columns=headers)
             try:
                 all_peak_df.to_pickle("./data/" + PEAK_FILE_NAME + ".pkl")
             except Exception as e:
@@ -835,8 +836,6 @@ class PeakSelector(object):
         :param rt: The retention time of the peak
         :return: duplicates - A boolean stating whether or not the peak_df contains duplicates for this given (mz,rt) peak.
         """
-        duplicates = False
-
         mass_tol = mz * MASS_PPM * PPM
         min_mass = mz - mass_tol
         max_mass = mz + mass_tol
@@ -844,9 +843,11 @@ class PeakSelector(object):
         min_rt = rt - RT_TOL
         max_rt = rt + RT_TOL
 
-        for index, row in peak_df.iterrows():
-            # If the mz and RT lie within a value then there are duplicates in the dataframe
-            if (min_mass < row.mass < max_mass) and (min_rt < row.rt < max_rt):
-                duplicates = True
+        min_mass_check = min_mass < peak_df['mass'].values
+        max_mass_check = peak_df['mass'].values < max_mass
+        min_rt_check = min_rt < peak_df['rt'].values
+        max_rt_check = peak_df['rt'].values < max_rt
+        dupe_idx = np.nonzero(min_mass_check & max_mass_check & min_rt_check & max_rt_check)[0]
 
+        duplicates = True if len(dupe_idx) > 0 else False
         return duplicates
