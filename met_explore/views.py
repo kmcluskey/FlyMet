@@ -18,9 +18,8 @@ from loguru import logger
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-    get_fly_pw_cmpd_formula
+    get_fly_pw_cmpd_formula, MIN_HITS
 from met_explore.peak_groups import PeakGroups
-
 
 # from met_explore.forms import ContactForm
 
@@ -422,11 +421,8 @@ def peak_ex_compare(request, peak_compare_list):
        :param peak_list: The list of peaks required for the page
        :return: The template and required parameters for the peak explorer page.
        """
-
     if peak_compare_list == "All":
-
         peaks = Peak.objects.all()
-
     else:
         peak_list_split = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_list_split))
@@ -565,7 +561,6 @@ def peak_compare_data(request, peak_compare_list):
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
-
     if peak_compare_list == "All":
 
         peaks = Peak.objects.all()
@@ -573,7 +568,6 @@ def peak_compare_data(request, peak_compare_list):
     else:
         peak_compare_list = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_compare_list))
-
 
 
     view_df1, _, _, _ = get_peak_compare_df(peaks)
@@ -605,7 +599,6 @@ def peak_data(request, peak_list):
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
-
     if peak_list == "All":
 
         peaks = Peak.objects.all()
@@ -711,7 +704,7 @@ def get_pathway_names(request):
        A method to return a list of all the Pathway names present in Reactome for the daea
        :return: A unique list of pathway names
     """
-    pals_df = get_cache_df()
+    pals_df = get_cache_df(MIN_HITS)
 
     if request.is_ajax():
         pathway_names = pals_df.pw_name.tolist()
@@ -818,7 +811,6 @@ def metabolite_pathway_data(request, pw_id):
         try:
             cmpd_id = Compound.objects.get(chebi_id=cmpd).id
         except ObjectDoesNotExist:
-            print ("in here")
             cmpd_id = Compound.objects.filter(related_chebi__contains=cmpd)[0].id
 
 
@@ -984,7 +976,7 @@ def get_pals_view_data():
     :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
 
-    pals_df = get_cache_df()
+    pals_df = get_cache_df(MIN_HITS)
     fly_pals_df = change_pals_col_names(pals_df)
 
     # dropping colums not required for calculating the min. max and mean for the datatable.
@@ -1042,7 +1034,7 @@ def get_peak_mf_compare_df():
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    group_df = get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(peaks)
 
     # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
 
@@ -1084,13 +1076,12 @@ def get_peak_compare_df(peaks):
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
-
     # peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
     # Get all of the peaks and all of the intensities of the sample files
-    group_df = get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(peaks)
 
     # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
@@ -1183,26 +1174,6 @@ def get_log_df(df, drop_list):
     mean_value = np.nanmean(calc_df)
 
     return log_df, min_value, mean_value, max_value
-
-
-def get_group_df(peaks):
-    """
-
-    :param peaks: The peaks required
-    :return: group_df All of the groups for the required peaks
-    """
-
-    # Get all of the peaks and all of the intensities of the sample files
-
-    if cache.get('full_group_df') is None:
-        logger.debug("we dont have cache so running the function")
-        cache.set('full_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
-        group_df = cache.get('full_group_df')
-    else:
-        logger.debug("we have cache so retrieving it")
-        group_df = cache.get('full_group_df')
-
-    return group_df
 
 
 class MetaboliteListView(ListView):

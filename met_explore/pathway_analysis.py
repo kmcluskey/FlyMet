@@ -20,7 +20,7 @@ from met_explore.helpers import load_object, save_object
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
-
+MIN_HITS =2
 
 def get_pals_ds():
     fly_int_df = get_pals_int_df()
@@ -45,19 +45,20 @@ def get_cache_ds():
     return pals_ds
 
 
-def get_pals_df():
+def get_pals_df(min_hits):
     ds = get_cache_ds()
     pals = PLAGE(ds, num_resamples=5000, seed=123)
     pathway_df_chebi = pals.get_pathway_df()
+    pathway_df_return = pathway_df_chebi[pathway_df_chebi.tot_ds_F >= min_hits]
 
-    return pathway_df_chebi
+    return pathway_df_return
 
 
-def get_cache_df():
+def get_cache_df(min_hits):
     # cache.delete('pals_df')
     if cache.get('pals_df') is None:
         logger.info("we dont have cache so running the pals_df function")
-        cache.set('pals_df', get_pals_df(), 60 * 180000)
+        cache.set('pals_df', get_pals_df(min_hits), 60 * 180000)
         pals_df = cache.get('pals_df')
     else:
         logger.info("we have cache for the pals df, so retrieving it")
@@ -183,7 +184,7 @@ def bfs_get_related(graph_dict, node):
 
 
 def get_pathway_id_names_dict():
-    pals_df = get_cache_df()
+    pals_df = get_cache_df(MIN_HITS)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
@@ -327,7 +328,7 @@ def get_fly_pw_cmpd_formula(pw_id):
     """
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
     pals_ds = get_cache_ds()  # possibly member variables
     pathway_ids = pals_df.index.values
 
@@ -354,7 +355,7 @@ def get_reactome_pw_metabolites(pw_id):
     :return: A list of metabolites associated with this Reactome pathway.
     """
 
-    pals_df = get_cache_df()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
     pals_ds = get_cache_ds()  # possibly member variables
     pathway_ids = pals_df.index.values
 
