@@ -16,6 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
+from met_explore.helpers import get_samples_by_factor
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula
@@ -1131,9 +1132,10 @@ def get_drilldown_data():
     :return: A list of lists containing the drilldown data structure - this may change depending on the number of
     whole fly replicates.
     """
-    num_FW = len(Sample.objects.filter(group="Whole_f"))
-    num_MW = len(Sample.objects.filter(group="Whole_m"))
-    num_LW = len(Sample.objects.filter(group="Whole_l"))
+    num_FW = len(get_samples_by_factor('group', 'Whole_f'))
+    num_MW = len(get_samples_by_factor('group', 'Whole_m'))
+    num_LW = len(get_samples_by_factor('group', 'Whole_l'))
+
 
     whole_fly_dict = {'FW': num_FW, 'MW': num_MW, 'LW': num_LW}  # whole_female, whole_male, whole_larvae
 

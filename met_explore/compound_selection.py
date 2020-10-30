@@ -10,7 +10,7 @@ from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
 
-from met_explore.helpers import get_samples_by_factor
+from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_factor_of_sample
 
 k = KEGG()
 
@@ -145,11 +145,14 @@ class CompoundSelector(object):
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
 
-        samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
-                                                                                            'sample_id__name',
-                                                                                            'sample_id__group')
+        sample_peaks = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id')
+        values = []
+        for sp in sample_peaks:
+            row = [sp.peak.id, sp.intensity, sp.sample.name, sp.sample.group]
+            values.append(row)
+
         columns = ['peak', 'intensity', 'filename', 'group']
-        int_df = pd.DataFrame(samples, columns=columns)
+        int_df = pd.DataFrame(values, columns=columns)
         group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
         # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
         gp_df = group_series.to_frame()
@@ -237,10 +240,12 @@ class CompoundSelector(object):
             elif g == 'id':
                 group_name_dict[g] = "Peak ID"
             else:
-                sample = get_samples_by_factor('group', g)[0] # Get the first sample of this group.
-                tissue = sample.tissue
-                ls = sample.life_stage
-                group_name_dict[g] = tissue + " " + "(" + ls + ")"
+                samples = get_samples_by_factor('group', g)
+                if len(samples) > 0:
+                    first_sample = samples[0] # Get the first sample of this group.
+                    tissue = first_sample.tissue
+                    ls = first_sample.life_stage
+                    group_name_dict[g] = tissue + " " + "(" + ls + ")"
 
         return group_name_dict
 
@@ -356,7 +361,9 @@ class CompoundSelector(object):
 
         for g, ls in zip(groups, life_stages):
             all_groups.append(g)
-            whole_gp = Sample.objects.filter(tissue=whole_tissue, life_stage=ls)[0].group
+            samples = get_samples_by_factors(['tissue', 'life_stage'], [whole_tissue, ls])
+            factor = get_factor_of_sample(samples[0], 'group')
+            whole_gp = factor.value
             all_groups.append(whole_gp)
 
         met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == metabolite]

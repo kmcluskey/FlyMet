@@ -34,6 +34,8 @@ def populate_samples(sample_csv):
     except IntegrityError:
         logger.warning('Samples have been inserted, skipping')
 
+    logger.warning('All samples loaded to database')
+
 # This requires the input taken from the construct_peak_df method/
 # It requires all secondary_ids to be unique and reports any errors (throw?)
 # To get the list and dict back from the json.dumps just use json.loads
