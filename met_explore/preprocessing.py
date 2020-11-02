@@ -123,9 +123,10 @@ class PreprocessCompounds(object):
                 new_cas_codes.append(cas_code)
                 new_smiles.append(smiles)
 
-            self.peak_df['chebi_name'] = chebi_name
-            self.peak_df['cas_code'] = cas_code
-            self.peak_df['smiles'] = smiles
+            self.peak_df['chebi_name'] = new_chebi_names
+            self.peak_df['cas_code'] = new_cas_codes
+            self.peak_df['smiles'] = new_smiles
+            self.peak_df['chebi_name'] = self.peak_df['chebi_name'].replace({np.nan: None}) # replace all NaN with None, if any
 
             try:
                 logger.info("Saving peak DF")
