@@ -7,6 +7,11 @@ require('bootstrap/js/dist/tooltip');
 function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
     const tName = '#'+tableName;
     const MIN_VAL = 3000;
+
+    const dashType = $.fn.dataTable.absoluteOrderNumber({
+                value: '-', position: 'bottom'
+            });
+
     let table = $(tName).DataTable({
         // responsive: true,
         "scrollY": "100vh",
@@ -34,6 +39,7 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
             {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
             {
                 "targets": '_all',
+                'type': dashType,
                 "createdCell": function (td, cellData, rowData, row, col) {
 
                     let $td = $(td);
