@@ -145,9 +145,10 @@ class CompoundSelector(object):
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
 
-        sample_peaks = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id')
+        sample_peaks = SamplePeak.objects.filter(peak__in=peaks).prefetch_related(
+            'sample__factor_set').order_by('peak_id')
         values = []
-        for sp in sample_peaks:
+        for sp in tqdm(sample_peaks):
             row = [sp.peak.id, sp.intensity, sp.sample.name, sp.sample.group]
             values.append(row)
 
