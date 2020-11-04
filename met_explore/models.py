@@ -9,6 +9,7 @@ class Sample(models.Model):
     """
     # Here the sample name is unique as this is important for processing FlyMet data
     name = models.CharField(max_length=250, unique=True, blank=False)
+    group = models.CharField(max_length=250, blank=True, null=True)
 
     def get_factor_value(self, name):
         values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
@@ -22,10 +23,6 @@ class Sample(models.Model):
     @property
     def tissue(self): # for flymet compatibility
         return self.get_factor_value('tissue')
-
-    @property
-    def group(self): # for flymet compatibility
-        return self.get_factor_value('group')
 
     @property
     def mutant(self): # for flymet compatibility

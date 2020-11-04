@@ -482,7 +482,7 @@ def get_pals_experimenal_design():
 
     exp_groups = {}  # Experimental group dictionary for use in the pals exp_design dict.
     for g in groups:
-        samples = get_samples_by_factor('group', g)
+        samples = Sample.objects.filter(group=g)
         gp_files = [sample.name for sample in samples]
         exp_groups[group_dict[g]] = gp_files
 

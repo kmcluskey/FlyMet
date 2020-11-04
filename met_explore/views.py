@@ -1123,10 +1123,9 @@ def get_drilldown_data():
     :return: A list of lists containing the drilldown data structure - this may change depending on the number of
     whole fly replicates.
     """
-    num_FW = len(get_samples_by_factor('group', 'Whole_f'))
-    num_MW = len(get_samples_by_factor('group', 'Whole_m'))
-    num_LW = len(get_samples_by_factor('group', 'Whole_l'))
-
+    num_FW = len(Sample.objects.filter(group="Whole_f"))
+    num_MW = len(Sample.objects.filter(group="Whole_m"))
+    num_LW = len(Sample.objects.filter(group="Whole_l"))
 
     whole_fly_dict = {'FW': num_FW, 'MW': num_MW, 'LW': num_LW}  # whole_female, whole_male, whole_larvae
 

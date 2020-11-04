@@ -145,15 +145,11 @@ class CompoundSelector(object):
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
 
-        sample_peaks = SamplePeak.objects.filter(peak__in=peaks).prefetch_related(
-            'sample__factor_set').order_by('peak_id')
-        values = []
-        for sp in tqdm(sample_peaks):
-            row = [sp.peak.id, sp.intensity, sp.sample.name, sp.sample.group]
-            values.append(row)
-
+        samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
+                                                                                            'sample_id__name',
+                                                                                            'sample_id__group')
         columns = ['peak', 'intensity', 'filename', 'group']
-        int_df = pd.DataFrame(values, columns=columns)
+        int_df = pd.DataFrame(samples, columns=columns)
         group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
         # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
         gp_df = group_series.to_frame()
@@ -194,8 +190,7 @@ class CompoundSelector(object):
 
         for group in sample_groups:
             logger.info("Working on group %s" % group)
-            gp_samples = get_samples_by_factor('group', group)
-
+            gp_samples = Sample.objects.filter(group=group)
             for i in df_index:
                 int_list = []
                 for g in gp_samples:
@@ -241,7 +236,7 @@ class CompoundSelector(object):
             elif g == 'id':
                 group_name_dict[g] = "Peak ID"
             else:
-                samples = get_samples_by_factor('group', g)
+                samples = Sample.objects.filter(group=g)
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
@@ -399,7 +394,7 @@ class CompoundSelector(object):
 
         met_int_df = int_df.loc[peak_id]
 
-        sample_group = get_samples_by_factor('group', group)
+        sample_group = Sample.objects.filter(group=group)
         sample_names = [s.name for s in sample_group]
 
         sample_ints = met_int_df[sample_names].values[0]

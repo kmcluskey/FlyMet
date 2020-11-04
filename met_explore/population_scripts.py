@@ -5,6 +5,7 @@ from django.db import IntegrityError
 from loguru import logger
 from tqdm import tqdm
 
+from met_explore.constants import CSV_GROUP_COLNAME
 from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak
 from met_explore.pathway_analysis import get_related_chebi_ids
 
@@ -21,16 +22,24 @@ def populate_samples(sample_csv):
 
     # Assume other columns are the experimental factors
     factor_names = sample_details.columns.values
+    assert CSV_GROUP_COLNAME in factor_names, 'Missing group information in CSV'
 
     try:
         for idx, row in sample_details.iterrows():
+            # save sample and the group column
             sample_name = idx.strip()
-            sample = Sample(name=sample_name)
+            group = row[CSV_GROUP_COLNAME]
+            sample = Sample(name=sample_name, group=group)
             sample.save()
+
+            # save other columns as factors
             for factor_name in factor_names:
+                if factor_name == CSV_GROUP_COLNAME: # skip the group column as it has been saved
+                    continue
                 factor_value = row[factor_name]
                 factor = Factor(sample=sample, name=factor_name, value=factor_value)
                 factor.save()
+
     except IntegrityError:
         logger.warning('Samples have been inserted, skipping')
 
