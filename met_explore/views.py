@@ -746,10 +746,21 @@ def pathway_search_data(pwy_id):
     met_peak_list = []
     cmpd_id_list = []
     for cmpd, form in cmpd_form_dict.items():
-        cmpd_name = Compound.objects.get(chebi_id=cmpd).cmpd_name
-        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+
+        try:
+            cmpd_name = Compound.objects.get(chebi_id=cmpd).cmpd_name
+            cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+        except ObjectDoesNotExist:
+            cmpd_name = Compound.objects.get(related_chebi__contains=cmpd).cmpd_name
+            cmpd_id = Compound.objects.get(related_chebi__contains=cmpd).id
+            print (cmpd_name, cmpd_id)
+        except Exception as e:
+            logger.warning("A compound for chebi id %s was not found, this shouldn't happen" % cmpd)
+            logger.warning("Failed with the exception %s " % e)
+            raise e
+
         met_name_list.append(cmpd_name)
-        peaks = Peak.objects.filter(compound__chebi_id=cmpd)
+        peaks = Peak.objects.filter(compound__id=cmpd_id)
         peak_list = [p.id for p in peaks]
         m_peaks = peak_compare_df[peak_compare_df['id'].isin(peak_list)]
         m_peaks_data = m_peaks.values.tolist()
