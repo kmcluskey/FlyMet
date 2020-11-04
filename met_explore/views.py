@@ -18,7 +18,9 @@ from loguru import logger
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-    get_fly_pw_cmpd_formula, MIN_HITS
+get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
+
+
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
@@ -201,6 +203,7 @@ def metabolite_search(request):
         max = MAX
         mean = MEAN
         references = None
+        pathways = {}
 
         # If we get a metabolite sent from the view
         if search_query is not None:
@@ -273,6 +276,18 @@ def metabolite_search(request):
                 # logger.debug ("HERE %s %s" % (peak_id, cmpd_id))
                 # Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
+                # Get the pathways associated with this compound ID
+                pathway_ids = get_cmpd_pwys(cmpd_id)
+                print (cmpd_id)
+                print (pathway_ids)
+                # Get pathway names based on their IDS.
+                pwy_name_id_dict = get_name_id_dict()
+
+
+                if pathway_ids:
+                    pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
+
+                print (pathways)
 
         logger.debug("met_table_data %s" % met_table_data)
         context = {
@@ -281,6 +296,7 @@ def metabolite_search(request):
             'min': min,
             'max': max,
             'mean': mean,
+            'pathways':pathways,
             'references': references,
             'json_url': reverse('get_metabolite_names')
         }

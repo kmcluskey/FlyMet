@@ -192,6 +192,15 @@ def get_pathway_id_names_dict():
     return pathway_id_names_dict
 
 
+def get_name_id_dict():
+    pals_df = get_cache_df()
+    pathway_id_names_dict = {}
+    for ix, row in pals_df.iterrows():
+        pathway_id_names_dict[ix] = row.pw_name
+
+    return pathway_id_names_dict
+
+
 def get_pals_int_df():
     """
     :return: A peak_id v sample_id DF containing all the peak intensity values.
@@ -593,3 +602,32 @@ def get_reactome_highlight_token():
     logger.info("Returning the Reactome token %s " % token)
 
     return token
+
+
+def get_cmpd_pwys(cmpd_id):
+    """
+
+    :param cmpd_id: The cmpd_id of the
+    :return:
+    """
+    pals_ds = get_cache_ds()
+    cmpd = Compound.objects.get(id=cmpd_id)
+    print (cmpd)
+    cmpd_pw_dict = pals_ds.mapping_dict
+    pwy_list = []
+    print (cmpd.chebi_id)
+    print (cmpd.related_chebi)
+    try:
+        if cmpd.chebi_id is not None:
+            pwy_list = cmpd_pw_dict[cmpd.chebi_id]
+    except KeyError:
+        if cmpd.related_chebi is not None:
+            alt_list = [chebi.strip() for chebi in cmpd.related_chebi.split(",")]
+            for alt_c in alt_list:
+                try:
+                    pwy_list = cmpd_pw_dict[alt_c]
+                    if pwy_list: #If we get a match return what we find a
+                        break
+                except KeyError:
+                    logger.info ("No pathways returned for this cmpd")
+    return pwy_list

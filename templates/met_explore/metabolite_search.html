@@ -103,7 +103,15 @@
               <legend>Pathways containing {{metabolite}} </legend>
               <div class="p-2">
                 <ul>
-                  <li><a href="{% url 'pathway_search' %}">{{metabolite}} catabolism</a>
+                  {% for id, name in pathways.items %}
+                  <li><a href="{% url 'pathway_search' %}">{{ name }}</a>
+                    <p class="m-2">This is currently a placeholder for {{name}}.</p>
+                  </li>
+                  {% endfor %}
+                </ul>
+
+
+                  <!-- <li><a href="{% url 'pathway_search' %}">{{metabolite}} catabolism</a>
                     <p class="m-2">This is currently a placeholder for pathways containing {{metabolite}}.</p>
                   </li>
                   <li><a href="#!">{{metabolite}}, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
@@ -112,7 +120,7 @@
                   <li><a href="#!">Synthesis of {{metabolite}}</a>
                     <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
                   </li>
-                </ul>
+                </ul> -->
               </div>
             </fieldset>
           </div>
@@ -244,8 +252,9 @@
       var min = {{min}}
       var max = {{max}}
       var mid = {{mean}}
+      var pathways ="{{pathways | safe}}"
 
-    console.log("using values", min, mid, max, metabolite)
+    console.log("using values", min, mid, max, metabolite, pathways)
   </script>
 
     {% render_bundle 'metabolite_search' 'js' %}
