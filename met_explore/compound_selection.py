@@ -358,8 +358,7 @@ class CompoundSelector(object):
         for g, ls in zip(groups, life_stages):
             all_groups.append(g)
             samples = get_samples_by_factors(['tissue', 'life_stage'], [whole_tissue, ls])
-            factor = get_factor_of_sample(samples[0], 'group')
-            whole_gp = factor.value
+            whole_gp = samples[0].group
             all_groups.append(whole_gp)
 
         met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == metabolite]
@@ -380,7 +379,7 @@ class CompoundSelector(object):
         # Get the first sample with of the given group and get the tissue type
 
         for gp in groups:
-            group_attributes = samples.filter(group=gp)[0]
+            group_attributes = Sample.objects.filter(group=gp)[0]
             gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
 
         return gp_tissue_ls_dict
