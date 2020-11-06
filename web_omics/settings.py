@@ -200,6 +200,30 @@ class Development(Common):
         # 'debug_toolbar.middleware.DebugToolbarMiddleware'
     ]
 
+    # turn this on to enable SQL logging from django
+    # works when DEBUG = True, also remember to set the log level to DEBUG
+    # LOGGING = {
+    #     'version': 1,
+    #     'filters': {
+    #         'require_debug_true': {
+    #             '()': 'django.utils.log.RequireDebugTrue',
+    #         }
+    #     },
+    #     'handlers': {
+    #         'console': {
+    #             'level': 'DEBUG',
+    #             'filters': ['require_debug_true'],
+    #             'class': 'logging.StreamHandler',
+    #         }
+    #     },
+    #     'loggers': {
+    #         'django.db.backends': {
+    #             'level': 'DEBUG',
+    #             'handlers': ['console'],
+    #         }
+    #     }
+    # }
+
 
 class Staging(Common):
     """

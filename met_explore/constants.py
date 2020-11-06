@@ -1,0 +1,1 @@
+CSV_GROUP_COLNAME = 'group'

@@ -16,6 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
+from met_explore.helpers import get_samples_by_factor
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS

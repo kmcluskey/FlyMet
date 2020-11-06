@@ -7,6 +7,8 @@ import sys
 
 from loguru import logger
 
+from met_explore.models import Factor
+
 
 def get_filename_from_string(fname):
     """
@@ -65,3 +67,26 @@ def set_log_level_info():
 def set_log_level_debug():
     logger.remove()
     logger.add(sys.stderr, level=logging.DEBUG)
+
+
+def get_samples_by_factor(name, value):
+    factors = Factor.objects.filter(name=name, value=value)
+    samples = [factor.sample for factor in factors]
+    return samples
+
+
+def get_samples_by_factors(names, values):
+    assert len(names) == len(values)
+    sets = []
+    for i in range(len(names)):
+        samples = set(get_samples_by_factor(names[i], values[i])) # convert the list of samples to a set
+        sets.append(samples)
+
+    # https://stackoverflow.com/questions/2541752/best-way-to-find-the-intersection-of-multiple-sets
+    intersection_results = set.intersection(*sets)
+    return list(intersection_results)
+
+
+def get_factor_of_sample(sample, name):
+    results = Factor.objects.filter(sample=sample, name=name)
+    return results.first()
