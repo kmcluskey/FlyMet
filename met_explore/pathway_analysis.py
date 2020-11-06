@@ -193,7 +193,7 @@ def get_pathway_id_names_dict():
 
 
 def get_name_id_dict():
-    pals_df = get_cache_df()
+    pals_df = get_cache_df(MIN_HITS)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[ix] = row.pw_name
