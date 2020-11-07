@@ -43,6 +43,7 @@ pals-pathway = ">=1.4.9"
 tqdm = "*"
 bioservices = "*"
 "reactome2py" = "*"
+appnope = "*"
 
 [dev-packages]
 
