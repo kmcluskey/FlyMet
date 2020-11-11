@@ -184,6 +184,10 @@ def bfs_get_related(graph_dict, node):
 
 
 def get_pathway_id_names_dict():
+    """
+       Given a pathway ID get its name
+       :return: pathway_id_names_dict
+       """
     pals_df = get_cache_df(MIN_HITS)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
@@ -193,12 +197,16 @@ def get_pathway_id_names_dict():
 
 
 def get_name_id_dict():
+    """
+    Given the name of a pathway get it's reactome ID
+    :return: name_pw_id_dict
+    """
     pals_df = get_cache_df(MIN_HITS)
-    pathway_id_names_dict = {}
+    name_pw_id_dict = {}
     for ix, row in pals_df.iterrows():
-        pathway_id_names_dict[ix] = row.pw_name
+        name_pw_id_dict[ix] = row.pw_name
 
-    return pathway_id_names_dict
+    return name_pw_id_dict
 
 
 def get_pals_int_df():
@@ -606,9 +614,10 @@ def get_reactome_highlight_token():
 
 def get_cmpd_pwys(cmpd_id):
     """
+    Given a compound ID, return all of the pathways that compound is found in
 
-    :param cmpd_id: The cmpd_id of the
-    :return:
+    :param cmpd_id: The cmpd_id
+    :return: List of pathways containing the compound.
     """
     pals_ds = get_cache_ds()
     cmpd = Compound.objects.get(id=cmpd_id)

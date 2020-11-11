@@ -5,6 +5,7 @@
 
 {% block head_block %}
     {% render_bundle 'pathway_search' 'css' %}
+    <script type="text/javascript" language="javascript" src="https://reactome.org/DiagramJs/diagram/diagram.nocache.js"></script>
 {% endblock %}
 
 {% block body_block %}
@@ -31,9 +32,9 @@
           <li class="nav-item">
             <a class="nav-link active" href="{% url 'pathway_search' %}">Pathways</a>
           </li>
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{% url 'tissue_search' %}">Tissues</a>
-          </li> -->
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -42,8 +43,8 @@
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>pathway</b> and find out how the associated metabolites in <i> Drosophila
-        </i> tissues change from those found in the Whole Fly.
+        Search for a <b>pathway</b> and find out which metabolites are present in <i> Drosophila
+        </i>.
       </p>
     </div>
 
@@ -56,120 +57,74 @@
     {% if pathway_name|length > 0 %}
     <div class="card mt-4 p-2 pb-2 border border-table rounded">
 
-      {% if met_peak_list|length == 0%}
+      {% if pathway_id|length == 0%}
       <div class="card-header pb-0 table-card-header">
-      {{pathway_name}} is not a known Reactome pathway, please search again.
+      {{pathway_name}} is not a known <i> Drosophila </i> Reactome pathway, please choose from the drop-down list.
       </div>
       {% endif %}
 
-      {% if met_peak_list|length > 0 %}
+      {% if pathway_id|length > 0 %}
       <div class="info card-header pb-0 table-card-header">
-      Changes observed in the {{pathway_name}} metabolites and associated peaks found in <i> Drosophila </i> tissues
+      {{pathway_name}} and metabolites found in <i> Drosophila </i> tissues
       </div>
-      <div class="container-fluid pb-0" >
-        <div class="row pb-0">
-          <div class="myspan80 mt-2">
-            {% for cmpd_id, metabolite, peak_table_data in name_data %}
-            <div class='pt-3 pb-4'>
-            <p class="text_box">Peaks associated with <a href="met_ex_all/{{cmpd_id}}">{{metabolite}}</a></p>
-            </div>
-            <table id="pwy_met_table_{{forloop.counter0}}" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+
+      {% endif %}
+      {% endif %}
+      </div>
+
+      <div class="pathway_details card mt-4 p-2 pb-2 border border-table rounded">
+        <div class="container-fluid pb-0">
+          <div class="row pb-0">
+            <div class="myspan75 p-2 mt-2">
+              <!-- <p>Columns can be dragged to reorganise the data as required.</p>
+              <table id="pals_data" class="try_hide table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
                 <thead class="thead-light">
                   <tr id = "columns">
                     {% for column_name in columns %}
-                      <th class="col">{{column_name}}</th>
+                    <th class = "col">{{column_name}}</th>
                     {% endfor %}
                   </tr>
                 </thead>
+              </table> -->
 
-                <tbody>
-                  {% for m_peak_data in peak_table_data %}
-                  <tr>
-                    {% for m in m_peak_data %}
-                          <td>{{m}}</td>
-                     {% endfor %}
-                  </tr>
-                  {% endfor %}
-                </tbody>
-                </table>
-                <hr>
+              <!-- <hr class="my-3"> -->
+              <div id="diagramTitle">
+              </div>
+                  <div id="diagramHolder">
+                  </div>
+                  <div id = "diagram_info">
+                    <hr class="my-3">
+                      <p> In this diagram the overrepresentation shown as <img src="{% static 'images/reactome_highlight.png' %}" class="tiny_img" alt="ReactomeH">
+                  highlights compounds (with associated peaks) that are found in FlyMet</p>
+                  </div>
+            </div>
 
-                {% endfor %}
-                </div>
+            <div class="pathway_details myspan25 sticky-top pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+              <fieldset class="fieldset-details">
+                <legend class="sidebar">Selected Pathway</legend>
+                <div class="p-2">
+                  <p id ="pwy_id" class="m-2"></p>
+                  </div>
 
-                <div class="myspan20 sticky-top pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+                  <hr class="my-3">
+                  <!-- <legend class="sidebar">Metabolites</legend> -->
+                  <div id='dataDiv' class = "p-2" >
 
-                  <fieldset class="pathway_details fieldset-details">
-                    <legend class="sidebar">Selected Pathway</legend>
-                    <div class="p-2">
-                      <p class="lead m-2">{{pathway_name}}</p>
-                      </div>
-                      <hr class="my-3">
-                      <div class>
-                        <p class=" m-2">Metabolite Coverage:</p>
-                      </div>
-                      <!-- <legend class="sidebar">Metabolites</legend> -->
-                      <!-- <div class = "p-2"> -->
-
-                      <div class="pl-2 pb-0 table-responsive">
-                        <table class="table table-sm table-bordered side_table">
-                          <thead>
-                            <tr id = "side_columns">
-                                <th id='PWF' class="side_col">Pwy Formula</th>
-                                <th id='DSF' class="side_col">DS Formula</th>
-                                <th id='Cov' class="side_col">Coverage</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                              <tr>
-                                {% for m in summ_values %}
-                                {% if forloop.last %}
-                                      <td class="text-center ">{{m}} %</td>
-                                {% else %}
-                                      <td class="text-center">{{m}}</td>
-                                {% endif %}
-                                 {% endfor %}
-                              </tr>
-                            </tbody>
-                            </table>
-
-                      </div>
-                      </fieldset>
-
-                      <fieldset id="click_info" class="fieldset-details">
-                        <legend class="sidebar">Peak Annotations</legend>
-                        <div class="p-2">
-                          <p class="m-2">Click on a peak to see other associated metabolites</p>
-                        </div>
-                      </fieldset>
-
-                      <fieldset class="peak_details fieldset-details">
-                        <legend class="sidebar">Peak Annotations</legend>
-                        <div class="p-2">
-                          <p id ="peak_id" class="m-2"></p>
-
-                          <div class="row">    
-                            <div class ="col-6">
-                            <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off" checked=""><small>All adducts</small>
-                            </div>
-                            <div class ="col-6">
-                            <input type="radio" name="radio_adducts" id="filtered" autocomplete="off"> <small>M+H/M-H</small>
-                            </div>
-                          </div>
-                          </div>
-                          <hr class="my-3">
-                          <div id='dataDiv'>
-                          </div>
-                          </fieldset>
-                    </div>
-                    <!-- </div> -->
+                  </div>
+                  </fieldset>
 
                 </div>
-                </div>
-                </div>
+        </div>
 
-      {% endif %}
-      {% endif %}
+        </div>
+
+        </div>
+
+        </div>
+
+      <!--end of main div-->
+      <!--Spacer so that content is not hidden-->
+      <div class="spacer">
       </div>
 
    {% endblock %}
@@ -178,12 +133,14 @@
       <script type='text/javascript'>
         var url = "{{json_url}}"
         var pathway_name = "{{pathway_name | safe}}" //Django template using html which fails.
-        var min = {{min_value}}
-        var max = {{max_value}}
-        var mid = {{mean_value}}
-        var num_metabolites = {{num_metabolites}}
+        var pathway_id = "{{pathway_id| safe}}"
+        // var num_metabolites = {{num_metabolites}}
+        var reactome_token = "{{reactome_token | safe}}"
 
-        console.log("using values", min, mid, max, pathway_name)
+        console.log("pathway_id", pathway_id)
+        console.log("pathway name", pathway_name)
+        // console.log("num_metabolites", num_metabolites)
+
 
       </script>
 
