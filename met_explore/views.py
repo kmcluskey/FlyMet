@@ -391,7 +391,6 @@ def pathway_metabolites(request):
 
         # Lists for the little pathway summary table.
         summ_values = []
-
         # If we get a metabolite sent from the view
         if search_query is not None:
 
@@ -401,9 +400,7 @@ def pathway_metabolites(request):
                 pathway_id = pathway_id_names_dict[search_query]
                 cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id)
 
-                peaks = Peak.objects.all()
-
-                view_df, min, mean, max = get_peak_compare_df(peaks, True)
+                view_df, min, mean, max = get_all_peaks_compare_df()
                 column_names = view_df.columns.tolist()
 
                 group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -606,6 +603,24 @@ def peak_explorer(request, peak_list):
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
+def get_all_peaks_compare_df():
+    """
+    A method to return the peak compare DF when all peaks are required and it is better to cache the result.
+    :return: The peak_compare DF when all of the peaks are required. This is cached as it is used several times
+    """
+
+    peaks = Peak.objects.all()
+
+    if cache.get('all_compare_df') is None:
+        logger.debug("we dont have cache for all_peaks_compare so running the function")
+        cache.set('all_compare_df', get_peak_compare_df(peaks), 60 * 18000)
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+    else:
+        logger.debug("we have cache for all_peaks_compare so retrieving it")
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+
+    return all_peak_compare_df, min_value, mean_value, max_value
+
 
 def pals_data(request):
     """
@@ -788,8 +803,8 @@ def pathway_search_data(pwy_id):
     """
 
     cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
-    peaks = Peak.objects.all()
-    peak_compare_df, _, _, _ = get_peak_compare_df(peaks)
+    # peaks = Peak.objects.all()
+    peak_compare_df, _, _, _ = get_all_peaks_compare_df()
     peak_compare_df = peak_compare_df.fillna("-")
 
     met_name_list = []
