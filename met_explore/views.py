@@ -331,10 +331,11 @@ def pathway_search(request):
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('pathway_search', None)
         pathway_id = ""
-        pals_df, _, _, _ = get_pals_view_data()
+        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data()
 
         # Lists for the little pathway summary table.
         summ_values = []
+        pwy_table_data = []
 
         # If we get a metabolite sent from the view
         if search_query is not None:
@@ -349,17 +350,49 @@ def pathway_search(request):
 
                 summ_values.append(summ_values_orig[-1])
 
+                single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
+
+                samples = Sample.objects.all()
+                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
+
+                # tissues.remove('Whole') #Whole not present in this table
+                columns = ['F', 'M', 'L']
+                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+
+                for tissue in tissues:
+                    for ls in columns:
+                        try:
+                            value = single_pwy_df.iloc[0][tissue + ' (' + ls + ')']
+                            nm_samples_df.loc[tissue, ls] = value
+                        except KeyError as e:
+                            pass
+
+                pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
+
+                index = nm_samples_df.index.tolist()
+                # Get a list to return to the view
+                pwy_table_data = []
+
+                for t, v in zip(index, pwy_values):
+                    pwy_table_data .append(([t] + v))
+
+
 
             except KeyError:
 
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
                 pass
 
+        print(pwy_table_data)
+
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
         context = {
-
+            'pwy_table_data': pwy_table_data,
+            'pals_min': pals_min,
+            'pals_max': pals_max,
+            'pals_mean': pals_mean,
             'reactome_token': reactome_token,
             'pathway_name': search_query,
             'pathway_id': pathway_id,
@@ -1114,7 +1147,7 @@ def change_pals_col_names(pals_df):
             c_new = c
         if 'comb_p' in c:
             split_c = c_new.split('/')
-            col_name = split_c[0]
+            col_name = split_c[0].strip()
             pals_df.rename(columns={c: col_name}, inplace=True)
 
     return pals_df

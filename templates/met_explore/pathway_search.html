@@ -65,29 +65,46 @@
 
       {% if pathway_id|length > 0 %}
       <div class="info card-header pb-0 table-card-header">
-      {{pathway_name}} and metabolites found in <i> Drosophila </i> tissues
+      {{pathway_name}} and metabolites found in <i> Drosophila </i> tissues.
+      <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway metabolites, between whole flies and individual tissues.</small></p>
       </div>
-
       {% endif %}
-      {% endif %}
-      </div>
 
+      {% if pathway_id|length > 0 %}
       <div class="pathway_details card mt-4 p-2 pb-2 border border-table rounded">
         <div class="container-fluid pb-0">
           <div class="row pb-0">
             <div class="myspan75 p-2 mt-2">
-              <!-- <p>Columns can be dragged to reorganise the data as required.</p>
-              <table id="pals_data" class="try_hide table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-                <thead class="thead-light">
-                  <tr id = "columns">
-                    {% for column_name in columns %}
-                    <th class = "col">{{column_name}}</th>
-                    {% endfor %}
-                  </tr>
-                </thead>
-              </table> -->
+                    <table id="pwy_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+                      <thead class="thead-light">
+                        <tr>
+                          <th class="col vw150">Tissue-Type</th>
+                          <th id = 'AF-pvalue' class="col vw150">Adult F/W p-value</th>
+                          <th id = 'AM-pvalue'class="col vw150">Adult M/W p-value</th>
+                          <th id = 'L-pvalue'class="col vw150">Larvae/W p-value </th>
+                        </tr>
+                      </thead>
+                      <tbody>
 
-              <!-- <hr class="my-3"> -->
+                        {% for pwy_data in pwy_table_data %}
+                        <tr>
+                          {% for p in pwy_data %}
+                            {% if forloop.first %}
+                              <td class="vw150">{{p}}</td>
+                            {% else %}
+                              {% if p == "NM" %}
+                                <td class="vw150">nm</td>
+                                {% else %}
+                                <td class="vw150">{{p}}</td>
+                                {% endif %}
+                           {% endif %}
+                        {% endfor %}
+                        </tr>
+                        {% endfor %}
+                      </tbody>
+                    </table>
+
+              <hr class="my-3">
               <div id="diagramTitle">
               </div>
                   <div id="diagramHolder">
@@ -119,8 +136,12 @@
         </div>
 
         </div>
-
         </div>
+        {% endif %}
+        {% endif %}
+
+
+
 
       <!--end of main div-->
       <!--Spacer so that content is not hidden-->
@@ -136,7 +157,9 @@
         var pathway_id = "{{pathway_id| safe}}"
         // var num_metabolites = {{num_metabolites}}
         var reactome_token = "{{reactome_token | safe}}"
-
+        var pals_min = {{pals_min}}
+        var pals_max = {{pals_max}}
+        var pals_mid = {{pals_mean}}
         console.log("pathway_id", pathway_id)
         console.log("pathway name", pathway_name)
         // console.log("num_metabolites", num_metabolites)

@@ -621,11 +621,9 @@ def get_cmpd_pwys(cmpd_id):
     """
     pals_ds = get_cache_ds()
     cmpd = Compound.objects.get(id=cmpd_id)
-    print (cmpd)
     cmpd_pw_dict = pals_ds.mapping_dict
     pwy_list = []
-    print (cmpd.chebi_id)
-    print (cmpd.related_chebi)
+
     try:
         if cmpd.chebi_id is not None:
             pwy_list = cmpd_pw_dict[cmpd.chebi_id]
@@ -638,5 +636,5 @@ def get_cmpd_pwys(cmpd_id):
                     if pwy_list: #If we get a match return what we find a
                         break
                 except KeyError:
-                    logger.info ("No pathways returned for this cmpd")
+                    logger.info ("No pathways returned for cmpd %s " % cmpd)
     return pwy_list
