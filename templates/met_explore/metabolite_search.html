@@ -104,7 +104,7 @@
               <div class="p-2">
                 <ul>
                   {% for id, name in pathways.items %}
-                  <li><a href="{% url 'pathway_search' %}">{{ name }}</a>
+                  <li><a href="{% url 'pathway_search' %}?pathway_search={{name}}">{{ name }}</a>
                     <p class="m-2">This is currently a placeholder for {{name}}.</p>
                   </li>
                   {% endfor %}
