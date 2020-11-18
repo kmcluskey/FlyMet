@@ -1,1 +1,8 @@
 CSV_GROUP_COLNAME = 'group'
+CONFIG_PROJECT = 'project'
+PROJECT_NAME = 'project_name'
+PROJECT_DESC = 'description'
+CONFIG_METABOLOMICS = 'metabolomics'
+SAMPLE_CSV = 'sample_csv'
+PEAK_JSON = 'peak_json'
+INT_JSON = 'int_json'

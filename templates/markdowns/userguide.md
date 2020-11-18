@@ -144,26 +144,26 @@ Currently, PiMP supports experiments defined by discrete categories. Thus experi
 
 ## Assign Samples:
 
-You can now drag and drop the files into the conditions you have specified. Once you have completed your assignment, click ‘Submit’, and click on the ‘Analysis’ tab.
+You can now drag and drop the files into the conditions you have specified. Once you have completed your assignment, click ‘Submit’, and click on the ‘Project’ tab.
 
-## Analysis:
+## Project:
 Once you have defined a project and set up the calibration and experimental samples, you can create a new analysis to be submitted to the server, you must click on the ‘+ Create’ button.
 
-<!-- ![Analysis List][analysis_list] -->
+<!-- ![Project List][analysis_list] -->
 <p class="centered">
 <img src="{% static 'userguide/img/analysis_list.png' %}" class="img-thumbnail" alt="Profile page" width="70%" style="float:none;margin:auto;">
 </p>
 
 You may provide an experiment name, and define the comparisons to be made. A comparison is simply a statistical comparison between two experimental groups, e.g. wild type vs mutant, or time 90 vs time 0. You can create as many comparisons as you like: click ‘Add Comparison’ to add another to the list for this experiment. It is also possible to change the default parameters to XCMS and mzMatch, by clicking the Change Parameters tab. When you have created the comparisons that you are interested in, click ‘Save'.
 
-<!-- ![Analysis Definition][analysis_definition] -->
+<!-- ![Project Definition][analysis_definition] -->
 <p class="centered">
 <img src="{% static 'userguide/img/analysis_definition.png' %}" class="img-thumbnail" alt="Profile page" width="70%" style="float:none;margin:auto;">
 </p>
 
- You are returned to the ‘Analysis’ tab. Your newly created analysis will be at the bottom of the list of current analyses. Simply click ‘Submit analysis’ to submit the analysis to the server. A lot of computational analysis is now performed on the data – please refer to [this paper](http://pubs.acs.org/doi/abs/10.1021/ac2000994) for a description of the analytical process. When the analysis is finished, you can click on the ‘access result’ button, which will bring you to the data exploration environment.
+ You are returned to the ‘Project’ tab. Your newly created analysis will be at the bottom of the list of current analyses. Simply click ‘Submit analysis’ to submit the analysis to the server. A lot of computational analysis is now performed on the data – please refer to [this paper](http://pubs.acs.org/doi/abs/10.1021/ac2000994) for a description of the analytical process. When the analysis is finished, you can click on the ‘access result’ button, which will bring you to the data exploration environment.
 
-### Analysis Performance
+### Project Performance
 
 It might be wondered at what speed the analysis proceeds at. The following plot
 shows performance at sample sizes of 6, 12, 24, 48, 96 and 132. These runs
@@ -172,7 +172,7 @@ totalling 32 cores with two Hyper-threads per core and 256 GB of RAM. As can be
 seen, the runtime for the analysis in this case is roughly linear, with a rate
 of roughly 10 samples per hour.
 
-<!-- ![Analysis Performance][analysis_performance] -->
+<!-- ![Project Performance][analysis_performance] -->
 <p class="centered">
 <img src="{% static 'userguide/img/performance_plot.png' %}" class="img-thumbnail" alt="Profile page" width="50%" style="float:none;margin:auto;">
 </p>
@@ -220,7 +220,7 @@ Data Processing describes the algorithms applied to the data, with references.
 
 Quality control provides a number of standard methods for assessing the quality of the data: a principal component analysis and the total ion chromatograms for the datasets.
 
-#### Principal Component Analysis
+#### Principal Component Project
 
 PCA, or principal component analysis is a multivariate statistical method for visualizing large datasets. A good experiment is usually characterized by clear separation between groups. The graph is interactive, and datapoints may be hidden or zoomed in on.
 

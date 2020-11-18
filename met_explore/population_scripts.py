@@ -10,7 +10,7 @@ from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annot
 from met_explore.pathway_analysis import get_related_chebi_ids
 
 
-def populate_samples(sample_csv):
+def populate_samples(project, sample_csv):
     '''
     Give the sample CSV file to populate the samples.
     '''
@@ -29,7 +29,7 @@ def populate_samples(sample_csv):
             # save sample and the group column
             sample_name = idx.strip()
             group = row[CSV_GROUP_COLNAME]
-            sample = Sample(name=sample_name, group=group)
+            sample = Sample(project=project, name=sample_name, group=group)
             sample.save()
 
             # save other columns as factors
@@ -51,7 +51,7 @@ def populate_samples(sample_csv):
 # This has been refactored to populate Peak, Annotation and Compound models.
 
 
-def populate_peaks_cmpds_annots(peak_df):
+def populate_peaks_cmpds_annots(project, peak_df):
     """
 
     :param peak_df: A dataframe of filtered peaks from the peak_selector based on adducts, identification, fragmentation
@@ -66,7 +66,8 @@ def populate_peaks_cmpds_annots(peak_df):
         # Populating the peak
         logger.debug("We are populating row %s" % index)
         db_peak, peak_created = Peak.objects.get_or_create(psec_id=row.sec_id, m_z=format(row.mass, '.9f'),
-                                                           rt=format(row.rt, '.9f'), polarity=row.polarity)
+                                                           rt=format(row.rt, '.9f'), polarity=row.polarity,
+                                                           project=project)
 
         if peak_created:
             logger.debug("A new peak %s was created %s" % (db_peak, peak_created))
@@ -78,7 +79,7 @@ def populate_peaks_cmpds_annots(peak_df):
             store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
                                                                       chebi_id=row.chebi_id, chebi_name=row.chebi_name,
                                                                       smiles=row.smiles, cas_code=row.cas_code,
-                                                                      inchikey=row.inchikey)
+                                                                      inchikey=row.inchikey, project=project)
             if cmpd_created:
                 store_cmpd.save()
 
@@ -87,7 +88,8 @@ def populate_peaks_cmpds_annots(peak_df):
             logger.debug("different row same cmpd_id, chebi_id")
 
             store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
-                                                                      chebi_id=row.chebi_id, chebi_name=row.chebi_name)
+                                                                      chebi_id=row.chebi_id, chebi_name=row.chebi_name,
+                                                                      project=project)
 
             if not cmpd_created:
                 if store_cmpd.smiles == 'nan' and row.smiles:
@@ -152,7 +154,7 @@ def add_related_chebis():
 # Takes a peak intensity DF and a pimp peak id / secondary id dictionary to populate the PeakSamples.
 # The dictionary is passed in as the Peak model only stores the psec id and not the pid from PiMP.
 
-def populate_peaksamples(intensity_df, pids_sids_dict):
+def populate_peaksamples(intensity_df, pids_sids_dict, project):
     logger.info('Populate peak samples')
 
     columns = list(intensity_df.columns)
@@ -168,7 +170,7 @@ def populate_peaksamples(intensity_df, pids_sids_dict):
         for index, value in tqdm(this_col.iteritems(), total=this_col.shape[0]):
             sec_id = pids_sids_dict[index]
             intensity = value
-            peak = Peak.objects.get(psec_id=sec_id)
+            peak = Peak.objects.get(psec_id=sec_id, project=project)
             logger.debug("we are adding the data for: %s %s %f " % (sample, peak, intensity))
             sample_peak = SamplePeak(peak=peak, sample=sample, intensity=intensity)
             data.append(sample_peak)

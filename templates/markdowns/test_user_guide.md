@@ -71,7 +71,7 @@ The following functionalities are available for an LDA experiment:
 - **Show Fragmentation Spectra**:  displays the fragmentation spectra in the data, alongside Mass2Motifs that explain the features in those spectra.
 - **Show Mass2Motifs**: diplays discovered Mass2Motifs.
 - **View Experiment Options**: displays a list of configurable options when performing motif matching and visualisating the data.
-- **Create MS1 Analysis**: if MS1 data is provided, this allows you to create MS1 analysis of case vs. control study where the differential prevalence of Mass2Motifs can be compared and visualised.
+- **Create MS1 Project**: if MS1 data is provided, this allows you to create MS1 analysis of case vs. control study where the differential prevalence of Mass2Motifs can be compared and visualised.
 - **Start Motif Matching**: performs the matching of discovered Mass2Motifs for this data against Mass2Motifs from another data. This allows for quick annotations.
 - **Manage Motif Matches**: once started, motif matching will run in the background. The results will be shown here and can be updated.
 - **Start Visualisation**: allows you to visualise Mass2Motifs and fragmentation spectra in a network graph.

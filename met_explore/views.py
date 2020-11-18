@@ -2,22 +2,19 @@ import json
 import math
 import timeit
 
-import django
 import numpy as np
 import pandas as pd
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.generic.list import ListView
-from django.core.exceptions import ObjectDoesNotExist
-
 from loguru import logger
 
-from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import get_samples_by_factor
-from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
+from met_explore.compound_selection import CompoundSelector
+from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Project
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula, MIN_HITS
 from met_explore.peak_groups import PeakGroups
@@ -31,9 +28,11 @@ MEAN = 0
 NUM_WHOLE_SAMPLES = 12
 WF_MIN = 1000  # Minimum value used for missing values in the whole fly data.
 
-# If the Db exists and has been initialised:
-try:
-    cmpd_selector = CompoundSelector()
+PLACEHOLDER_PROJECT_ID = 1 # TODO: this should be deleted
+
+def get_single_compounds_df(project_id):
+    project = Project.get(id=project_id)
+    cmpd_selector = CompoundSelector(project)
     # DFs for all the peaks
     # int_df = cmpd_selector.construct_cmpd_intensity_df()
     # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
@@ -43,25 +42,7 @@ try:
     s_cmpds_df = cmpd_selector.get_single_cmpd_df(hc_int_df)
     single_cmpds_df = s_cmpds_df.reindex(sorted(s_cmpds_df.columns[1:]), axis=1)
     single_cmpds_df.insert(0, "Metabolite", s_cmpds_df['Metabolite'])
-
-except django.db.utils.OperationalError as e:
-
-    logger.warning("I'm catching this error %s " % e)
-
-    logger.warning("DB not ready, start server again once populated")
-    cmpd_selector = None
-
-except FileNotFoundError as e:
-
-    logger.error("Please reinitialise DB and make sure the file exists /data/%s.pkl" % HC_INTENSITY_FILE_NAME)
-    logger.info("Returning the DF as None")
-
-    cmpd_selector = None
-
-except Exception as e:
-    logger.warning("I'm catching this error %s" % e)
-    logger.warning("Hopefully just that the DB not ready, start server again once populated")
-    raise e
+    return single_cmpds_df, cmpd_selector
 
 
 def index(request):
@@ -196,6 +177,8 @@ def metabolite_search(request):
         search_query = request.GET.get('metabolite_search', None)
         samples = Sample.objects.all()
         tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
+        project_id = PLACEHOLDER_PROJECT_ID # FIXME
+        single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
         met_table_data = []
         min = MIN
@@ -324,6 +307,8 @@ def pathway_search(request):
         max = MAX
         mean = MEAN
         column_headers = []
+        project_id = PLACEHOLDER_PROJECT_ID # FIXME
+        single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
         pals_df, _, _, _ = get_pals_view_data()
 
@@ -338,7 +323,7 @@ def pathway_search(request):
 
             try:
 
-                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id)
+                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, cmpd_selector)
 
 
             except KeyError:
@@ -347,7 +332,7 @@ def pathway_search(request):
 
             peaks = Peak.objects.all()
 
-            view_df, min, mean, max = get_peak_compare_df(peaks)
+            view_df, min, mean, max = get_peak_compare_df(peaks, cmpd_selector)
             column_names = view_df.columns.tolist()
 
             group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -428,10 +413,12 @@ def peak_ex_compare(request, peak_compare_list):
         peak_list_split = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_list_split))
 
+    project_id = PLACEHOLDER_PROJECT_ID # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
     logger.info("Peak comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df(peaks)
+    view_df, min, mean, max = get_peak_compare_df(peaks, cmpd_selector)
     column_names = view_df.columns.tolist()
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -460,9 +447,12 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_mf_compare_df()
-    column_names = view_df.columns.tolist()
 
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
+
+    view_df, min, mean, max = get_peak_mf_compare_df(cmpd_selector)
+    column_names = view_df.columns.tolist()
     group_names = cmpd_selector.get_list_view_column_names(column_names)
 
     column_headers = []
@@ -505,6 +495,9 @@ def peak_explorer(request, peak_list):
     # If we want all the colours to be for the whole table this should be cached?
 
     # group_df = cmpd_selector.get_group_df(peaks)
+
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
     if cache.get('my_group_df') is None:
         logger.debug("we dont have cache so running the function")
@@ -562,6 +555,9 @@ def peak_compare_data(request, peak_compare_list):
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
+
     if peak_compare_list == "All":
 
         peaks = Peak.objects.all()
@@ -571,7 +567,7 @@ def peak_compare_data(request, peak_compare_list):
         peaks = Peak.objects.filter(id__in=list(peak_compare_list))
 
 
-    view_df1, _, _, _ = get_peak_compare_df(peaks)
+    view_df1, _, _, _ = get_peak_compare_df(peaks, cmpd_selector)
     view_df = view_df1.fillna("-")
     #
     peak_compare_data = view_df.values.tolist()
@@ -585,8 +581,10 @@ def peak_mf_compare_data(request):
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
-    view_df1, _, _, _ = get_peak_mf_compare_df()
+    view_df1, _, _, _ = get_peak_mf_compare_df(cmpd_selector)
     view_df = view_df1.fillna("-")
     #
     peak_compare_mf_data = view_df.values.tolist()
@@ -613,6 +611,8 @@ def peak_data(request, peak_list):
     peak_df = pd.DataFrame.from_records(required_data)
 
     # # Get all of the peaks and all of the intensities of the sample files
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
     group_df = cmpd_selector.get_group_df(peaks)
 
     group_df.reset_index(inplace=True)
@@ -660,6 +660,8 @@ def met_ex_tissues(request):
         :returns: Render met_explore/met_ex_tissues and datatable
     """
 
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
     view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
 
     logger.debug(view_df.head())
@@ -692,7 +694,8 @@ def get_metabolite_names(request):
     :return: A unique list of peak compound names.
     """
     if request.is_ajax():
-
+        project_id = PLACEHOLDER_PROJECT_ID # FIXME
+        single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
         metabolite_names = single_cmpds_df['Metabolite'].tolist()
         return JsonResponse({'metaboliteNames': metabolite_names})
 
@@ -715,7 +718,7 @@ def get_pathway_names(request):
         return JsonResponse({'pathwayNames': ['Not', 'ajax']})
 
 
-def pathway_search_data(pwy_id):
+def pathway_search_data(pwy_id, cmpd_selector):
     """
     Given the pathway ID return the list of metabolites and associated peaks
     :param pwy_id: Reactome pathway ID
@@ -724,7 +727,7 @@ def pathway_search_data(pwy_id):
 
     cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
     peaks = Peak.objects.all()
-    peak_compare_df, _, _, _ = get_peak_compare_df(peaks)
+    peak_compare_df, _, _, _ = get_peak_compare_df(peaks, cmpd_selector)
     peak_compare_df = peak_compare_df.fillna("-")
 
     met_name_list = []
@@ -755,19 +758,20 @@ def pathway_search_data(pwy_id):
     return cmpd_id_list, met_name_list, met_peak_list
 
 
-def get_compounds_details(cmpds):
-    """
-    :param cmpds: A list of compounds that all for which the references are required
-    :return: A dictionary of cmpd_id: all the compound parameters
-    """
-    compounds_details = {}
-
-    for cmpd in cmpds:
-        cmpd_id = Compound.objects.get(chebi_id=cmpd).id
-        references = cmpd_selector.get_simple_compound_details(cmpd_id)
-        compounds_details[cmpd_id] = references
-
-    return compounds_details
+# FIXME: doesn't seem like it's used?? To check.
+# def get_compounds_details(cmpds):
+#     """
+#     :param cmpds: A list of compounds that all for which the references are required
+#     :return: A dictionary of cmpd_id: all the compound parameters
+#     """
+#     compounds_details = {}
+#
+#     for cmpd in cmpds:
+#         cmpd_id = Compound.objects.get(chebi_id=cmpd).id
+#         references = cmpd_selector.get_simple_compound_details(cmpd_id)
+#         compounds_details[cmpd_id] = references
+#
+#     return compounds_details
 
 
 def metabolite_peak_data(request, cmpd_id):
@@ -816,6 +820,8 @@ def metabolite_pathway_data(request, pw_id):
     :return: cmpd_id: formula dictionary
     """
 
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
     pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
     cmpd_details = {}
     for cmpd, formula in pw_cmpd_for_dict.items():
@@ -868,13 +874,17 @@ def met_search_highchart_data(request, tissue, metabolite):
        :return: A list of dictionaries for the metabolite/tissue highcharts.
 
     """
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
+
     cmpd_selector = CompoundSelector()
 
     hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
 
     # Should only be looking at a single compound
 
-    single_cmpd_indexed = s_cmpds_df.index.values
+    # FIXME: s_cmpds_df doesn't exist anywhere, is this code working?? Maybe it should be 'single_cmpds_df'
+    single_cmpd_indexed = single_cmpds_df.index.values
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
@@ -1041,7 +1051,7 @@ def change_pals_col_names(pals_df):
     return pals_df
 
 
-def get_peak_mf_compare_df():
+def get_peak_mf_compare_df(cmpd_selector):
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
@@ -1083,7 +1093,7 @@ def get_peak_mf_compare_df():
     return peak_compare_mf, min_value, mean_value, max_value
 
 
-def get_peak_compare_df(peaks):
+def get_peak_compare_df(peaks, cmpd_selector):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.

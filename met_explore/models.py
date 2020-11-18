@@ -1,12 +1,66 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils import timezone
+from jsonfield import JSONField
 
+User = get_user_model()
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=1000, null=True)
+    timestamp = models.DateTimeField(default=timezone.localtime, null=False)
+    metadata = JSONField()
+    users = models.ManyToManyField(User, through='Share')
+
+    def get_experimental_design(self):
+        if 'experimental_design' in self.metadata:
+            return self.metadata['experimental_design']
+        else:
+            return {}
+
+    def get_owner(self):
+        for share in self.share_set.all():
+            if share.owner:
+                return share.user
+
+    def get_read_only_status(self, user):
+        for share in self.share_set.all():  # search shares for this user
+            if share.user == user:
+                if share.owner:  # owner can always edit
+                    return False
+                return share.read_only  # otherwise check the read-only field
+        return False
+
+    def get_read_only_str(self, user):
+        read_only = self.get_read_only_status(user)
+        msg = 'Read Only' if read_only else 'Edit'
+        return msg
+
+    def __str__(self):
+        return self.name
+
+
+class Share(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    read_only = models.BooleanField()
+    owner = models.BooleanField()
+
+    def __str__(self):
+        return 'User=%s, Project=%s, read_only=%s, owner=%s' % (self.user, self.project, self.read_only, self.owner)
+
+    def get_read_only_str(self):
+        msg = 'Read Only' if self.read_only else 'Edit'
+        return msg
 
 
 class Sample(models.Model):
     """
     Model class defining an instance of an experimental Sample including the tissue and life-stage from which it came
     """
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
     # Here the sample name is unique as this is important for processing FlyMet data
     name = models.CharField(max_length=250, unique=True, blank=False)
     group = models.CharField(max_length=250, blank=True, null=True)
@@ -17,23 +71,22 @@ class Sample(models.Model):
         return value
 
     @property
-    def life_stage(self): # for flymet compatibility
+    def life_stage(self):  # for flymet compatibility
         return self.get_factor_value('life_stage')
 
     @property
-    def tissue(self): # for flymet compatibility
+    def tissue(self):  # for flymet compatibility
         return self.get_factor_value('tissue')
 
     @property
-    def mutant(self): # for flymet compatibility
+    def mutant(self):  # for flymet compatibility
         return self.get_factor_value('mutant')
 
-    def  __str__(self):
+    def __str__(self):
         """
         Method to return a representation of the Sample
         """
-
-        return "Sample " + self.name
+        return 'Project %s Sample %s' % (self.project, self.name)
 
 
 class Factor(models.Model):
@@ -44,7 +97,7 @@ class Factor(models.Model):
     name = models.CharField(max_length=250, blank=False, null=False)
     value = models.CharField(max_length=250, blank=False, null=False)
 
-    def  __str__(self):
+    def __str__(self):
         return "Sample %s factor %s value %s " % (self.sample, self.name, self.value)
 
 
@@ -53,35 +106,36 @@ class Peak(models.Model):
     Model class representing a basic peak including the compound as a simple string.
     One peak per secondary peak ID in PiMP
     """
-
-    psec_id = models.IntegerField(unique=True) #The secondary peak ID from PiMP
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    psec_id = models.IntegerField(unique=True)  # The secondary peak ID from PiMP
     m_z = models.DecimalField(max_digits=20, decimal_places=10)
     rt = models.DecimalField(max_digits=20, decimal_places=10)
     polarity = models.CharField(max_length=8)
-    preferred_annotation =  models.ForeignKey('Annotation', on_delete=models.SET_NULL, null=True, related_name='preferred_annotation')
+    preferred_annotation = models.ForeignKey('Annotation', on_delete=models.SET_NULL, null=True,
+                                             related_name='preferred_annotation')
     preferred_annotation_reason = models.CharField(max_length=600)
 
-
-    def  __str__(self):
+    def __str__(self):
         """
         Method to return a representation of the SamplePeak including the name of the compound
         :return: String:
         """
 
-        return "Peak" + str(self.id)+ " of m/z " + str(self.m_z)
+        return "Peak" + str(self.id) + " of m/z " + str(self.m_z)
+
 
 class Compound(models.Model):
-
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     cmpd_formula = models.CharField(max_length=100)
-    pc_sec_id = models.IntegerField(unique=False) #The pimp compound secondary ID - it's unique in the populating df,
+    pc_sec_id = models.IntegerField(unique=False)  # The pimp compound secondary ID - it's unique in the populating df,
     chebi_id = models.CharField(null=True, max_length=30, unique=True)
     chebi_name = models.CharField(null=True, max_length=250)
-    inchikey = models.CharField(null = True, max_length=27)
-    smiles =  models.CharField(null=True, max_length=250)
+    inchikey = models.CharField(null=True, max_length=27)
+    smiles = models.CharField(null=True, max_length=250)
     cas_code = models.CharField(null=True, max_length=30)
     peaks = models.ManyToManyField(Peak, through='Annotation')
-    related_chebi = models.CharField(null=True, max_length=100) #Chebi IDs of acid/base conjugated or tautomers of the original chebi_id
-
+    related_chebi = models.CharField(null=True,
+                                     max_length=100)  # Chebi IDs of acid/base conjugated or tautomers of the original chebi_id
 
     @property
     def cmpd_name(self):
@@ -93,21 +147,25 @@ class Compound(models.Model):
         if self.chebi_name:
             cmpd_name = self.chebi_name
         elif CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').exists():
-            cmpd_name = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('cmpd_name',flat=True)[0]
+            cmpd_name = \
+            CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('cmpd_name',
+                                                                                                 flat=True)[0]
         elif CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').exists():
-            cmpd_name = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('cmpd_name',flat=True)[0]
-        else: #Just grab any name
+            cmpd_name = \
+            CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('cmpd_name',
+                                                                                                 flat=True)[0]
+        else:  # Just grab any name
             cmpd_name = CompoundDBDetails.objects.filter(compound=self).values_list('cmpd_name', flat=True)[0]
 
         return cmpd_name
 
-    def  __str__(self):
+    def __str__(self):
         """
         Method to return a representation of the Compound name
         :return: String:
         """
 
-        return "Compound " + str(self.id) +" "+self.cmpd_name
+        return "Compound " + str(self.id) + " " + self.cmpd_name
 
     # Currently this just returns one kegg_id even if there are more than one
     def get_kegg_id(self):
@@ -115,16 +173,19 @@ class Compound(models.Model):
         kegg_id = None
 
         if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').exists():
-            kegg_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('identifier', flat=True)[0]
+            kegg_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='kegg').values_list('identifier',
+                                                                                                           flat=True)[0]
 
         return kegg_id
+
     # Currently this just returns one hmbd_id even if there are more than one
     def get_hmdb_id(self):
 
         hmdb_id = None
 
         if CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').exists():
-            hmdb_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('identifier', flat=True)[0]
+            hmdb_id = CompoundDBDetails.objects.filter(compound=self, db_name__db_name='hmdb').values_list('identifier',
+                                                                                                           flat=True)[0]
 
         return hmdb_id
 
@@ -137,30 +198,25 @@ class Compound(models.Model):
         ### Add identfiers including chebi and cas as long as they are not Nan or None
         for d in db_objects:
             if not (d.identifier == 'nan' or d.identifier == None):
-                all_identifiers[d.db_name.db_name] =  d.identifier
+                all_identifiers[d.db_name.db_name] = d.identifier
 
         if (self.cas_code != 'nan'):
-            all_identifiers['cas-code']=self.cas_code
+            all_identifiers['cas-code'] = self.cas_code
 
-        if (self.chebi_id !=None):
-            all_identifiers['chebi_id']=self.chebi_id
+        if (self.chebi_id != None):
+            all_identifiers['chebi_id'] = self.chebi_id
 
         return all_identifiers
-
-
-
 
 
 class DBNames(models.Model):
     db_name = models.CharField(unique=True, max_length=100)
 
     def __str__(self):
-
         return "This is the " + self.db_name + " DB"
 
 
 class CompoundDBDetails(models.Model):
-
     db_name = models.ForeignKey(DBNames, on_delete=models.CASCADE)
     identifier = models.CharField(max_length=100)
     cmpd_name = models.CharField(max_length=250)
@@ -173,18 +229,16 @@ class CompoundDBDetails(models.Model):
         return self.cmpd_name + " found in " + self.db_name.db_name
 
 
-
-
 class Annotation(models.Model):
-
     identified = models.CharField(max_length=100)  # Should be set at True or False
-    frank_anno = models.CharField(max_length=600, null=True) #Stored as JSON
+    frank_anno = models.CharField(max_length=600, null=True)  # Stored as JSON
     adduct = models.CharField(max_length=100)
-    confidence = models.IntegerField(blank=False, null=False, default=0) #Level of confidence 6 is the top, zero means not set.
+    confidence = models.IntegerField(blank=False, null=False,
+                                     default=0)  # Level of confidence 6 is the top, zero means not set.
     compound = models.ForeignKey(Compound, on_delete=models.CASCADE)
     peak = models.ForeignKey(Peak, on_delete=models.CASCADE)
     neutral_mass = models.DecimalField(max_digits=20, decimal_places=10)
-    annotation_group = models.IntegerField(null=True) #Group to store related peaks through annotations
+    annotation_group = models.IntegerField(null=True)  # Group to store related peaks through annotations
 
     def __str__(self):
         """
@@ -195,16 +249,12 @@ class Annotation(models.Model):
         return "Annotation of peak " + str(self.peak.id) + " and compound " + self.compound.cmpd_name
 
 
-
-
 class SamplePeak(models.Model):
-
     peak = models.ForeignKey(Peak, on_delete=models.CASCADE)
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
     intensity = models.FloatField(null=True, blank=True)
 
-    def  __str__(self):
-
+    def __str__(self):
         """
         Method to return a representation of the SamplePeak including the name of the compound
         :return: String:
@@ -213,22 +263,18 @@ class SamplePeak(models.Model):
         return "Sample: " + self.sample.name + " Peak: " + str(self.peak.id)
 
 
-
 class UniqueToken(models.Model):
     """
     Model class to store unique and often temporary tokens
     """
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     name = models.CharField(max_length=250, unique=True, blank=False)
-    description =  models.CharField(max_length=250, blank = True)
+    description = models.CharField(max_length=250, blank=True)
     token = models.CharField(max_length=100)
     datetime = models.DateTimeField(default=timezone.now)  # for token expiration
 
-    def  __str__(self):
+    def __str__(self):
         """
         Method to return a representation of the Token
         """
-        return "Token " + self.name +" token " + self.token
-
-
-
-
+        return "Token " + self.name + " token " + self.token
