@@ -114,7 +114,6 @@ db.sqlite3.temp
 tissues_life_stages_no_whole.xlsx
 assets
 notebooks
-data
 peak_explorer_old.html
 sendgrid.env
 db.sqlite3.full
@@ -124,3 +123,4 @@ db.sqlite3_old
 db.sqlite3_march20
 pathway_search_old.html
 yarn.lock
+old_data
