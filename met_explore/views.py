@@ -31,7 +31,7 @@ WF_MIN = 1000  # Minimum value used for missing values in the whole fly data.
 PLACEHOLDER_PROJECT_ID = 1 # TODO: this should be deleted
 
 def get_single_compounds_df(project_id):
-    project = Project.get(id=project_id)
+    project = Project.objects.get(id=project_id)
     cmpd_selector = CompoundSelector(project)
     # DFs for all the peaks
     # int_df = cmpd_selector.construct_cmpd_intensity_df()
