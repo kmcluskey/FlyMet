@@ -10,10 +10,7 @@ function enableTooltips(){
 
 function updateReactomePathway(pathway_id, pathway_name, reactome_token){
 
-  console.log("In the reactome update ", pathway_id)
   console.log("reactome_token ", reactome_token)
-
-
       let dTitleDiv = document.getElementById("diagramTitle"); //diagram_title_div
       dTitleDiv.innerHTML = "";
       //
@@ -55,10 +52,8 @@ function updateReactomePathway(pathway_id, pathway_name, reactome_token){
 }
 function updatePathwayInfo(returned_data, pathway_name){
   let cmpd_details = returned_data.cmpd_details
-  console.log (returned_data.cmpd_details)
   let cmpds = Object.keys(cmpd_details)
   let no_cmpds = cmpds.length;
-  console.log("CMPDS ", cmpds)
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
 
@@ -90,7 +85,6 @@ function updatePathwayInfo(returned_data, pathway_name){
       let related_chebi = cmpd_details[cmpds[i]].related_chebi
 
       if (related_chebi != null) {
-        console.log(related_chebi)
         related_chebi = `or ${related_chebi}`
       }
       else {
@@ -100,7 +94,6 @@ function updatePathwayInfo(returned_data, pathway_name){
        let cmpd_info = `<div><span><a href="${url_cmpd}" target = _"blank">${name} (ChEBI: ${chebi_id} ${related_chebi}; formula: ${formula})</a></span></div>`
             cmpdDiv.innerHTML =  cmpd_info;
             sideDiv.appendChild(cmpdDiv);
-
 }
 }
 

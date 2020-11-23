@@ -383,7 +383,6 @@ def pathway_search(request):
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
                 pass
 
-        print(pwy_table_data)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
