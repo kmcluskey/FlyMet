@@ -1,0 +1,74 @@
+{
+  "project": {
+    "project_name": "flymet_no_whole",
+    "description": "FlyMet No Whole",
+    "user_name": "flymet"
+  },
+  "metabolomics": {
+    "sample_csv": "data/peak_data/tissues_life_stages_no_whole.csv",
+    "peak_json": "data/peak_data/67_peak_cmpd_export_1.json",
+    "int_json": "data/peak_data/67_peak_int_export.json",
+    "analysis_sets": [
+      {
+        "analysis_name": "tissue comparisons",
+        "analysis_type": "case_control",
+        "comparisons": [
+          {
+            "comparison_name": "Head_f/Whole_f",
+            "case": "Head_f",
+            "control": "Whole_f"
+          },
+          {
+            "comparison_name": "Mid_f/Whole_f",
+            "case": "Mid_f",
+            "control": "Whole_f"
+          },
+          {
+            "comparison_name": "Ovary_f/Whole_f",
+            "case": "Ovary_f",
+            "control": "Whole_f"
+          },
+          {
+            "comparison_name": "Head_m/Whole_m",
+            "case": "Head_m",
+            "control": "Whole_m"
+          },
+          {
+            "comparison_name": "Mid_m/Whole_m",
+            "case": "Mid_m",
+            "control": "Whole_m"
+          },
+          {
+            "comparison_name": "Testes_m/Whole_m",
+            "case": "Testes_m",
+            "control": "Whole_m"
+          }
+        ]
+      },
+      {
+        "analysis_name": "M/F comparisons",
+        "analysis_type": "case_control",
+        "comparisons": [
+          {
+            "comparison_name": "Head_f/Head_m",
+            "case": "Head_f",
+            "control": "Head_m"
+          },
+          {
+            "comparison_name": "Mid_f/Mid_m",
+            "case": "Mid_f",
+            "control": "Mid_m"
+          },
+          {
+            "comparison_name": "Ovary_f/Testes_m",
+            "case": "Ovary_f",
+            "control": "Testes_m"
+          }
+        ]
+      }
+    ]
+  },
+  "transcriptomics": {
+
+  }
+}
