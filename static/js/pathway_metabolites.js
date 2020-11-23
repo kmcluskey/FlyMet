@@ -308,8 +308,8 @@ $(document).ready(function() {
     for (var i = 0; i < num_metabolites; i++) {
 
       let pwy_met_table = initialise_pcompare_table(`pwy_met_table_${i}`, min, mid, max);
-      $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
-      title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
+      $("p[id^='pwy_id']").html(`<a href="pathway_search?pathway_search=${pathway_name}" data-toggle="tooltip"
+      title="${pathway_name} changes in FlyMet tissues" target="_blank">${pathway_name} in FlyMet</a>`);
 
 
       pwy_met_table.on( 'click', 'tr', function () {
