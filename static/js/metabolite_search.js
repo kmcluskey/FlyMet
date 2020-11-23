@@ -150,6 +150,8 @@ $(document).ready(function() {
 
   $("fieldset[class^='peak_details']").hide();
 
+  console.log(pathways)
+
   //Wait for the table to exist before we try to use it Try/Catch block.
 
   try {

@@ -493,6 +493,13 @@ table.dataTable .px300 {
   overflow-x: scroll;
 }
 
+table.dataTable .vw150 {
+  min-width: 15vw;
+  max-width: 15vw;
+  overflow-x: scroll;
+}
+
+
 /* Here try and make column one like this */
 table.dataTable .maxpx300 {
   max-width: 30vw;

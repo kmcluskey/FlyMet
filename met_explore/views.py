@@ -16,7 +16,9 @@ from loguru import logger
 from met_explore.compound_selection import CompoundSelector
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Project
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-    get_fly_pw_cmpd_formula, MIN_HITS
+get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
+
+
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
@@ -185,6 +187,7 @@ def metabolite_search(request):
         max = MAX
         mean = MEAN
         references = None
+        pathways = {}
 
         # If we get a metabolite sent from the view
         if search_query is not None:
@@ -257,6 +260,15 @@ def metabolite_search(request):
                 # logger.debug ("HERE %s %s" % (peak_id, cmpd_id))
                 # Here this no longer works a treat
                 references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
+                # Get the pathways associated with this compound ID
+                pathway_ids = get_cmpd_pwys(cmpd_id)
+
+                # Get pathway names based on their IDS.
+                pwy_name_id_dict = get_name_id_dict()
+
+
+                if pathway_ids:
+                    pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
 
         logger.debug("met_table_data %s" % met_table_data)
         context = {
@@ -265,6 +277,7 @@ def metabolite_search(request):
             'min': min,
             'max': max,
             'mean': mean,
+            'pathways':pathways,
             'references': references,
             'json_url': reverse('get_metabolite_names')
         }
@@ -299,7 +312,90 @@ def pathway_search(request):
     """
 
     if request.method == 'GET':  # If the URL is loaded
+        project_id = PLACEHOLDER_PROJECT_ID # FIXME
+        single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
         search_query = request.GET.get('pathway_search', None)
+        pathway_id = ""
+        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(cmpd_selector)
+
+        # Lists for the little pathway summary table.
+        summ_values = []
+        pwy_table_data = []
+
+        # If we get a metabolite sent from the view
+        if search_query is not None:
+
+            pathway_id_names_dict = get_pathway_id_names_dict(cmpd_selector)
+
+            try:
+                pathway_id = pathway_id_names_dict[search_query]
+                summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
+                summ_values_orig = summ_table.values.flatten().tolist()
+                summ_values = [int(i) for i in summ_values_orig[:-1]]
+
+                summ_values.append(summ_values_orig[-1])
+
+                single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
+
+                samples = Sample.objects.all()
+                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
+
+                # tissues.remove('Whole') #Whole not present in this table
+                columns = ['F', 'M', 'L']
+                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+
+                for tissue in tissues:
+                    for ls in columns:
+                        try:
+                            value = single_pwy_df.iloc[0][tissue + ' (' + ls + ')']
+                            nm_samples_df.loc[tissue, ls] = value
+                        except KeyError as e:
+                            pass
+
+                pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
+
+                index = nm_samples_df.index.tolist()
+                # Get a list to return to the view
+                pwy_table_data = []
+
+                for t, v in zip(index, pwy_values):
+                    pwy_table_data .append(([t] + v))
+
+
+
+            except KeyError:
+
+                logger.warning("A pathway name %s was not passed to the search" % search_query)
+                pass
+
+
+        reactome_token = get_highlight_token(project_id)
+        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+
+        context = {
+            'pwy_table_data': pwy_table_data,
+            'pals_min': pals_min,
+            'pals_max': pals_max,
+            'pals_mean': pals_mean,
+            'reactome_token': reactome_token,
+            'pathway_name': search_query,
+            'pathway_id': pathway_id,
+            'summ_values': summ_values,
+            'json_url': reverse('get_pathway_names')
+        }
+
+        return render(request, 'met_explore/pathway_search.html', context)
+
+
+def pathway_metabolites(request):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+
+    """
+
+    if request.method == 'GET':  # If the URL is loaded
+        search_query = request.GET.get('pathway_metabolites', None)
         met_peak_list = []
         metabolite_names = []
         cmpd_id_list = []
@@ -314,38 +410,32 @@ def pathway_search(request):
 
         # Lists for the little pathway summary table.
         summ_values = []
-
         # If we get a metabolite sent from the view
         if search_query is not None:
 
             pathway_id_names_dict = get_pathway_id_names_dict(cmpd_selector)
-            pathway_id = pathway_id_names_dict[search_query]
-
             try:
-
+                pathway_id = pathway_id_names_dict[search_query]
                 cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, cmpd_selector)
+                view_df, min, mean, max = get_all_peaks_compare_df(cmpd_selector)
+                column_names = view_df.columns.tolist()
 
+                group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+                for c in column_names:
+                    column_headers.append(group_names[c])  #
+
+                # Here and send back the list of reactome compounds too...
+                summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
+                summ_values_orig = summ_table.values.flatten().tolist()
+                summ_values = [int(i) for i in summ_values_orig[:-1]]
+                summ_values.append(summ_values_orig[-1])
 
             except KeyError:
 
-                met_peak_list = []
+                logger.warning("A pathway name %s was not passed to the search" % search_query)
+                pass
 
-            peaks = Peak.objects.all()
-
-            view_df, min, mean, max = get_peak_compare_df(peaks, cmpd_selector)
-            column_names = view_df.columns.tolist()
-
-            group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-            for c in column_names:
-                column_headers.append(group_names[c])  #
-
-            # Here and send back the list of reactome compounds too...
-            summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
-            summ_values_orig = summ_table.values.flatten().tolist()
-            summ_values = [int(i) for i in summ_values_orig[:-1]]
-
-            summ_values.append(summ_values_orig[-1])
 
         num_metabolites = len(metabolite_names)
 
@@ -367,7 +457,7 @@ def pathway_search(request):
             'json_url': reverse('get_pathway_names')
         }
 
-        return render(request, 'met_explore/pathway_search.html', context)
+        return render(request, 'met_explore/pathway_metabolites.html', context)
 
 
 def met_ex_gconditions(request):
@@ -499,10 +589,12 @@ def peak_explorer(request, peak_list):
     project_id = PLACEHOLDER_PROJECT_ID  # FIXME
     single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
+    ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
+
     if cache.get('my_group_df') is None:
-        logger.debug("we dont have cache so running the function")
-        cache.set('my_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
-        group_df = cache.get('my_group_df')
+            logger.debug("we dont have cache so running the function")
+            cache.set('my_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
+            group_df = cache.get('my_group_df')
     else:
         logger.debug("we have cache so retrieving it")
         group_df = cache.get('my_group_df')
@@ -533,6 +625,24 @@ def peak_explorer(request, peak_list):
                 'mean_value': mean_value}
 
     return render(request, 'met_explore/peak_explorer.html', response)
+
+def get_all_peaks_compare_df(cmpd_selector):
+    """
+    A method to return the peak compare DF when all peaks are required and it is better to cache the result.
+    :return: The peak_compare DF when all of the peaks are required. This is cached as it is used several times
+    """
+
+    peaks = Peak.objects.all()
+
+    if cache.get('all_compare_df') is None:
+        logger.debug("we dont have cache for all_peaks_compare so running the function")
+        cache.set('all_compare_df', get_peak_compare_df(peaks, cmpd_selector), 60 * 18000)
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+    else:
+        logger.debug("we have cache for all_peaks_compare so retrieving it")
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+
+    return all_peak_compare_df, min_value, mean_value, max_value
 
 
 def pals_data(request):
@@ -731,8 +841,8 @@ def pathway_search_data(pwy_id, cmpd_selector):
     """
 
     cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id, cmpd_selector)
-    peaks = Peak.objects.all()
-    peak_compare_df, _, _, _ = get_peak_compare_df(peaks, cmpd_selector)
+    # peaks = Peak.objects.all()
+    peak_compare_df, _, _, _ = get_all_peaks_compare_df(cmpd_selector)
     peak_compare_df = peak_compare_df.fillna("-")
 
     met_name_list = []
@@ -746,7 +856,6 @@ def pathway_search_data(pwy_id, cmpd_selector):
         except ObjectDoesNotExist:
             cmpd_name = Compound.objects.get(related_chebi__contains=cmpd).cmpd_name
             cmpd_id = Compound.objects.get(related_chebi__contains=cmpd).id
-            print (cmpd_name, cmpd_id)
         except Exception as e:
             logger.warning("A compound for chebi id %s was not found, this shouldn't happen" % cmpd)
             logger.warning("Failed with the exception %s " % e)
@@ -1050,7 +1159,7 @@ def change_pals_col_names(pals_df):
             c_new = c
         if 'comb_p' in c:
             split_c = c_new.split('/')
-            col_name = split_c[0]
+            col_name = split_c[0].strip()
             pals_df.rename(columns={c: col_name}, inplace=True)
 
     return pals_df
@@ -1104,6 +1213,7 @@ def get_peak_compare_df(peaks, cmpd_selector):
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
     # peaks = Peak.objects.all()
+
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 

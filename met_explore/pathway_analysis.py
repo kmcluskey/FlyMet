@@ -184,12 +184,29 @@ def bfs_get_related(graph_dict, node):
 
 
 def get_pathway_id_names_dict(cmpd_selector):
+    """
+       Given a pathway ID get its name
+       :return: pathway_id_names_dict
+       """
     pals_df = get_cache_df(MIN_HITS, cmpd_selector)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
 
     return pathway_id_names_dict
+
+
+def get_name_id_dict():
+    """
+    Given the name of a pathway get it's reactome ID
+    :return: name_pw_id_dict
+    """
+    pals_df = get_cache_df(MIN_HITS)
+    name_pw_id_dict = {}
+    for ix, row in pals_df.iterrows():
+        name_pw_id_dict[ix] = row.pw_name
+
+    return name_pw_id_dict
 
 
 def get_pals_int_df():
@@ -593,3 +610,31 @@ def get_reactome_highlight_token():
     logger.info("Returning the Reactome token %s " % token)
 
     return token
+
+
+def get_cmpd_pwys(cmpd_id):
+    """
+    Given a compound ID, return all of the pathways that compound is found in
+
+    :param cmpd_id: The cmpd_id
+    :return: List of pathways containing the compound.
+    """
+    pals_ds = get_cache_ds()
+    cmpd = Compound.objects.get(id=cmpd_id)
+    cmpd_pw_dict = pals_ds.mapping_dict
+    pwy_list = []
+
+    try:
+        if cmpd.chebi_id is not None:
+            pwy_list = cmpd_pw_dict[cmpd.chebi_id]
+    except KeyError:
+        if cmpd.related_chebi is not None:
+            alt_list = [chebi.strip() for chebi in cmpd.related_chebi.split(",")]
+            for alt_c in alt_list:
+                try:
+                    pwy_list = cmpd_pw_dict[alt_c]
+                    if pwy_list: #If we get a match return what we find a
+                        break
+                except KeyError:
+                    logger.info ("No pathways returned for cmpd %s " % cmpd)
+    return pwy_list

@@ -16,6 +16,7 @@ module.exports = {
         met_ex_all:'./static/js/met_ex_all',
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
+        pathway_metabolites: './static/js/pathway_metabolites',
         peak_explorer: './static/js/peak_explorer',
         peak_ex_compare: './static/js/peak_ex_compare',
         peak_mf_compare: './static/js/peak_mf_compare',
