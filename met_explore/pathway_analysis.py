@@ -17,14 +17,14 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object, get_samples_by_factor
-from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Project
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
 MIN_HITS =2
 
-def get_pals_ds():
+def get_pals_ds(cmpd_selector):
     fly_int_df = get_pals_int_df()
-    fly_exp_design = get_pals_experimenal_design()
+    fly_exp_design = get_pals_experimenal_design(cmpd_selector)
     chebi_df = get_single_db_entity_df('chebi_id')
 
     ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,
@@ -32,11 +32,11 @@ def get_pals_ds():
     return ds
 
 
-def get_cache_ds():
+def get_cache_ds(cmpd_selector):
     # cache.delete('pals_ds')
     if cache.get('pals_ds') is None:
         logger.info("we dont have cache so running the pals_ds function")
-        cache.set('pals_ds', get_pals_ds(), 60 * 180000)
+        cache.set('pals_ds', get_pals_ds(cmpd_selector), 60 * 180000)
         pals_ds = cache.get('pals_ds')
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
@@ -45,8 +45,8 @@ def get_cache_ds():
     return pals_ds
 
 
-def get_pals_df(min_hits):
-    ds = get_cache_ds()
+def get_pals_df(min_hits, cmpd_selector):
+    ds = get_cache_ds(cmpd_selector)
     pals = PLAGE(ds, num_resamples=5000, seed=123)
     pathway_df_chebi = pals.get_pathway_df()
     pathway_df_return = pathway_df_chebi[pathway_df_chebi.tot_ds_F >= min_hits]
@@ -54,11 +54,11 @@ def get_pals_df(min_hits):
     return pathway_df_return
 
 
-def get_cache_df(min_hits):
+def get_cache_df(min_hits, cmpd_selector):
     # cache.delete('pals_df')
     if cache.get('pals_df') is None:
         logger.info("we dont have cache so running the pals_df function")
-        cache.set('pals_df', get_pals_df(min_hits), 60 * 180000)
+        cache.set('pals_df', get_pals_df(min_hits, cmpd_selector), 60 * 180000)
         pals_df = cache.get('pals_df')
     else:
         logger.info("we have cache for the pals df, so retrieving it")
@@ -183,8 +183,8 @@ def bfs_get_related(graph_dict, node):
     return related_keys
 
 
-def get_pathway_id_names_dict():
-    pals_df = get_cache_df(MIN_HITS)
+def get_pathway_id_names_dict(cmpd_selector):
+    pals_df = get_cache_df(MIN_HITS, cmpd_selector)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
@@ -320,7 +320,7 @@ def get_all_chebi_ids():
 
 
 
-def get_fly_pw_cmpd_formula(pw_id):
+def get_fly_pw_cmpd_formula(pw_id, cmpd_selector):
     """
     Method to return a cmpd_id: cmpd formula dictionary for a given pathway
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
@@ -328,8 +328,8 @@ def get_fly_pw_cmpd_formula(pw_id):
     """
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS, cmpd_selector)  # possibly member variables
+    pals_ds = get_cache_ds(cmpd_selector)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
@@ -348,15 +348,15 @@ def get_fly_pw_cmpd_formula(pw_id):
     return fly_pw_cmpd_for_dict
 
 
-def get_reactome_pw_metabolites(pw_id):
+def get_reactome_pw_metabolites(pw_id, cmpd_selector):
     """
 
     :param pw_id: The ID of the pathway
     :return: A list of metabolites associated with this Reactome pathway.
     """
 
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS, cmpd_selector)  # possibly member variables
+    pals_ds = get_cache_ds(cmpd_selector)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Pass the summary table for the pathway from another function.
@@ -463,8 +463,7 @@ def get_single_db_entity_df(id_type):
     return annot_df
 
 
-def get_pals_experimenal_design():
-    cmpd_selector = CompoundSelector()
+def get_pals_experimenal_design(cmpd_selector):
     samples = Sample.objects.all()
 
     groups = list(set([s.group for s in samples]))  # Names of all the groups
@@ -522,7 +521,7 @@ def get_control_from_case(case):
     return control
 
 
-def get_highlight_token():
+def get_highlight_token(project_id):
     """
     A method to create or get the token for highlighting Reactome pathways using their Chebi IDS.
     This method would be easily adapted for other tokens.
@@ -530,7 +529,8 @@ def get_highlight_token():
     """
 
     time_now = timezone.now()
-    highlight_token, token_created = UniqueToken.objects.get_or_create(name="reactome_highlight")
+    project = Project.objects.get(id=project_id)
+    highlight_token, token_created = UniqueToken.objects.get_or_create(project=project, name="reactome_highlight")
 
     if token_created:  # Add a description and save.
         highlight_token.description = "A token to highlight cmpds on a Reactome pathway based on their Chebi IDs"

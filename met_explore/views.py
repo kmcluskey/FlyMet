@@ -310,7 +310,7 @@ def pathway_search(request):
         project_id = PLACEHOLDER_PROJECT_ID # FIXME
         single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
 
-        pals_df, _, _, _ = get_pals_view_data()
+        pals_df, _, _, _ = get_pals_view_data(cmpd_selector)
 
         # Lists for the little pathway summary table.
         summ_values = []
@@ -318,7 +318,7 @@ def pathway_search(request):
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            pathway_id_names_dict = get_pathway_id_names_dict()
+            pathway_id_names_dict = get_pathway_id_names_dict(cmpd_selector)
             pathway_id = pathway_id_names_dict[search_query]
 
             try:
@@ -540,8 +540,9 @@ def pals_data(request):
     :param request: Request for the peak data for the Pathway explorer
     :return: The cached url of the ajax data for the pals data table.
     """
-
-    view_df1, _, _, _ = get_pals_view_data()
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
+    view_df1, _, _, _ = get_pals_view_data(cmpd_selector)
     view_df = view_df1.fillna("-")
     #
     pals_data = view_df.values.tolist()
@@ -638,15 +639,17 @@ def pathway_explorer(request):
        """
 
     logger.info("Pathway ranking table requested")
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
     start = timeit.default_timer()
-    view_df, pals_min, pals_mean, pals_max = get_pals_view_data()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(cmpd_selector)
     column_headers = view_df.columns.tolist()
 
     stop = timeit.default_timer()
 
     logger.info("Returning the pals data took: %s S" % str(stop - start))
 
-    reactome_token = get_highlight_token()
+    reactome_token = get_highlight_token(project_id)
 
     response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
                 'mean_value': pals_mean, 'reactome_token': reactome_token}
@@ -708,7 +711,9 @@ def get_pathway_names(request):
        A method to return a list of all the Pathway names present in Reactome for the daea
        :return: A unique list of pathway names
     """
-    pals_df = get_cache_df(MIN_HITS)
+    project_id = PLACEHOLDER_PROJECT_ID  # FIXME
+    single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
+    pals_df = get_cache_df(MIN_HITS, cmpd_selector)
 
     if request.is_ajax():
         pathway_names = pals_df.pw_name.tolist()
@@ -725,7 +730,7 @@ def pathway_search_data(pwy_id, cmpd_selector):
     :return: List of metabolite names followed by associated peaks in the pathway.
     """
 
-    cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
+    cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id, cmpd_selector)
     peaks = Peak.objects.all()
     peak_compare_df, _, _, _ = get_peak_compare_df(peaks, cmpd_selector)
     peak_compare_df = peak_compare_df.fillna("-")
@@ -822,7 +827,7 @@ def metabolite_pathway_data(request, pw_id):
 
     project_id = PLACEHOLDER_PROJECT_ID  # FIXME
     single_cmpds_df, cmpd_selector = get_single_compounds_df(project_id)
-    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
+    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id, cmpd_selector)
     cmpd_details = {}
     for cmpd, formula in pw_cmpd_for_dict.items():
 
@@ -993,12 +998,12 @@ def met_search_highchart_data(request, tissue, metabolite):
                          'drilldown_data': drilldown_data})
 
 
-def get_pals_view_data():
+def get_pals_view_data(cmpd_selector):
     """
     :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
 
-    pals_df = get_cache_df(MIN_HITS)
+    pals_df = get_cache_df(MIN_HITS, cmpd_selector)
     fly_pals_df = change_pals_col_names(pals_df)
 
     # dropping colums not required for calculating the min. max and mean for the datatable.
