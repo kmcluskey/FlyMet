@@ -1206,36 +1206,51 @@ def get_peak_compare_df(peaks):
 
     # Get all of the peaks and all of the intensities of the sample files
     group_df = cmpd_selector.get_group_df(peaks)
+    control_list = []
+    column_names = group_df.columns
+
+    # FixMe: eventually this will be used for the controls depending on what is required. Hardcoding should be removed.
+
+    if 'Whole_f' in column_names:
+        control_list = ['Whole_f', 'Whole_m', 'Whole_l']
+
+    elif 'NoMet' in column_names:
+        control_list = ['NoMet']
 
     # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
     # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
 
-    group_df[['Whole_f', 'Whole_m', 'Whole_l']] = group_df[['Whole_f', 'Whole_m', 'Whole_l']].replace(np.nan, WF_MIN)
+    group_df[control_list] = group_df[control_list].replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak': 'id'}, inplace=True)
 
-    column_names = group_df.columns
 
     # divide by the whole fly amount for the sex/life-stage.
-    for c in column_names:
-        if c.endswith('f'):
-            group_df[c] = group_df[c].div(group_df['Whole_f'])
-        elif c.endswith('l'):
-            group_df[c] = group_df[c].div(group_df['Whole_l'])
-        elif c.endswith('m'):  # it starts with m
-            group_df[c] = group_df[c].div(group_df['Whole_m'])
+    # Fixme: This should not be hard-coded in the future.
+    if 'Whole_f' in column_names:
 
-    drop_list = ['id', 'Whole_f', 'Whole_m', 'Whole_l']
+        for c in column_names:
+            if c.endswith('f'):
+                group_df[c] = group_df[c].div(group_df['Whole_f'])
+            elif c.endswith('l'):
+                group_df[c] = group_df[c].div(group_df['Whole_l'])
+            elif c.endswith('m'):  # it starts with m
+                group_df[c] = group_df[c].div(group_df['Whole_m'])
+
+    elif 'NoMet' in column_names:
+        group_df['HighMet'] = group_df['HighMet'].div(group_df['NoMet'])
+
+    drop_list = ['id'] + control_list
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
 
-    peak_compare_df = peak_compare_df.drop(['Whole_f', 'Whole_m', 'Whole_l'], axis=1)
+    peak_compare_df = peak_compare_df.drop(control_list, axis=1)
 
     return peak_compare_df, min_value, mean_value, max_value
 

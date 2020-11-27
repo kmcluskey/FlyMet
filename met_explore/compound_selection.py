@@ -240,8 +240,12 @@ class CompoundSelector(object):
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
-                    ls = first_sample.life_stage
-                    group_name_dict[g] = tissue + " " + "(" + ls + ")"
+                    if tissue:
+                        ls = first_sample.life_stage
+                        group_name_dict[g] = tissue + " " + "(" + ls + ")"
+                    # If it is not a FlyMet sample, just use the group name
+                    else:
+                        group_name_dict[g] = first_sample.group
 
         return group_name_dict
 
