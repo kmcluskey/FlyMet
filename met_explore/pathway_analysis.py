@@ -485,7 +485,14 @@ def get_pals_experimenal_design():
     samples = Sample.objects.all()
 
     groups = list(set([s.group for s in samples]))  # Names of all the groups
-    controls = ['Whole_f', 'Whole_m', 'Whole_l']  # The current control groups
+    fly_controls = ['Whole_f', 'Whole_m', 'Whole_l']  # The current control groups
+    # FixMe: This needs to be made generic - juts hard coding for Fly/Cancer data
+
+    if fly_controls not in groups:
+        controls = ['NoMet']
+    else:
+        controls = fly_controls
+
     cases = [g for g in groups if g not in controls]  # Groups not in the control group
 
     # This gives a dictionary of orginal names: user readable names.
@@ -532,6 +539,8 @@ def get_control_from_case(case):
         control = "Whole (L)"
     elif '(M)' in case:
         control = "Whole (M)"
+    elif 'HighMet' in case: #Fixme: More hard coding for Beatson data
+        control = "NoMet"
     else:
         logger.error("There is no control to match the passed case, returning None")
         control = None

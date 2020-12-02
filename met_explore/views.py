@@ -351,14 +351,18 @@ def pathway_search(request):
                 summ_values.append(summ_values_orig[-1])
 
                 single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
-
                 samples = Sample.objects.all()
-                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
 
                 # tissues.remove('Whole') #Whole not present in this table
                 columns = ['F', 'M', 'L']
-                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
 
+                if tissues==[None]:
+                    tissues = list(set([s.group for s in samples]))
+                    columns = ['HighMet']
+                # tissues.remove('Whole') #Whole not present in this table
+                # columns = ['F', 'M', 'L']
+                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
                 for tissue in tissues:
                     for ls in columns:
                         try:

@@ -20,7 +20,14 @@ function headerTips(settings) {
     else if (head_split[0]=="RT"){
       string ="Retention Time";
     }
-    else {
+    // Fixme: this hard coding of condtions for tooltips should be changed.
+    else if (head_split[0]=="NoMet"){
+      string ="No Metastases";
+    }
+    else if (head_split[0]=="HighMet"){
+      string ="High Metastases";
+    }
+    else { // Otherise these are tissues
       string =`${head_split[0]} tissue from`;
       const header_words = head_split.length;
       const ls_check = header_words-1;

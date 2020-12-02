@@ -229,6 +229,8 @@ class CompoundSelector(object):
                 group_name_dict[g] = g
             elif g == 'cmpd_id':
                 group_name_dict[g] = g
+            elif g == 'HighMet' or g == 'NoMet' : #FixMe: Added for Beatson data
+                group_name_dict[g] = g
             elif g == 'm_z':
                 group_name_dict[g] = "m/z"
             elif g == 'rt':
