@@ -24,8 +24,8 @@ def populate_samples(sample_csv):
     factor_names = sample_details.columns.values
     assert CSV_GROUP_COLNAME in factor_names, 'Missing group information in CSV'
 
-    try:
-        for idx, row in sample_details.iterrows():
+    for idx, row in sample_details.iterrows():
+        try:
             # save sample and the group column
             sample_name = idx.strip()
             group = row[CSV_GROUP_COLNAME]
@@ -40,8 +40,9 @@ def populate_samples(sample_csv):
                 factor = Factor(sample=sample, name=factor_name, value=factor_value)
                 factor.save()
 
-    except IntegrityError:
-        logger.warning('Samples have been inserted, skipping')
+        except IntegrityError as e:
+            logger.warning('Samples have been inserted, skipping')
+            continue
 
     logger.warning('All samples loaded to database')
 
