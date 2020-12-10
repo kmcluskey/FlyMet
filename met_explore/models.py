@@ -2,6 +2,19 @@ from django.db import models
 from django.utils import timezone
 
 
+class Group(models.Model):
+    """
+    This is a model to store the name of the groups that collects triplicate samples and can be used for case/control
+    studies.
+    """
+    name = models.CharField(max_length=250, unique=True)
+
+    def __str__(self):
+        """
+        Method to return a representation of the Sample
+        """
+        return "Group " + self.name
+
 
 class Sample(models.Model):
     """
@@ -9,12 +22,18 @@ class Sample(models.Model):
     """
     # Here the sample name is unique as this is important for processing FlyMet data
     name = models.CharField(max_length=250, unique=True, blank=False)
-    group = models.CharField(max_length=250, blank=True, null=True)
+    sample_group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
 
     def get_factor_value(self, name):
         values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
         value = values[0] if len(values) > 0 else None
         return value
+    #
+    # def get_sample_group(self):
+    #     group = Group.objects.filter(sample=self).valuess_list('name', flat=True)
+    #     print ("getting sample_group")
+    #     return group
+
 
     @property
     def life_stage(self): # for flymet compatibility
@@ -27,6 +46,11 @@ class Sample(models.Model):
     @property
     def mutant(self): # for flymet compatibility
         return self.get_factor_value('mutant')
+
+    @property
+    def group(self): # for flymet compatibility
+        group = self.sample_group.name
+        return group
 
     def  __str__(self):
         """
@@ -46,6 +70,46 @@ class Factor(models.Model):
 
     def  __str__(self):
         return "Sample %s factor %s value %s " % (self.sample, self.name, self.value)
+
+class Analysis(models.Model):
+
+    """
+    Model class representing a single Analysis
+    """
+    name = models.CharField(max_length=250, unique=True, blank=False)
+    type = models.CharField(max_length=250, blank=False, null=False)
+
+    def  __str__(self):
+        """
+        Method to return a representation of the Analysis
+        """
+        return "Analysis" + self.name
+
+
+
+class AnalysisComparison(models.Model):
+
+    name = models.CharField(max_length=250, unique=True, blank=False)
+    case_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='case_sample')
+    control_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='control_sample')
+    analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE) #deleting the analysis deletes this comparison
+
+    @property
+    def case(self):
+        return self.case_group.name
+
+    @property
+    def control(self):
+        return self.control_group.name
+
+
+    def  __str__(self):
+        """
+        Method to return a representation of the AnalysisComparison including the name of the compound
+        :return: String:
+        """
+        return "Analysis Comparison " + str(self.name)
+
 
 
 class Peak(models.Model):

@@ -147,7 +147,7 @@ class CompoundSelector(object):
 
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
-                                                                                            'sample_id__group')
+                                                                                            'sample_id__sample_group__name')
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
         group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
@@ -190,7 +190,7 @@ class CompoundSelector(object):
 
         for group in sample_groups:
             logger.info("Working on group %s" % group)
-            gp_samples = Sample.objects.filter(group=group)
+            gp_samples = Sample.objects.filter(sample_group__name=group)
             for i in df_index:
                 int_list = []
                 for g in gp_samples:
@@ -236,7 +236,7 @@ class CompoundSelector(object):
             elif g == 'id':
                 group_name_dict[g] = "Peak ID"
             else:
-                samples = Sample.objects.filter(group=g)
+                samples = Sample.objects.filter(sample_group__name=g)
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
@@ -379,7 +379,7 @@ class CompoundSelector(object):
         # Get the first sample with of the given group and get the tissue type
 
         for gp in groups:
-            group_attributes = Sample.objects.filter(group=gp)[0]
+            group_attributes = Sample.objects.filter(sample_group__name=gp)[0]
             gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
 
         return gp_tissue_ls_dict
@@ -393,7 +393,7 @@ class CompoundSelector(object):
 
         met_int_df = int_df.loc[peak_id]
 
-        sample_group = Sample.objects.filter(group=group)
+        sample_group = Sample.objects.filter(sample_group__name=group)
         sample_names = [s.name for s in sample_group]
 
         sample_ints = met_int_df[sample_names].values[0]
@@ -495,7 +495,7 @@ def get_kegg_id(cmpd_name):
     :return: The kegg_id associated with the compound name or None if an association doesn't exist
     """
 
-    logger.info ('finding a ID for %s', cmpd_name)
+    logger.info ('finding a ID for %s' % cmpd_name)
 
     try:
         res = k.find('compound', cmpd_name)

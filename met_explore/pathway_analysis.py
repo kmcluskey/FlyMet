@@ -484,7 +484,7 @@ def get_pals_experimenal_design():
     cmpd_selector = CompoundSelector()
     samples = Sample.objects.all()
 
-    groups = list(set([s.group for s in samples]))  # Names of all the groups
+    groups = list(set([s.sample_group.name for s in samples]))  # Names of all the groups
     controls = ['Whole_f', 'Whole_m', 'Whole_l']  # The current control groups
     cases = [g for g in groups if g not in controls]  # Groups not in the control group
 
@@ -499,7 +499,7 @@ def get_pals_experimenal_design():
 
     exp_groups = {}  # Experimental group dictionary for use in the pals exp_design dict.
     for g in groups:
-        samples = Sample.objects.filter(group=g)
+        samples = Sample.objects.filter(sample_group__name=g)
         gp_files = [sample.name for sample in samples]
         exp_groups[group_dict[g]] = gp_files
 
