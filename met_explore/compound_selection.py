@@ -240,6 +240,8 @@ class CompoundSelector(object):
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
+                    if tissue=='nan':
+                        tissue = first_sample.age #Fixme: this is just for flymet if this is nt tissue it will be age.
                     ls = first_sample.life_stage
                     group_name_dict[g] = tissue + " " + "(" + ls + ")"
 

@@ -48,6 +48,10 @@ class Sample(models.Model):
         return self.get_factor_value('mutant')
 
     @property
+    def age(self):  # for flymet compatibility
+        return self.get_factor_value('age')
+
+    @property
     def group(self): # for flymet compatibility
         group = self.sample_group.name
         return group

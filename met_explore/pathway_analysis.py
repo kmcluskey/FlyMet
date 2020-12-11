@@ -17,12 +17,21 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object, get_samples_by_factor
-from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, AnalysisComparison
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
 MIN_HITS =2
 
+# """
+# FixMe: For FlyMet the Analyses IDs for PALS are 1 and 3 this will be different for other projects
+# this should be refactored.
+# """
+#
+# ANALYSIS_IDS = [1,3]
+
 def get_pals_ds():
+
+
     fly_int_df = get_pals_int_df()
     fly_exp_design = get_pals_experimenal_design()
     chebi_df = get_single_db_entity_df('chebi_id')
@@ -481,12 +490,22 @@ def get_single_db_entity_df(id_type):
 
 
 def get_pals_experimenal_design():
-    cmpd_selector = CompoundSelector()
-    samples = Sample.objects.all()
 
-    groups = list(set([s.sample_group.name for s in samples]))  # Names of all the groups
-    controls = ['Whole_f', 'Whole_m', 'Whole_l']  # The current control groups
-    cases = [g for g in groups if g not in controls]  # Groups not in the control group
+    analysis_ids = [1,3]
+    cmpd_selector = CompoundSelector()
+    # samples = Sample.objects.all()
+
+    # groups = Group.objects.all().name.values_list()
+
+    analysis_comparisions = AnalysisComparison.objects.filter(analysis__in=analysis_ids)
+
+    controls = list(set([a.control_group.name for a in analysis_comparisions]))
+    cases = list(set([a.case_group.name for a in analysis_comparisions]))
+
+    # controls = analysis_comparisions.control_group.name
+    # cases = analysis_comparisions.case_group.name
+
+    groups =controls+cases
 
     # This gives a dictionary of orginal names: user readable names.
     group_dict = cmpd_selector.get_list_view_column_names(groups)
@@ -504,9 +523,9 @@ def get_pals_experimenal_design():
         exp_groups[group_dict[g]] = gp_files
 
     comparison_dict_list = []
-    for c in case_names:
+    for c, case in zip(case_names, cases):
         comparison_dict = {}
-        control = get_control_from_case(c)
+        control = control_dict[get_control_from_case(case, analysis_comparisions)]
         comparison_dict['case'] = c
         comparison_dict['control'] = control
         comparison_dict['name'] = c + '/' + control
@@ -520,21 +539,14 @@ def get_pals_experimenal_design():
     return experiment_design
 
 
-def get_control_from_case(case):
+def get_control_from_case(case, analysis_comparisions):
     """
     :param case: The group name of the sample that are the casein the study
-    :return:
+    :return: String of the control group name
     """
 
-    if '(F)' in case:
-        control = "Whole (F)"
-    elif '(L)' in case:
-        control = "Whole (L)"
-    elif '(M)' in case:
-        control = "Whole (M)"
-    else:
-        logger.error("There is no control to match the passed case, returning None")
-        control = None
+    group = Group.objects.get(name=case)
+    control = analysis_comparisions.get(case_group=group).control_group.name
 
     return control
 
