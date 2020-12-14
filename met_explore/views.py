@@ -197,7 +197,11 @@ def metabolite_search(request):
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
         samples = Sample.objects.all()
-        tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
+
+        # Fixme - need to do this on analysis and factors for more general code.
+        real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+        ages = list(set([s.age for s in samples if s.age != 'nan']))
+        tissues = ages+real_tissues
 
         met_table_data = []
         min = MIN
@@ -353,7 +357,11 @@ def pathway_search(request):
                 single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
 
                 samples = Sample.objects.all()
-                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
+                real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+                aged_flies = list(set([s.age for s in samples if s.age != 'nan']))
+
+                #Fixme: this is the factor groups required for the tables - could be more general?
+                tissues = real_tissues+aged_flies
 
                 # tissues.remove('Whole') #Whole not present in this table
                 columns = ['F', 'M', 'L']

@@ -334,7 +334,13 @@ class CompoundSelector(object):
         :param tissue: The tissue of interest
         :return: The groups that this tissue is found in
         """
-        filtered_sps = get_samples_by_factor('tissue', tissue)
+        #Fixme: this will need to be rewritten for more generic factors.
+        if get_samples_by_factor('tissue', tissue):
+
+            filtered_sps = get_samples_by_factor('tissue', tissue)
+        else:
+            filtered_sps =get_samples_by_factor('age', tissue)
+
         groups = set([f.group for f in filtered_sps])
         lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)
         life_stages = [ls[1] for ls in lifestage_dict.values()]
@@ -379,10 +385,14 @@ class CompoundSelector(object):
         groups = set([s.group for s in samples])
 
         # Get the first sample with of the given group and get the tissue type
-
+        #Fixme: should be fixed so that the code is more generic.
         for gp in groups:
             group_attributes = Sample.objects.filter(sample_group__name=gp)[0]
-            gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
+            if group_attributes.tissue != 'nan':
+                factor = group_attributes.tissue
+            else:
+                factor = group_attributes.age
+            gp_tissue_ls_dict[gp] = [factor, group_attributes.life_stage]
 
         return gp_tissue_ls_dict
 
