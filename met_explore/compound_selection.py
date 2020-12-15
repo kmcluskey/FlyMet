@@ -339,7 +339,7 @@ class CompoundSelector(object):
 
             filtered_sps = get_samples_by_factor('tissue', tissue)
         else:
-            filtered_sps =get_samples_by_factor('age', tissue)
+            filtered_sps = get_samples_by_factor('age', tissue)
 
         groups = set([f.group for f in filtered_sps])
         lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)

@@ -11,14 +11,14 @@ from met_explore.population_scripts import populate_samples, populate_peaks_cmpd
 
 
 # Run from the command line using:
-# python manage.py initialisedb 'tissues_life_stages_v2.csv' '67_peak_cmpd_export_1.json' '67_peak_int_export.json'
+# python manage.py initialisedb 'tissues_life_stages_v2.csv' '67_peak_cmpd_export_1.json' '67_peak_int_export.json' 'flymet_analysis_config.json'
 # This should be done after deleting DB and removing all migrations.
 
 
 class Command(BaseCommand):
     args = 'Takes in the FlyMet tissue/sample csv file [0] along with Peak [1] and Intensity [2] json files ' \
            'exported from PiMP'
-    help = 'Takes in the above files assigns peaks to compounds and inialises the FlyMet DB ' \
+    help = 'Takes in the above files assigns peaks to compounds and initialises the FlyMet DB ' \
            'FlyMet DB'
 
     def add_arguments(self, parser):
