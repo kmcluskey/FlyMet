@@ -1067,7 +1067,7 @@ def met_search_highchart_data(request, tissue, metabolite):
                     d[1] = i
 
     # Return the interquartile range, q25 and q75, as the error bars.
-    error_data = []
+    error_bar_data = []
 
     for d in all_intensities:
         np_data = np.array(d)
@@ -1078,10 +1078,8 @@ def met_search_highchart_data(request, tissue, metabolite):
             error_series = [q25, q75]
         else:
             error_series = None
-        error_data.append(error_series)
+        error_bar_data.append(error_series)
 
-    # Replacing the NaNs with zeros for highchart.
-    error_bar_data = (np.nan_to_num(error_data)).tolist()
     logger.debug("error_bar_data %s" % error_bar_data)
     logger.info("Passing the series data %s" % met_series_data)
     logger.info("Passing the error bar data %s" % error_bar_data)
@@ -1208,7 +1206,7 @@ def get_peak_compare_df(peaks):
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
     # peaks = Peak.objects.all()
-
+    controls = ['Whole_f', 'Whole_m', 'Whole_l']
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
@@ -1219,7 +1217,7 @@ def get_peak_compare_df(peaks):
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
     # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
 
-    group_df[['Whole_f', 'Whole_m', 'Whole_l']] = group_df[['Whole_f', 'Whole_m', 'Whole_l']].replace(np.nan, WF_MIN)
+    group_df[controls] = group_df[controls].replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1229,21 +1227,24 @@ def get_peak_compare_df(peaks):
 
     # divide by the whole fly amount for the sex/life-stage.
     for c in column_names:
-        if c.endswith('f'):
-            group_df[c] = group_df[c].div(group_df['Whole_f'])
-        elif c.endswith('l'):
-            group_df[c] = group_df[c].div(group_df['Whole_l'])
-        elif c.endswith('m'):  # it starts with m
-            group_df[c] = group_df[c].div(group_df['Whole_m'])
+        if c not in controls:
+            if c.endswith('f'):
+                group_df[c] = group_df[c].div(group_df['Whole_f'])
+            elif c.endswith('l'):
+                group_df[c] = group_df[c].div(group_df['Whole_l'])
+            elif c.endswith('m'):  # it starts with m
+                group_df[c] = group_df[c].div(group_df['Whole_m'])
 
-    drop_list = ['id', 'Whole_f', 'Whole_m', 'Whole_l']
+    drop_list = ['id']+controls
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
 
-    peak_compare_df = peak_compare_df.drop(['Whole_f', 'Whole_m', 'Whole_l'], axis=1)
+    peak_compare_df = peak_compare_df.drop(controls, axis=1)
+
+    print (peak_compare_df)
 
     return peak_compare_df, min_value, mean_value, max_value
 

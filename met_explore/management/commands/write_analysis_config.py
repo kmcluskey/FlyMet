@@ -31,7 +31,7 @@ class Command(BaseCommand):
 
         try:
 
-            logger.info("the files for writing the analysis_config are using are: %s %s" % (sample_csv, comparisons_groups))
+            logger.info("The files for writing the analysis_config are using are: %s %s" % (sample_csv, comparisons_groups))
 
             sample_details = pd.read_csv(sample_csv, index_col=0).dropna(how='all')
             unique_groups = set(sample_details.group.values)
@@ -42,6 +42,8 @@ class Command(BaseCommand):
 
             analysis_set_dict = {}
             analysis_list = []
+            logger.info("Constructing the analysis config file")
+
             for gc, analysis_details in comparisons_groups.items():
 
                 # For flymet these are the different case and control groups -
@@ -62,8 +64,6 @@ class Command(BaseCommand):
                 all_cases = case_controls[0]
 
                 # Get cases for specific analysis group (tissue or age)
-
-                # cases = get_group_cases(sample_details, analysis_group, all_cases)
 
                 """
                 Given the analysis group (tissue or age) and all the potential cases, return the cases 
@@ -114,11 +114,13 @@ class Command(BaseCommand):
             analysis_set_dict["analysis_sets"] = analysis_list
 
             try:
+
                 with open("data/flymet_analysis_config.json", 'w') as file:
                     json.dump(analysis_set_dict, file)
+                logger.info("The flymet configuration file has been written")
 
             except TypeError as e:
-                logger.error("Unable to dump the analysis dict with error ad %s " % e)
+                logger.error("Unable to dump the analysis config dict with error %s " % e)
 
 
         except Exception as e:
