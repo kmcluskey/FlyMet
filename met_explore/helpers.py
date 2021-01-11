@@ -89,4 +89,4 @@ def get_samples_by_factors(names, values):
 
 def get_factor_of_sample(sample, name):
     results = Factor.objects.filter(sample=sample, name=name)
-    return results.first()
+    return results.first

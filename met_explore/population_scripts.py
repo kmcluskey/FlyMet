@@ -72,17 +72,17 @@ def populate_analysis_comparisions(analysis_set):
 
         try:
 
-            new_analysis = Analysis(name=analysis["analysis_name"], type=analysis["analysis_type"])
-            new_analysis.save()
-            logger.info("Saving the analysis and comparisons for %s" % new_analysis)
+            new_analysis, analysis_created = Analysis.objects.get_or_create(name=analysis["analysis_name"], type=analysis["analysis_type"])
+            if analysis_created:
+                new_analysis.save()
+                logger.info("Saving the analysis and comparisons for %s" % new_analysis)
 
-
-            comparisons = analysis["comparisons"]
-            for c in comparisons:
-                comp_case = Group.objects.get(name=c['case'])
-                comp_control = Group.objects.get(name=c['control'])
-                comparison = AnalysisComparison(analysis = new_analysis, name=c['comparison_name'], case_group=comp_case, control_group=comp_control)
-                comparison.save()
+                comparisons = analysis["comparisons"]
+                for c in comparisons:
+                    comp_case = Group.objects.get(name=c['case'])
+                    comp_control = Group.objects.get(name=c['control'])
+                    comparison = AnalysisComparison(analysis = new_analysis, name=c['comparison_name'], case_group=comp_case, control_group=comp_control)
+                    comparison.save()
 
         except IntegrityError as e:
             logger.warning(e)

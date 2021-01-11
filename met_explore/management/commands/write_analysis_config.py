@@ -36,7 +36,7 @@ class Command(BaseCommand):
             sample_details = pd.read_csv(sample_csv, index_col=0).dropna(how='all')
             unique_groups = set(sample_details.group.values)
 
-            f = open(comparisons_groups,)
+            f = open(comparisons_groups)
             x = f.read()
             comparisons_groups = json.loads(x)
 

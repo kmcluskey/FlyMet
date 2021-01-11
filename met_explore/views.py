@@ -17,7 +17,7 @@ from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
 from met_explore.helpers import get_samples_by_factor
-from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
+from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 
@@ -522,6 +522,9 @@ def peak_ex_compare(request, peak_compare_list):
        :param peak_list: The list of peaks required for the page
        :return: The template and required parameters for the peak explorer page.
        """
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
     if peak_compare_list == "All":
         peaks = Peak.objects.all()
     else:
@@ -531,7 +534,7 @@ def peak_ex_compare(request, peak_compare_list):
 
     logger.info("Peak comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df(peaks)
+    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
     column_names = view_df.columns.tolist()
 
     group_names = cmpd_selector.get_list_view_column_names(column_names)
@@ -591,6 +594,8 @@ def peak_explorer(request, peak_list):
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
     peaks = Peak.objects.all()
 
     required_data = peaks.values('id', 'm_z', 'rt')
@@ -610,7 +615,7 @@ def peak_explorer(request, peak_list):
 
     if cache.get('my_group_df') is None:
         logger.debug("we dont have cache so running the function")
-        cache.set('my_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
+        cache.set('my_group_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
         group_df = cache.get('my_group_df')
     else:
         logger.debug("we have cache so retrieving it")
@@ -642,6 +647,70 @@ def peak_explorer(request, peak_list):
                 'mean_value': mean_value}
 
     return render(request, 'met_explore/peak_explorer.html', response)
+
+def peak_age_explorer(request, peak_list):
+    """
+    :param request: The peak Explorer page
+    :return: The template and required parameters for the peak explorer page.
+    """
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
+    logger.debug("PEAK EXPLORER REQUEST for peaks %s" % peak_list)
+
+    logger.info("Peak table requested")
+    start = timeit.default_timer()
+    peaks = Peak.objects.all()
+
+    required_data = peaks.values('id', 'm_z', 'rt')
+
+    # peak_ids = [p.id for p in peaks]
+
+    peak_df = pd.DataFrame.from_records(list(required_data))
+
+    peak_df[['m_z', 'rt']].round(3).astype(str)
+
+    # Get all of the peaks and all of he intensities of the sample files
+    # If we want all the colours to be for the whole table this should be cached?
+
+    # group_df = cmpd_selector.get_group_df(peaks)
+
+    ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
+
+    if cache.get('my_group_age_df') is None:
+        logger.debug("we dont have cache so running the function")
+        cache.set('my_group_age_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get('my_group_age_df')
+    else:
+        logger.debug("we have cache so retrieving it")
+        group_df = cache.get('my_group_age_df')
+
+    max_value = np.nanmax(group_df)
+    min_value = np.nanmin(group_df)
+    mean_value = np.nanmean(group_df)
+    group_df.reset_index(inplace=True)
+
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    view_df = pd.merge(peak_df, group_df, on='id')
+
+    column_names = view_df.columns.tolist()
+
+    group_names = cmpd_selector.get_list_view_column_names(column_names)
+
+    column_headers = []
+    for c in column_names:
+        column_headers.append(group_names[c])
+
+    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'peak_list': peak_list, 'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/peak_age_explorer.html', response)
+
 
 def get_all_peaks_compare_df():
     """
@@ -682,6 +751,8 @@ def peak_compare_data(request, peak_compare_list):
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
     if peak_compare_list == "All":
 
         peaks = Peak.objects.all()
@@ -691,7 +762,7 @@ def peak_compare_data(request, peak_compare_list):
         peaks = Peak.objects.filter(id__in=list(peak_compare_list))
 
 
-    view_df1, _, _, _ = get_peak_compare_df(peaks)
+    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
     view_df = view_df1.fillna("-")
     #
     peak_compare_data = view_df.values.tolist()
@@ -715,11 +786,13 @@ def peak_mf_compare_data(request):
     return JsonResponse({'data': peak_compare_mf_data})
 
 
-def peak_data(request, peak_list):
+def peak_age_data(request, peak_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
     if peak_list == "All":
 
         peaks = Peak.objects.all()
@@ -733,7 +806,41 @@ def peak_data(request, peak_list):
     peak_df = pd.DataFrame.from_records(required_data)
 
     # # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
+
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+    #
+    view_df1 = pd.merge(peak_df, group_df, on='id')
+    view_df = view_df1.fillna("-")
+    #
+    peak_data = view_df.values.tolist()
+
+    logger.info("returning the peak data")
+    return JsonResponse({'data': peak_data})
+
+def peak_data(request, peak_list):
+    """
+    :param request: Request for the peak data for the Peak Explorer page
+    :return: The cached url of the ajax data for the peak data table.
+    """
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    if peak_list == "All":
+
+        peaks = Peak.objects.all()
+
+    else:
+        peak_list = peak_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list))
+
+    required_data = peaks.values('id', 'm_z', 'rt')
+
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    # # Get all of the peaks and all of the intensities of the sample files
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak': 'id'}, inplace=True)
@@ -1159,11 +1266,13 @@ def change_pals_col_names(pals_df):
 
 
 def get_peak_mf_compare_df():
+
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    group_df = cmpd_selector.get_group_df(peaks)
+    analysis = Analysis.objects.get(name='M/F Comparisons')
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
 
@@ -1200,18 +1309,18 @@ def get_peak_mf_compare_df():
     return peak_compare_mf, min_value, mean_value, max_value
 
 
-def get_peak_compare_df(peaks):
+def  get_peak_compare_df(analysis, peaks):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
-    # peaks = Peak.objects.all()
+
     controls = ['Whole_f', 'Whole_m', 'Whole_l']
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
     # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get

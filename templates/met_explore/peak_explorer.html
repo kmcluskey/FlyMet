@@ -14,10 +14,17 @@
     <div class="logo_row">
       <div class="logo_main mt-4">
         <p class="lead">
-          Investigate the the metabolite peaks found in <i> Drosophila </i> tissues.
+          Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
           </p>
         </div>
       </div>
+      <!-- extra Tabs for Analysis type -->
+      <nav>
+        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+          <a class="navdark nav-item nav-link active" href="{% url 'peak_explorer' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link" href="{% url 'peak_age_explorer' 'All' %}">Aged Flies</a>
+        </div>
+      </nav>
 
   <!--Tabs to go to new pages-->
   <div class="card text-center">
@@ -25,10 +32,10 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+          <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue Comparisons</a>
+          <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'peak_mf_compare' %}">F/M Comparisons</a>

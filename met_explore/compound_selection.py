@@ -5,6 +5,7 @@ import traceback
 
 import numpy as np
 import pandas as pd
+import itertools
 from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
@@ -14,7 +15,8 @@ from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, g
 
 k = KEGG()
 
-from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, Factor
+from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, \
+    AnalysisComparison, Analysis, Group
 
 INTENSITY_FILE_NAME = 'current_int_df'
 HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
@@ -140,7 +142,7 @@ class CompoundSelector(object):
 
         return int_df
 
-    def get_group_df(self, peaks):
+    def get_group_df(self, analysis, peaks):
 
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
@@ -150,7 +152,14 @@ class CompoundSelector(object):
                                                                                             'sample_id__sample_group__name')
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
-        group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
+
+        gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
+        gp_ids = set(itertools.chain(*gp_ids_all))
+        group_names = [Group.objects.get(id=g).name for g in gp_ids]
+
+        analysis_int_df = int_df[int_df['group'].isin(group_names)]
+
+        group_series = analysis_int_df.groupby(["peak", "group"]).apply(self.get_average)
         # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
         gp_df = group_series.to_frame()
         # Remove groups from the index and just keep peaks.

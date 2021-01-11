@@ -210,6 +210,12 @@ card-header {
     /*z-index: 4;*/
 }
 
+.nav_pad {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0;
+
+}
+
 .myspan100 {
   overflow-y: scroll;
   width: 100%;
@@ -588,3 +594,9 @@ table.dataTable .maxpx300 {
   width: 100%;
   overflow: scroll;
 }
+
+.nav-tabs .navdark.nav-link.active,
+    .nav-tabs .nav-item.show .nav-link {
+      color: #fff;
+      background-color: #5D2627;
+       }

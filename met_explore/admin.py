@@ -8,5 +8,10 @@ admin.site.register(Compound)
 admin.site.register(Annotation)
 admin.site.register(CompoundDBDetails)
 admin.site.register(DBNames)
+admin.site.register(Group)
+admin.site.register(Factor)
+admin.site.register(Analysis)
+admin.site.register(AnalysisComparison)
+admin.site.register(UniqueToken)
 
 # Register your models here.

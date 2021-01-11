@@ -87,7 +87,22 @@ class Analysis(models.Model):
         """
         Method to return a representation of the Analysis
         """
-        return "Analysis" + self.name
+        return "Analysis " + self.name
+
+
+    def get_control_samples(self):
+
+        control_groups = set(Group.objects.filter(control_sample__in=AnalysisComparison.objects.filter(analysis=self)))
+        control_samples = Sample.objects.filter(sample_group__in=control_groups)
+
+        return control_samples
+
+    def get_case_samples(self):
+
+        case_groups = set(Group.objects.filter(case_sample__in=AnalysisComparison.objects.filter(analysis=self)))
+        control_samples = Sample.objects.filter(sample_group__in=case_groups)
+
+        return control_samples
 
 
 
@@ -114,7 +129,21 @@ class AnalysisComparison(models.Model):
         """
         return "Analysis Comparison " + str(self.name)
 
-
+# class SampleAnalysis(models.Model):
+#     """
+#     Model class defining which samples relate to which analysis and vice versa
+#     A sample can belong to several analyses and an analysis contains many samples.
+#     """
+#     sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+#     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE)
+#
+#     def  __str__(self):
+#         """
+#         Method to return a representation of the AnalysisComparison including the name of the compound
+#         :return: String:
+#         """
+#         return "Sample Analysis  " + str(self.sample) + " "+ str(self.analysis)
+#
 
 class Peak(models.Model):
     """
