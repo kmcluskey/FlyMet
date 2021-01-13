@@ -33,7 +33,7 @@ def get_pals_ds():
 
 
     fly_int_df = get_pals_int_df()
-    fly_exp_design = get_pals_experimenal_design()
+    fly_exp_design = get_pals_experimental_design()
     chebi_df = get_single_db_entity_df('chebi_id')
 
     ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,
@@ -489,7 +489,7 @@ def get_single_db_entity_df(id_type):
     return annot_df
 
 
-def get_pals_experimenal_design():
+def get_pals_experimental_design():
 
     analysis_ids = [1,3]
     cmpd_selector = CompoundSelector()
@@ -508,9 +508,9 @@ def get_pals_experimenal_design():
     groups =controls+cases
 
     # This gives a dictionary of orginal names: user readable names.
-    group_dict = cmpd_selector.get_list_view_column_names(groups)
-    control_dict = cmpd_selector.get_list_view_column_names(controls)
-    case_dict = cmpd_selector.get_list_view_column_names(cases)
+    group_dict, _ = cmpd_selector.get_list_view_column_names(groups)
+    control_dict, _ = cmpd_selector.get_list_view_column_names(controls)
+    case_dict, _ = cmpd_selector.get_list_view_column_names(cases)
 
     # User friendly names for use on the web
     control_names = [v for k, v in control_dict.items()]

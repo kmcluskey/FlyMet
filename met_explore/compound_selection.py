@@ -228,33 +228,35 @@ class CompoundSelector(object):
         :param column_names:This is the names of the groups.
         :return: Dictionary with group: user-friendly column name
         """
+
         group_name_dict = {}
+        data_name_dict = {}
         groups = column_names
 
         for g in groups:
             if g == 'max_value':
-                group_name_dict[g] = "Max" + " " + "Value"
+                data_name_dict[g] = "Max" + " " + "Value"
             elif g == 'Metabolite':
-                group_name_dict[g] = g
+                data_name_dict[g] = g
             elif g == 'cmpd_id':
-                group_name_dict[g] = g
+                data_name_dict[g] = g
             elif g == 'm_z':
-                group_name_dict[g] = "m/z"
+                data_name_dict[g] = "m/z"
             elif g == 'rt':
-                group_name_dict[g] = "RT"
+                data_name_dict[g] = "RT"
             elif g == 'id':
-                group_name_dict[g] = "Peak ID"
+                data_name_dict[g] = "Peak ID"
             else:
                 samples = Sample.objects.filter(sample_group__name=g)
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
                     if tissue=='nan':
-                        tissue = first_sample.age #Fixme: this is just for flymet if this is nt tissue it will be age.
+                        tissue = first_sample.age #Fixme: this is just for flymet if this is not tissue it will be age.
                     ls = first_sample.life_stage
                     group_name_dict[g] = tissue + " " + "(" + ls + ")"
 
-        return group_name_dict
+        return group_name_dict, data_name_dict
 
     # KMcL: I think this is will only work with an intensity df of the high confidence DF.
     def get_single_cmpd_df(self, hc_int_df):

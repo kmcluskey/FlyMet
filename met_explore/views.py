@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import get_samples_by_factor
+from met_explore.helpers import natural_keys
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
@@ -443,10 +443,7 @@ def pathway_metabolites(request):
                 view_df, min, mean, max = get_all_peaks_compare_df()
                 column_names = view_df.columns.tolist()
 
-                group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-                for c in column_names:
-                    column_headers.append(group_names[c])  #
+                column_headers = get_column_headers(column_names)
 
                 # Here and send back the list of reactome compounds too...
                 summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
@@ -537,13 +534,7 @@ def peak_ex_compare(request, peak_compare_list):
     view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
     column_names = view_df.columns.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    column_headers = get_column_headers(column_names)
 
     stop = timeit.default_timer()
 
@@ -566,11 +557,10 @@ def peak_mf_compare(request):
     view_df, min, mean, max = get_peak_mf_compare_df()
     column_names = view_df.columns.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
+    column_heads = get_column_headers(column_names)
 
     column_headers = []
-    for c in column_names:
-        new_header = group_names[c]
+    for new_header in column_heads:
         if new_header.endswith('(F)'):
             new_header = new_header.replace('(F)', "(F/M)")
         column_headers.append(new_header)
@@ -600,10 +590,7 @@ def peak_explorer(request, peak_list):
 
     required_data = peaks.values('id', 'm_z', 'rt')
 
-    # peak_ids = [p.id for p in peaks]
-
     peak_df = pd.DataFrame.from_records(list(required_data))
-
     peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
@@ -612,7 +599,7 @@ def peak_explorer(request, peak_list):
     # group_df = cmpd_selector.get_group_df(peaks)
 
     ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
-
+    cache.delete('my_group_df')
     if cache.get('my_group_df') is None:
         logger.debug("we dont have cache so running the function")
         cache.set('my_group_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
@@ -630,15 +617,8 @@ def peak_explorer(request, peak_list):
 
     view_df = pd.merge(peak_df, group_df, on='id')
 
-    column_names = view_df.columns.tolist()
-
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    column_names = view_df.columns.tolist() #remove the peak column
+    column_headers = get_column_headers(column_names)
 
     stop = timeit.default_timer()
 
@@ -663,18 +643,10 @@ def peak_age_explorer(request, peak_list):
 
     required_data = peaks.values('id', 'm_z', 'rt')
 
-    # peak_ids = [p.id for p in peaks]
-
     peak_df = pd.DataFrame.from_records(list(required_data))
-
     peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
-    # If we want all the colours to be for the whole table this should be cached?
-
-    # group_df = cmpd_selector.get_group_df(peaks)
-
-    ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
 
     if cache.get('my_group_age_df') is None:
         logger.debug("we dont have cache so running the function")
@@ -691,17 +663,15 @@ def peak_age_explorer(request, peak_list):
 
     group_df.rename(columns={'peak': 'id'}, inplace=True)
 
-    view_df = pd.merge(peak_df, group_df, on='id')
 
+    view_df = pd.merge(peak_df, group_df, on='id')
     column_names = view_df.columns.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
+    # g_names = group_df.columns.tolist()  # remove the peak column
+    # g_names.remove('peak')  # peak is duplicated as id in the peak_df
+    # d_names = peak_df.columns.tolist()  # data names
 
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    column_headers = get_column_headers(column_names)
 
     stop = timeit.default_timer()
 
@@ -720,9 +690,12 @@ def get_all_peaks_compare_df():
 
     peaks = Peak.objects.all()
 
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+
     if cache.get('all_compare_df') is None:
         logger.debug("we dont have cache for all_peaks_compare so running the function")
-        cache.set('all_compare_df', get_peak_compare_df(peaks), 60 * 18000)
+        cache.set('all_compare_df', get_peak_compare_df(analysis, peaks), 60 * 18000)
         all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
     else:
         logger.debug("we have cache for all_peaks_compare so retrieving it")
@@ -893,11 +866,7 @@ def met_ex_tissues(request):
     met_ex_list = view_df.values.tolist()
     column_names = view_df.columns.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
+    column_headers = get_column_headers(column_names)
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
     df2 = view_df.drop(['Metabolite'], axis=1, inplace=False)
@@ -906,7 +875,6 @@ def met_ex_tissues(request):
     min_value = np.nanmin(df2)
     mean_value = np.nanmean(df2)
 
-    ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
     response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
@@ -1350,10 +1318,8 @@ def  get_peak_compare_df(analysis, peaks):
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
-
     peak_compare_df = peak_compare_df.drop(controls, axis=1)
 
-    print (peak_compare_df)
 
     return peak_compare_df, min_value, mean_value, max_value
 
@@ -1417,6 +1383,29 @@ def get_log_df(df, drop_list):
 
     return log_df, min_value, mean_value, max_value
 
+def get_column_headers(data_group_names):
+
+    """
+    A method to return the column headers for a datatable given a list of group and data names.
+    :param g_names: Group names
+    :param d_names: Data names e.g. peak, mz, rt
+    :return: column headers in format used in web browser
+    """
+    column_headers = []
+    group_headers = []
+
+    group_names, data_names = cmpd_selector.get_list_view_column_names(data_group_names)
+    # data_names = cmpd_selector.get_list_view_column_names(d_names)
+
+    for g in group_names:
+        group_headers.append(group_names[g])
+    group_headers.sort(key=natural_keys) #sort in human format - useful when columns start with numbers
+
+    for d in data_names:
+        column_headers.append(data_names[d])
+    column_headers.extend(group_headers)
+
+    return column_headers
 
 class MetaboliteListView(ListView):
     model = Peak
