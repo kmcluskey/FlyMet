@@ -26,7 +26,7 @@ function headerTips(settings) {
       const ls_check = header_words-1;
       ls = get_lifestage(head_split[ls_check])    }
       //Change the title attribute of the column to the string/tooltip info
-    $td.attr({title: `${string}`});
+    $td.attr({title: `${string} ${ls}`});
     $td.attr('data-toggle', "tooltip");
     $td.attr('data-placement', "top" );
 });
