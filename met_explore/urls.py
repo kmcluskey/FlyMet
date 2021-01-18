@@ -25,6 +25,7 @@ urlpatterns = [
     path('pathway_explorer', views.pathway_explorer, name='pathway_explorer'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
     path('peak_ex_compare/<str:peak_compare_list>',cache_page(60 * 18000)(views.peak_ex_compare), name='peak_ex_compare'),
+    path('peak_age_compare/<str:peak_compare_list>', cache_page(60 * 18000)(views.peak_age_compare), name='peak_age_compare'),
     path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
     path('peak_explorer/<str:peak_list>', cache_page(60 * 18000)(views.peak_explorer), name='peak_explorer'),
     path('peak_age_explorer/<str:peak_list>', cache_page(60 * 18000)(views.peak_age_explorer), name='peak_age_explorer'),

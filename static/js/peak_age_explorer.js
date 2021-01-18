@@ -1,4 +1,4 @@
-import {initialise_pcompare_table, updatePeakSidePanel} from './peak_tables_general.js';
+import {initialise_pcompare_table, updatePeakSidePanel, get_lifestage} from './peak_tables_general.js';
 
 function headerTips(settings) {
 
@@ -20,8 +20,14 @@ function headerTips(settings) {
     else if (head_split[0]=="RT"){
       string ="Retention Time";
     }
+
     else {
-      string =`${head_split[0]} tissue from`;
+      if (head_split[0]=="Whole"){
+        string ="Whole (7 day old)"
+      }
+      else {
+      string =`${head_split[0]} day old`
+    }
       const header_words = head_split.length;
       const ls_check = header_words-1;
       ls = get_lifestage(head_split[ls_check])    }
@@ -36,19 +42,19 @@ $('[data-toggle="tooltip"]').tooltip({
 });
 
 };
-
-function get_lifestage(ls_string){
-
-  let ls = "";
-  if (ls_string=="(F)")
-    ls ="Females";
-  else if (ls_string=="(M)")
-      ls ="Males";
-  else if (ls_string=="(L)")
-        ls ="Larvae";
-
-  return ls
-};
+//
+// function get_lifestage(ls_string){
+//
+//   let ls = "";
+//   if (ls_string=="(F)")
+//     ls ="Females";
+//   else if (ls_string=="(M)")
+//       ls ="Males";
+//   else if (ls_string=="(L)")
+//         ls ="Larvae";
+//
+//   return ls
+// };
 
 $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();

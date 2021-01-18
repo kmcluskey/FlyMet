@@ -21,12 +21,12 @@ function headerTips(settings) {
       string ="Retention Time";
     }
     else {
-      tissue =`Fold change between ${head_split[0]} tissue from`;
+      tissue =`Fold change between ${head_split[0]} day old`;
       const header_words = head_split.length;
       const ls_check = header_words-1;
       ls = get_lifestage(head_split[ls_check])
-      string = `${tissue} ${ls} and Whole ${ls}`
-    }
+      string = `${tissue} ${ls} and Whole (7 day old) ${ls}`
+      }
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string}`});
     $td.attr('data-toggle', "tooltip");
@@ -39,7 +39,7 @@ $('[data-toggle="tooltip"]').tooltip({
 
 };
 
-//
+
 // function get_lifestage(ls_string){
 //
 //   let ls = "";
@@ -57,9 +57,9 @@ $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
     console.log("peak compare list", peak_compare_list)
 
-    let nd_title = "This MS peak was not detected for this tissue/life stage combination";
+    let nd_title = "This MS peak was not detected for this Aged fly";
     let ajax_url = `peak_compare_data/${peak_compare_list}`;
-    let peak_side_url = `peak_explorer/`;
+    let peak_side_url = `peak_age_explorer/`;
     let peak_side_text =`Intensities for peak `;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,

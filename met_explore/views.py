@@ -16,8 +16,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import natural_keys
-from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis
+from met_explore.helpers import natural_keys, get_control_from_case
+from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 
@@ -287,7 +287,6 @@ def metabolite_search(request):
                 # Get pathway names based on their IDS.
                 pwy_name_id_dict = get_name_id_dict()
 
-
                 if pathway_ids:
                     pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
 
@@ -546,6 +545,40 @@ def peak_ex_compare(request, peak_compare_list):
     return render(request, 'met_explore/peak_ex_compare.html', response)
 
 
+def peak_age_compare(request, peak_compare_list):
+    """
+       :param request: The peak Explorer page
+       :param peak_list: The list of peaks required for the page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
+    if peak_compare_list == "All":
+        peaks = Peak.objects.all()
+    else:
+        peak_list_split = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list_split))
+
+    logger.info("Peak comparison table requested")
+    start = timeit.default_timer()
+    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
+    column_names = view_df.columns.tolist()
+
+    column_headers = get_column_headers(column_names)
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
+
+    return render(request, 'met_explore/peak_age_compare.html', response)
+
+
+
+
+
 def peak_mf_compare(request):
     """
        :param request: The peak Explorer page
@@ -666,10 +699,6 @@ def peak_age_explorer(request, peak_list):
 
     view_df = pd.merge(peak_df, group_df, on='id')
     column_names = view_df.columns.tolist()
-
-    # g_names = group_df.columns.tolist()  # remove the peak column
-    # g_names.remove('peak')  # peak is duplicated as id in the peak_df
-    # d_names = peak_df.columns.tolist()  # data names
 
     column_headers = get_column_headers(column_names)
 
@@ -1277,13 +1306,16 @@ def get_peak_mf_compare_df():
     return peak_compare_mf, min_value, mean_value, max_value
 
 
-def  get_peak_compare_df(analysis, peaks):
+def get_peak_compare_df(analysis, peaks):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
+    analysis_comparison = AnalysisComparison.objects.filter(analysis=analysis)
+    control_ids = analysis_comparison.values_list('control_group', flat=True).distinct()
+    controls = list(Group.objects.filter(id__in=control_ids).values_list('name', flat=True).distinct())
 
-    controls = ['Whole_f', 'Whole_m', 'Whole_l']
+    # controls = ['Whole_f', 'Whole_m', 'Whole_l']
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
@@ -1302,15 +1334,15 @@ def  get_peak_compare_df(analysis, peaks):
 
     column_names = group_df.columns
 
-    # divide by the whole fly amount for the sex/life-stage.
+    # divide the cases by the controls
     for c in column_names:
         if c not in controls:
-            if c.endswith('f'):
-                group_df[c] = group_df[c].div(group_df['Whole_f'])
-            elif c.endswith('l'):
-                group_df[c] = group_df[c].div(group_df['Whole_l'])
-            elif c.endswith('m'):  # it starts with m
-                group_df[c] = group_df[c].div(group_df['Whole_m'])
+            try:
+                control = get_control_from_case(c, analysis_comparison)
+                group_df[c] = group_df[c].div(group_df[control])
+            except ObjectDoesNotExist:
+                logger.warning('%s is not a case so skipping this column', c )
+                pass
 
     drop_list = ['id']+controls
 

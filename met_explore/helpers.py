@@ -8,7 +8,7 @@ import re
 
 from loguru import logger
 
-from met_explore.models import Factor
+from met_explore.models import Factor, Group
 
 
 def atoi(text):
@@ -102,3 +102,16 @@ def get_samples_by_factors(names, values):
 def get_factor_of_sample(sample, name):
     results = Factor.objects.filter(sample=sample, name=name)
     return results.first
+
+def get_control_from_case(case, analysis_comparisions):
+    """
+    :param case: The group name of the sample that are the case in the study
+    :return: String of the control group name
+    """
+    print ("Case passed is ", case)
+    group = Group.objects.get(name=case)
+    control = analysis_comparisions.get(case_group=group).control_group.name
+
+    return control
+
+

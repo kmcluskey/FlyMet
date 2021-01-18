@@ -16,7 +16,7 @@ from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
-from met_explore.helpers import load_object, save_object, get_samples_by_factor
+from met_explore.helpers import load_object, save_object, get_control_from_case
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, AnalysisComparison
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
@@ -539,16 +539,16 @@ def get_pals_experimental_design():
     return experiment_design
 
 
-def get_control_from_case(case, analysis_comparisions):
-    """
-    :param case: The group name of the sample that are the casein the study
-    :return: String of the control group name
-    """
-
-    group = Group.objects.get(name=case)
-    control = analysis_comparisions.get(case_group=group).control_group.name
-
-    return control
+# def get_control_from_case(case, analysis_comparisions):
+#     """
+#     :param case: The group name of the sample that are the case in the study
+#     :return: String of the control group name
+#     """
+#
+#     group = Group.objects.get(name=case)
+#     control = analysis_comparisions.get(case_group=group).control_group.name
+#
+#     return control
 
 
 def get_highlight_token():

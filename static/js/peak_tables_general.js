@@ -257,6 +257,19 @@ function updatePeakData(returned_data, radio_all_check){
     }
 };
 
+function get_lifestage(ls_string){
+
+  let ls = "";
+  if (ls_string=="(F)")
+    ls ="Females";
+  else if (ls_string=="(M)")
+      ls ="Males";
+  else if (ls_string=="(L)")
+        ls ="Larvae";
+
+  return ls
+};
+
 //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
 function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
@@ -266,5 +279,6 @@ function add_side_tooltips(id_name, frag_name, no_other_cmpds){
 
 export {
     initialise_pcompare_table,
-    updatePeakSidePanel
+    updatePeakSidePanel,
+    get_lifestage
   }
