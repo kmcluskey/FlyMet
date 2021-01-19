@@ -383,8 +383,6 @@ def pathway_search(request):
                 for t, v in zip(index, pwy_values):
                     pwy_table_data .append(([t] + v))
 
-
-
             except KeyError:
 
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
@@ -578,7 +576,6 @@ def peak_age_compare(request, peak_compare_list):
 
 
 
-
 def peak_mf_compare(request):
     """
        :param request: The peak Explorer page
@@ -587,7 +584,8 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_mf_compare_df()
+    analysis = Analysis.objects.get(name="M/F Comparisons")
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
     column_names = view_df.columns.tolist()
 
     column_heads = get_column_headers(column_names)
@@ -605,6 +603,37 @@ def peak_mf_compare(request):
                 'mean_value': mean}
 
     return render(request, 'met_explore/peak_mf_compare.html', response)
+
+
+def peak_mf_age_compare(request):
+    """
+       :param request: The peak Explorer page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    logger.info("Peak m/f age comparison table requested")
+    start = timeit.default_timer()
+
+    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+    column_names = view_df.columns.tolist()
+
+    column_heads = get_column_headers(column_names)
+
+    column_headers = []
+    for new_header in column_heads:
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)', "(F/M)")
+        column_headers.append(new_header)
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
+
+    return render(request, 'met_explore/peak_mf_age_compare.html', response)
+
 
 
 def peak_explorer(request, peak_list):
@@ -773,19 +802,58 @@ def peak_compare_data(request, peak_compare_list):
     return JsonResponse({'data': peak_compare_data})
 
 
+
 def peak_mf_compare_data(request):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    view_df1, _, _, _ = get_peak_mf_compare_df()
+    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
     view_df = view_df1.fillna("-")
     #
     peak_compare_mf_data = view_df.values.tolist()
 
     logger.info("returning the peak comparison data")
     return JsonResponse({'data': peak_compare_mf_data})
+
+
+def peak_age_compare_data(request, peak_compare_list):
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    if peak_compare_list == "All":
+
+        peaks = Peak.objects.all()
+
+    else:
+        peak_compare_list = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_compare_list))
+
+    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
+    view_df = view_df1.fillna("-")
+    #
+    peak_age_compare_data = view_df.values.tolist()
+
+    logger.info("returning the peak comparison data")
+    return JsonResponse({'data': peak_age_compare_data})
+
+
+def peak_mf_age_data(request):
+    """
+        :param request: Request for the peak data for the Peak Explorer page
+        :return: The cached url of the ajax data for the peak data table.
+        """
+
+    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
+    view_df = view_df1.fillna("-")
+    #
+    peak_compare_mf_data = view_df.values.tolist()
+
+    logger.info("returning the peak comparison data")
+    return JsonResponse({'data': peak_compare_mf_data})
+
 
 
 def peak_age_data(request, peak_list):
@@ -1262,13 +1330,13 @@ def change_pals_col_names(pals_df):
     return pals_df
 
 
-def get_peak_mf_compare_df():
+def get_peak_mf_compare_df(analysis):
 
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    analysis = Analysis.objects.get(name='M/F Comparisons')
+    # analysis = Analysis.objects.get(name='M/F Comparisons')
     group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.

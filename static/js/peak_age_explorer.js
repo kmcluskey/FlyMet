@@ -42,25 +42,12 @@ $('[data-toggle="tooltip"]').tooltip({
 });
 
 };
-//
-// function get_lifestage(ls_string){
-//
-//   let ls = "";
-//   if (ls_string=="(F)")
-//     ls ="Females";
-//   else if (ls_string=="(M)")
-//       ls ="Males";
-//   else if (ls_string=="(L)")
-//         ls ="Larvae";
-//
-//   return ls
-// };
 
 $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();
 
   let nd_title = "A MS peak was not detected for this tissue/life stage combination";
-  let ajax_url = `peak_data/${peak_list}`;
+  let ajax_url = `peak_age_data/${peak_list}`;
   let peak_side_url = `peak_ex_compare/`;
   let peak_side_text =`Compare tissues for peak `
   let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Peak Age Compare {% endblock %}
+{% block title %} Peak M/F Age Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'peak_age_compare' 'css' %}
+    {% render_bundle 'peak_mf_age_compare' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -22,7 +22,7 @@
       <!-- extra Tabs for Analysis type -->
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link" href="{% url 'peak_explorer' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link " href="{% url 'peak_explorer' 'All' %}">Tissues</a>
           <a class="navdark nav-item nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Aged Flies</a>
         </div>
       </nav>
@@ -36,10 +36,10 @@
           <a class="nav-link" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_age_compare' 'All' %}">Age/Whole Comparisons</a>
+          <a class="nav-link" href="{% url 'peak_age_compare' 'All' %}">Age/Whole Comparisons</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_mf_age_compare' %}">F/M Age Comparisons</a>
+          <a class="nav-link active" href="{% url 'peak_mf_age_compare' %}">F/M Age Comparisons</a>
         </li>
         </ul>
         <div class="top-right" >
@@ -49,7 +49,7 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between aged <i>Drosophila</i> and the whole flies (7 days old)
+    The log<sub>2</sub> fold-change (FC) in peak intesity levels between aged Male and Female <i>Drosophila</i>.
     </p>
   </div>
 
@@ -123,10 +123,10 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_compare_list = "{{peak_compare_list | safe}}"
-    console.log(min_value, mean_value, max_value, peak_compare_list)
+    var peak_mf_list = "{{peak_mf_list | safe}}"
+    console.log(min_value, mean_value, max_value)
 
     </script>
 
-  {% render_bundle 'peak_age_compare' 'js' %}
+  {% render_bundle 'peak_mf_age_compare' 'js' %}
   {% endblock %}
