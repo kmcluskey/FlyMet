@@ -39,28 +39,14 @@ $('[data-toggle="tooltip"]').tooltip({
 
 };
 
-
-// function get_lifestage(ls_string){
-//
-//   let ls = "";
-//   if (ls_string=="(F)")
-//     ls ="Females";
-//   else if (ls_string=="(M)")
-//       ls ="Males";
-//   else if (ls_string=="(L)")
-//         ls ="Larvae";
-//
-//   return ls
-// };
-
 $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
     console.log("peak compare list", peak_compare_list)
 
-    let nd_title = "This MS peak was not detected for this Aged fly";
-    let ajax_url = `peak_compare_data/${peak_compare_list}`;
+    let nd_title = "This MS peak was not detected for this aged fly";
+    let ajax_url = `peak_age_compare_data/${peak_compare_list}`;
     let peak_side_url = `peak_age_explorer/`;
-    let peak_side_text =`Intensities for peak `;
+    let peak_side_text =`Age intensities for peak `;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
     nd_title, ajax_url, headerTips);

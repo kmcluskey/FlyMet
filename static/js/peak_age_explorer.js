@@ -46,10 +46,10 @@ $('[data-toggle="tooltip"]').tooltip({
 $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();
 
-  let nd_title = "A MS peak was not detected for this tissue/life stage combination";
+  let nd_title = "A MS peak was not detected for this age/life stage combination";
   let ajax_url = `peak_age_data/${peak_list}`;
-  let peak_side_url = `peak_ex_compare/`;
-  let peak_side_text =`Compare tissues for peak `
+  let peak_side_url = `peak_age_compare/`;
+  let peak_side_text =`Compare age data for peak `
   let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
 

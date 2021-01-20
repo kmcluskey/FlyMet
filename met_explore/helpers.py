@@ -108,7 +108,6 @@ def get_control_from_case(case, analysis_comparisions):
     :param case: The group name of the sample that are the case in the study
     :return: String of the control group name
     """
-    print ("Case passed is ", case)
     group = Group.objects.get(name=case)
     control = analysis_comparisions.get(case_group=group).control_group.name
 

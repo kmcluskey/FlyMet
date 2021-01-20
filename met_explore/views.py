@@ -1409,7 +1409,7 @@ def get_peak_compare_df(analysis, peaks):
                 control = get_control_from_case(c, analysis_comparison)
                 group_df[c] = group_df[c].div(group_df[control])
             except ObjectDoesNotExist:
-                logger.warning('%s is not a case so skipping this column', c )
+                logger.warning('%s is not a case so skipping this column' % c )
                 pass
 
     drop_list = ['id']+controls
