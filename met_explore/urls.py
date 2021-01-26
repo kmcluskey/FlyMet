@@ -23,6 +23,7 @@ urlpatterns = [
     path('links', views.links, name='links'),
     path('about', views.about, name='about'),
     path('pathway_explorer', views.pathway_explorer, name='pathway_explorer'),
+    path('pathway_age_explorer', views.pathway_age_explorer, name='pathway_age_explorer'),
     path('path_ex_lifestages', views.path_ex_lifestages, name='path_ex_lifestages'),
     path('peak_ex_compare/<str:peak_compare_list>',cache_page(60 * 18000)(views.peak_ex_compare), name='peak_ex_compare'),
     path('peak_age_compare/<str:peak_compare_list>', cache_page(60 * 18000)(views.peak_age_compare), name='peak_age_compare'),
@@ -44,5 +45,6 @@ urlpatterns = [
     path('peak_mf_compare_data', cache_page(60 * 18000)(views.peak_mf_compare_data), name='peak_mf_age_data'),
     path('peak_mf_age_data', cache_page(60 * 18000)(views.peak_mf_age_data), name='peak_mf_age_data'),
     path('pals_data', cache_page(60 * 18000) (views.pals_data), name='pals_data'),
+    path('pals_age_data', cache_page(60 * 18000)(views.pals_age_data), name='pals_age_data'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
 ]

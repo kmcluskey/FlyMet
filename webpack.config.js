@@ -24,6 +24,7 @@ module.exports = {
         peak_age_explorer: './static/js/peak_age_explorer',
         peak_age_compare: './static/js/peak_age_compare',
         peak_mf_age_compare: './static/js/peak_mf_age_compare',
+        pathway_age_explorer:'./static/js/pathway_age_explorer',
         index:'./static/js/index',
     },
 

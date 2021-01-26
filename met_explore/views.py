@@ -767,8 +767,8 @@ def pals_data(request):
     :param request: Request for the peak data for the Pathway explorer
     :return: The cached url of the ajax data for the pals data table.
     """
-
-    view_df1, _, _, _ = get_pals_view_data()
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    view_df1, _, _, _ = get_pals_view_data(analysis)
     view_df = view_df1.fillna("-")
     #
     pals_data = view_df.values.tolist()
@@ -776,6 +776,20 @@ def pals_data(request):
     logger.info("returning the pals data ")
     return JsonResponse({'data': pals_data})
 
+
+def pals_age_data(request):
+    """
+    :param request: Request for the peak data for the Pathway explorer
+    :return: The cached url of the ajax data for the pals data table.
+    """
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    view_df1, _, _, _ = get_pals_view_data(analysis)
+    view_df = view_df1.fillna("-")
+    #
+    pals_data = view_df.values.tolist()
+
+    logger.info("returning the pals data ")
+    return JsonResponse({'data': pals_data})
 
 def peak_compare_data(request, peak_compare_list):
     """
@@ -933,10 +947,10 @@ def pathway_explorer(request):
        :param request: The pathway Explorer page for the tissue data
        :return: The template and required parameters for the pathway explorer page.
        """
-
-    logger.info("Pathway ranking table requested")
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    logger.info("Pathway ranking table requested for analysis %s " % analysis)
     start = timeit.default_timer()
-    view_df, pals_min, pals_mean, pals_max = get_pals_view_data()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
     column_headers = view_df.columns.tolist()
 
     stop = timeit.default_timer()
@@ -949,6 +963,33 @@ def pathway_explorer(request):
                 'mean_value': pals_mean, 'reactome_token': reactome_token}
 
     return render(request, 'met_explore/pathway_explorer.html', response)
+
+
+
+def pathway_age_explorer(request):
+    """
+       :param request: The pathway Explorer page for the tissue data
+       :return: The template and required parameters for the pathway explorer page.
+       """
+
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    logger.info("Pathway ranking table requested for analysis %s " % analysis)
+    start = timeit.default_timer()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
+    column_headers = view_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the pals data took: %s S" % str(stop - start))
+
+    reactome_token = get_highlight_token()
+
+    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
+                'mean_value': pals_mean, 'reactome_token': reactome_token}
+
+    return render(request, 'met_explore/pathway_age_explorer.html', response)
+
+
 
 
 def met_ex_tissues(request):
@@ -997,7 +1038,10 @@ def get_pathway_names(request):
        A method to return a list of all the Pathway names present in Reactome for the daea
        :return: A unique list of pathway names
     """
-    pals_df = get_cache_df(MIN_HITS)
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
 
     if request.is_ajax():
         pathway_names = pals_df.pw_name.tolist()
@@ -1272,12 +1316,14 @@ def met_search_highchart_data(request, tissue, metabolite):
                          'drilldown_data': drilldown_data})
 
 
-def get_pals_view_data():
+def get_pals_view_data(analysis):
     """
     :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
 
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: Here we should select the columns for the view, probably.
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     fly_pals_df = change_pals_col_names(pals_df)
 
     # dropping colums not required for calculating the min. max and mean for the datatable.

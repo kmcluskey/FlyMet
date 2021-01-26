@@ -17,7 +17,8 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object, get_control_from_case
-from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, AnalysisComparison
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, \
+    AnalysisComparison, Analysis
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
 MIN_HITS =2
@@ -29,11 +30,11 @@ MIN_HITS =2
 #
 # ANALYSIS_IDS = [1,3]
 
-def get_pals_ds():
+def get_pals_ds(analysis):
 
 
-    fly_int_df = get_pals_int_df()
-    fly_exp_design = get_pals_experimental_design()
+    fly_int_df = get_pals_int_df(analysis)
+    fly_exp_design = get_pals_experimental_design(analysis)
     chebi_df = get_single_db_entity_df('chebi_id')
 
     ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,
@@ -41,21 +42,22 @@ def get_pals_ds():
     return ds
 
 
-def get_cache_ds():
+def get_cache_ds(analysis):
     # cache.delete('pals_ds')
-    if cache.get('pals_ds') is None:
+    a_id = str(analysis.id)
+    if cache.get('pals_ds'+a_id) is None:
         logger.info("we dont have cache so running the pals_ds function")
-        cache.set('pals_ds', get_pals_ds(), 60 * 180000)
-        pals_ds = cache.get('pals_ds')
+        cache.set('pals_ds'+a_id, get_pals_ds(analysis), 60 * 180000)
+        pals_ds = cache.get('pals_ds'+a_id)
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
-        pals_ds = cache.get('pals_ds')
+        pals_ds = cache.get('pals_ds'+a_id)
 
     return pals_ds
 
 
-def get_pals_df(min_hits):
-    ds = get_cache_ds()
+def get_pals_df(min_hits, analysis):
+    ds = get_cache_ds(analysis)
     pals = PLAGE(ds, num_resamples=5000, seed=123)
     pathway_df_chebi = pals.get_pathway_df()
     pathway_df_return = pathway_df_chebi[pathway_df_chebi.tot_ds_F >= min_hits]
@@ -63,15 +65,16 @@ def get_pals_df(min_hits):
     return pathway_df_return
 
 
-def get_cache_df(min_hits):
+def get_cache_df(min_hits, analysis):
     # cache.delete('pals_df')
-    if cache.get('pals_df') is None:
+    a_id = str(analysis.id)
+    if cache.get('pals_df'+a_id) is None:
         logger.info("we dont have cache so running the pals_df function")
-        cache.set('pals_df', get_pals_df(min_hits), 60 * 180000)
-        pals_df = cache.get('pals_df')
+        cache.set('pals_df'+a_id, get_pals_df(min_hits, analysis), 60 * 180000)
+        pals_df = cache.get('pals_df'+a_id)
     else:
         logger.info("we have cache for the pals df, so retrieving it")
-        pals_df = cache.get('pals_df')
+        pals_df = cache.get('pals_df'+a_id)
 
     return pals_df
 
@@ -197,7 +200,12 @@ def get_pathway_id_names_dict():
        Given a pathway ID get its name
        :return: pathway_id_names_dict
        """
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do
+    #  A fix is for this is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
@@ -210,7 +218,12 @@ def get_name_id_dict():
     Given the name of a pathway get it's reactome ID
     :return: name_pw_id_dict
     """
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    #  A fix for this is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     name_pw_id_dict = {}
     for ix, row in pals_df.iterrows():
         name_pw_id_dict[ix] = row.pw_name
@@ -218,13 +231,16 @@ def get_name_id_dict():
     return name_pw_id_dict
 
 
-def get_pals_int_df():
+def get_pals_int_df(analysis):
     """
     :return: A peak_id v sample_id DF containing all the peak intensity values.
     """
     logger.info("Getting the peak/sample intensity df")
     # Sample peaks are all the sample peaks that we want to look at - in the case of FlyMet this is all the peaks
-    psi = SamplePeak.objects.values_list('peak', 'sample', 'intensity')
+
+    all_samples = analysis.get_case_samples() | analysis.get_control_samples()
+    psi = SamplePeak.objects.filter(sample_id__in=all_samples).values_list('peak', 'sample', 'intensity')
+    # psi = SamplePeak.objects.values_list('peak', 'sample', 'intensity')
     peaks, samples, intensities = zip(*psi)
     dpeaks = sorted(list(set(peaks)))
     dsamples = sorted(list(set(samples)))
@@ -352,10 +368,15 @@ def get_fly_pw_cmpd_formula(pw_id):
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
     :return: Dict with cmpd chebi_id: formula for each of the cmpds in a given pathway for the fly data
     """
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    #  A fix is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
+    pals_ds = get_cache_ds(analysis)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
@@ -380,9 +401,13 @@ def get_reactome_pw_metabolites(pw_id):
     :param pw_id: The ID of the pathway
     :return: A list of metabolites associated with this Reactome pathway.
     """
+    #Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    # A fix is probably wise.
 
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
+    pals_ds = get_cache_ds(analysis)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Pass the summary table for the pathway from another function.
@@ -489,15 +514,15 @@ def get_single_db_entity_df(id_type):
     return annot_df
 
 
-def get_pals_experimental_design():
+def get_pals_experimental_design(analysis):
 
-    analysis_ids = [1,3]
+    # analysis_ids = [1,3]
     cmpd_selector = CompoundSelector()
     # samples = Sample.objects.all()
 
     # groups = Group.objects.all().name.values_list()
 
-    analysis_comparisions = AnalysisComparison.objects.filter(analysis__in=analysis_ids)
+    analysis_comparisions = AnalysisComparison.objects.filter(analysis=analysis)
 
     controls = list(set([a.control_group.name for a in analysis_comparisions]))
     cases = list(set([a.case_group.name for a in analysis_comparisions]))
@@ -631,7 +656,12 @@ def get_cmpd_pwys(cmpd_id):
     :param cmpd_id: The cmpd_id
     :return: List of pathways containing the compound.
     """
-    pals_ds = get_cache_ds()
+    #Fixme: I don't think it matters which analysis we use for this as the number of metabolites are for the
+    # whole project. Might be worth a discussion/fix
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_ds = get_cache_ds(analysis)
     cmpd = Compound.objects.get(id=cmpd_id)
     cmpd_pw_dict = pals_ds.mapping_dict
     pwy_list = []
