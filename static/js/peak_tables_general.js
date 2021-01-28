@@ -149,7 +149,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updatePeakSidePanel(obj, pk_side_url, pk_side_text){
+function updatePeakSidePanel(obj, pk_side_url, pk_side_text, met_url){
   let peak_id = $(obj).children().first().text();
   console.log("pk_side_text", pk_side_text)
   console.log("peak_side ", pk_side_url)
@@ -162,7 +162,7 @@ function updatePeakSidePanel(obj, pk_side_url, pk_side_text){
     let radio_all_check = radio_all.checked
 
     // Update the peak table
-    updatePeakData(returned_data, radio_all_check)
+    updatePeakData(returned_data, radio_all_check, met_url)
 
     // Redraw the adduct data if the radio button is clicked.
     $("input[name='radio_adducts']" ).click(function(){
@@ -193,7 +193,7 @@ function updateAdducts(returned_data){
 }
 
 // Update the compound names and any details we want on the side panel
-function updatePeakData(returned_data, radio_all_check){
+function updatePeakData(returned_data, radio_all_check, met_url){
 
   const cmpd_names = returned_data.cmpd_names;
   const adducts = returned_data.adducts;
@@ -219,7 +219,9 @@ function updatePeakData(returned_data, radio_all_check){
 
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
-      var url_met = `met_ex_all/${cmpd_id}`
+      var url_met = `${met_url}${cmpd_id}`
+
+      console.log("url_met", url_met)
 
       let success ="";
       let identified="";

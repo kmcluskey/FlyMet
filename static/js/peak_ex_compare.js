@@ -61,12 +61,13 @@ $(document).ready(function() {
     let ajax_url = `peak_compare_data/${peak_compare_list}`;
     let peak_side_url = `peak_explorer/`;
     let peak_side_text =`Intensities for peak `;
+    let met_url = `met_ex_all/`;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
     nd_title, ajax_url, headerTips);
 
       peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this, peak_side_url, peak_side_text);
+        updatePeakSidePanel(this, peak_side_url, peak_side_text, met_url);
       } );
 
 });

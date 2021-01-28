@@ -43,16 +43,17 @@ $(document).ready(function() {
     $("fieldset[class^='peak_details']").hide();
     console.log("peak compare list", peak_compare_list)
 
-    let nd_title = "This MS peak was not detected for this aged fly";
+    let nd_title = "This MS peak was not detected for this age of fly";
     let ajax_url = `peak_age_compare_data/${peak_compare_list}`;
     let peak_side_url = `peak_age_explorer/`;
     let peak_side_text =`Age intensities for peak `;
+    let met_url = `met_age_all/`;
+
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
     nd_title, ajax_url, headerTips);
 
       peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this, peak_side_url, peak_side_text);
+        updatePeakSidePanel(this, peak_side_url, peak_side_text, met_url);
       } );
-
 });
