@@ -99,18 +99,18 @@ class Analysis(models.Model):
 
     def get_case_samples(self):
 
-        case_groups = set(Group.objects.filter(case_sample__in=AnalysisComparison.objects.filter(analysis=self)))
-        control_samples = Sample.objects.filter(sample_group__in=case_groups)
+        case_groups = set(Group.objects.filter(case_group__in=AnalysisComparison.objects.filter(analysis=self)))
+        case_samples = Sample.objects.filter(sample_group__in=case_groups)
 
-        return control_samples
+        return case_samples
 
 
 
 class AnalysisComparison(models.Model):
 
     name = models.CharField(max_length=250, unique=True, blank=False)
-    case_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='case_sample')
-    control_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='control_sample')
+    case_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='case_group')
+    control_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='control_group')
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE) #deleting the analysis deletes this comparison
 
     @property

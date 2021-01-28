@@ -4,7 +4,7 @@
 {% block title %} Metabolite Explorer All Metabolites {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'met_ex_all' 'css' %}
+    {% render_bundle 'met_age_all' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -22,20 +22,20 @@
 
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
-          <a class="navdark nav-item nav-link" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
+          <a class="navdark nav-item nav-link" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link active" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
         </div>
       </nav>
-      
+
   <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_all' 'All' %}">All</a>
+          <a class="nav-link active" href="{% url 'met_age_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
+          <a class="nav-link " href="{% url 'met_age_id' %}">Identified</a>
         </li>
       </ul>
       <div class="top-right" >
@@ -107,7 +107,6 @@
 
   {% endblock %}
 
-
   {% block js_block %}
 
   <script type='text/javascript'>
@@ -116,6 +115,6 @@
 
   </script>
 
- {% render_bundle 'met_ex_all' 'js' %}
+ {% render_bundle 'met_age_all' 'js' %}
 
 {% endblock %}

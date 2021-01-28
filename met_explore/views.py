@@ -16,7 +16,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import natural_keys, get_control_from_case
+from met_explore.helpers import natural_keys, get_control_from_case, get_group_names
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
@@ -499,7 +499,7 @@ def met_ex_mutants(request):
 
 def met_ex_all(request, cmpd_list):
     """
-    View to return the metabolite serach page
+    View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
 
@@ -508,6 +508,21 @@ def met_ex_all(request, cmpd_list):
     response = {'cmpd_list': cmpd_list, 'columns': columns}
 
     return render(request, 'met_explore/met_ex_all.html', response)
+
+
+def met_age_all(request, cmpd_list):
+    """
+    View to return the metabolite serach page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
+
+    response = {'cmpd_list': cmpd_list, 'columns': columns}
+
+    return render(request, 'met_explore/met_age_all.html', response)
+
+
 
 
 def peak_ex_compare(request, peak_compare_list):
@@ -994,15 +1009,51 @@ def pathway_age_explorer(request):
 
 def met_ex_tissues(request):
     """
+    This view is equivalent to the met_age_id table.
         View to return the metabolite search page
         :returns: Render met_explore/met_ex_tissues and datatable
+
     """
 
-    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    group_names = get_group_names(analysis)
+    group_names.insert(0, "Metabolite")
 
-    logger.debug(view_df.head())
-    met_ex_list = view_df.values.tolist()
-    column_names = view_df.columns.tolist()
+    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    select_df = view_df[group_names]
+
+    met_ex_list = select_df.values.tolist()
+    column_names = select_df.columns.tolist()
+
+    column_headers = get_column_headers(column_names)
+
+    # Get the max and mean values for the intensities to pass to the 'heat map'
+    df2 = select_df.drop(['Metabolite'], axis=1, inplace=False)
+
+    max_value = np.nanmax(df2)
+    min_value = np.nanmin(df2)
+    mean_value = np.nanmean(df2)
+
+    response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/met_ex_tissues.html', response)
+
+def met_age_id(request):
+    """
+        View to return the metabolite search page
+        :returns: Render met_explore/met_age_id and datatable
+    """
+
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    group_names = get_group_names(analysis)
+    group_names.insert(0, "Metabolite")
+
+    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    select_df = view_df[group_names]
+
+    met_ex_list = select_df.values.tolist()
+    column_names = select_df.columns.tolist()
 
     column_headers = get_column_headers(column_names)
 
@@ -1016,7 +1067,7 @@ def met_ex_tissues(request):
     response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
-    return render(request, 'met_explore/met_ex_tissues.html', response)
+    return render(request, 'met_explore/met_age_id.html', response)
 
 
 def get_metabolite_names(request):

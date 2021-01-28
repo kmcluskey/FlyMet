@@ -5,10 +5,11 @@ import pathlib
 import pickle
 import sys
 import re
+import itertools
 
 from loguru import logger
 
-from met_explore.models import Factor, Group
+from met_explore.models import Factor, Group, Analysis, AnalysisComparison
 
 
 def atoi(text):
@@ -113,4 +114,15 @@ def get_control_from_case(case, analysis_comparisions):
 
     return control
 
+def get_group_names(analysis):
+    """
+    A method to get all of the names of the groups given an analysis
+    :param analysis:
+    :return: list of group names (string)
+    """
 
+    gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
+    gp_ids = set(itertools.chain(*gp_ids_all))
+    group_names = [Group.objects.get(id=g).name for g in gp_ids]
+
+    return group_names

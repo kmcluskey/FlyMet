@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Tissue Lists {% endblock %}
+{% block title %} Metabolite Aged Flies Lists {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_list' 'css' %}
+    {% render_bundle 'met_age_id' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -22,11 +22,12 @@
           <img src="{% static 'images/met_exp_logo.png'%}" class="explorer_logos" alt="Met_Ex_Logo">
         </div> -->
       </div>
+
       <!-- extra Tabs for Analysis type -->
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
-          <a class="navdark nav-item nav-link" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
+          <a class="navdark nav-item nav-link" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link active" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
         </div>
       </nav>
 
@@ -36,10 +37,10 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_all' 'All' %}">All</a>
+          <a class="nav-link" href="{% url 'met_age_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_tissues' %}">Identified</a>
+          <a class="nav-link active" href="{% url 'met_age_id' %}">Identified</a>
         </li>
       </ul>
       <div class="top-right" >
@@ -50,7 +51,7 @@
   <div class="mt-4 mb-4">
     <p>
     The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-    tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
+    ages of Female (F) and Male (M) <i>Drosophila</i>.
     </p>
     <p class="small">
     The metabolites in this list have a high confidence score having been
@@ -109,5 +110,5 @@
 
     </script>
 
-  {% render_bundle 'metabolite_list' 'js' %}
+  {% render_bundle 'met_age_id' 'js' %}
   {% endblock %}

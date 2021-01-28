@@ -11,7 +11,7 @@ from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
 
-from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_factor_of_sample
+from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_group_names
 
 k = KEGG()
 
@@ -153,9 +153,9 @@ class CompoundSelector(object):
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
 
-        gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
-        gp_ids = set(itertools.chain(*gp_ids_all))
-        group_names = [Group.objects.get(id=g).name for g in gp_ids]
+        # gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
+        # gp_ids = set(itertools.chain(*gp_ids_all))
+        group_names = get_group_names(analysis)
 
         analysis_int_df = int_df[int_df['group'].isin(group_names)]
 
