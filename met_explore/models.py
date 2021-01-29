@@ -92,7 +92,7 @@ class Analysis(models.Model):
 
     def get_control_samples(self):
 
-        control_groups = set(Group.objects.filter(control_sample__in=AnalysisComparison.objects.filter(analysis=self)))
+        control_groups = set(Group.objects.filter(control_group__in=AnalysisComparison.objects.filter(analysis=self)))
         control_samples = Sample.objects.filter(sample_group__in=control_groups)
 
         return control_samples
