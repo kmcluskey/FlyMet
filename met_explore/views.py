@@ -196,12 +196,152 @@ def metabolite_search(request):
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
-        samples = Sample.objects.all()
+
+        analysis = Analysis.objects.get(name="Tissue Comparisons")
+
+        case_s = analysis.get_case_samples()
+        control_s = analysis.get_control_samples()
+
+        samples = case_s | control_s
+
+        # samples = Sample.objects.all()
+
+        # Fixme - need to do this on analysis and factors for more general code.
+        # Fixme - refactor DB so that Group --> Samples and Group --> Factors.
+        # Fixme - so that the Factor/Sample realtionship is no longer direct.
+        real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+        ages = list(set([s.age for s in samples if s.age != 'nan']))
+        tissues = ages+real_tissues
+
+        print ("Tissues ", tissues)
+
+        met_table_data = []
+        min = MIN
+        max = MAX
+        mean = MEAN
+        references = None
+        pathways = {}
+
+        # If we get a metabolite sent from the view
+        if search_query is not None:
+
+            met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
+
+            logger.debug(met_search_df)
+
+            # If there is a row in the DF matching the searched for metabolite
+            if met_search_df.shape[0] == 1:
+
+                peak_id = met_search_df.index.values[0]
+                cmpd_id = met_search_df.cmpd_id.values[0]
+
+                # logger.debug ("COMPOUND_ID %s" % cmpd_id)
+
+                logger.info("Getting the details for %s " % search_query)
+
+                # Get the metabolite/tissue comparison DF
+                # Fixme: This can be taken from the factors once refactored.
+                columns = ['F', 'M', 'L']
+                df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
+                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+                gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
+
+                # Fill in the DF with Tissue/Life stages and intensities.
+                for tissue in tissues:
+                    for ls in columns:
+                        for g in gp_tissue_ls_dict:
+                            if gp_tissue_ls_dict[g] == [tissue, ls]:
+                                value = met_search_df.iloc[0][g]
+                                df.loc[tissue, ls] = value
+                                nm_samples_df.loc[tissue, ls] = value
+
+                # Standardise the DF by dividing by the Whole cell/Lifestage
+                whole_row = df.loc['Whole']
+                sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
+                log_df = np.log2(sdf)
+                view_df = log_df.drop(index='Whole').round(2)
+
+                nm_df = nm_samples_df.drop(index='Whole')
+
+                nm2 = nm_df[nm_df == 'NM']
+                log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
+
+                logger.debug(log_nm_df)
+
+                log_nm = log_nm_df.fillna("-")
+
+                log_values = log_nm.values.tolist()  # This is what we are sending to the user.
+
+                index = view_df.index.tolist()
+                # Get a list to return to the view
+                met_table_data = []
+
+                for t, v in zip(index, log_values):
+                    met_table_data.append(([t] + v))
+
+                actual_min = np.nanmin(view_df)
+                actual_max = np.nanmax(view_df)
+                actual_mean = np.nanmean(view_df)
+
+                # If the max and min values are outwith the standard range
+                if (actual_min < MIN) or (actual_max > MAX):
+                    min = actual_min
+                    max = actual_max
+                    mean = actual_mean
+
+                # logger.debug ("HERE %s %s" % (peak_id, cmpd_id))
+                # Here this no longer works a treat
+                references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
+                # Get the pathways associated with this compound ID
+                pathway_ids = get_cmpd_pwys(cmpd_id)
+
+                # Get pathway names based on their IDS.
+                pwy_name_id_dict = get_name_id_dict()
+
+                if pathway_ids:
+                    pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
+
+        logger.debug("met_table_data %s" % met_table_data)
+        context = {
+            'metabolite': search_query,
+            'met_table_data': met_table_data,
+            'min': min,
+            'max': max,
+            'mean': mean,
+            'pathways':pathways,
+            'references': references,
+            'json_url': reverse('get_metabolite_names')
+        }
+
+        logger.debug("The references are %s" % references)
+        return render(request, 'met_explore/metabolite_search.html', context)
+
+
+def metabolite_search_age(request):
+    """
+    View to return the metabolite search page
+    :returns: Render met_explore/metabolite_search
+    """
+    # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
+
+    if request.method == 'GET':  # If the URL is loaded
+
+        search_query = request.GET.get('metabolite_search_age', None)
+
+        analysis = Analysis.objects.get(name="Age Comparisons")
+
+        case_s = analysis.get_case_samples()
+        control_s = analysis.get_control_samples()
+
+        samples = case_s | control_s
 
         # Fixme - need to do this on analysis and factors for more general code.
         real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
         ages = list(set([s.age for s in samples if s.age != 'nan']))
         tissues = ages+real_tissues
+
+        print ("Age Tissues ", tissues)
+
 
         met_table_data = []
         min = MIN
@@ -293,6 +433,7 @@ def metabolite_search(request):
         logger.debug("met_table_data %s" % met_table_data)
         context = {
             'metabolite': search_query,
+            'analysis_id': analysis.id,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
@@ -303,7 +444,9 @@ def metabolite_search(request):
         }
 
         logger.debug("The references are %s" % references)
-        return render(request, 'met_explore/metabolite_search.html', context)
+        return render(request, 'met_explore/metabolite_search_age.html', context)
+
+
 
 
 def enzyme_search(request):
@@ -1248,7 +1391,7 @@ def peak_explore_annotation_data(request, peak_id):
                          'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
 
 
-def met_search_highchart_data(request, tissue, metabolite):
+def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     """
        A method to return a list of tissue/intensity values for a given cmpd.
        :return: A list of dictionaries for the metabolite/tissue highcharts.
@@ -1258,14 +1401,21 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
 
+    analysis = Analysis.objects.get(id=analysis_id)
+    case_s = analysis.get_case_samples()
+    control_s = analysis.get_control_samples()
+
+    samples = case_s | control_s
+
     # Should only be looking at a single compound
 
     single_cmpd_indexed = s_cmpds_df.index.values
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
+
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
-    samples = Sample.objects.all()
+    # samples = Sample.objects.all()
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
 
     met_series_data = [{'name': "Adult Female", 'y': None, 'drilldown': "1"},

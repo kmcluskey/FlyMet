@@ -4,7 +4,7 @@
 {% block title %} Search Metabolites {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_search' 'css' %}
+    {% render_bundle 'metabolite_search_age' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -20,8 +20,8 @@
 
     <nav>
       <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
-        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' %}">Tissues</a>
+        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
       </div>
     </nav>
 
@@ -33,7 +33,7 @@
             <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
           </li> -->
           <li class="nav-item">
-            <a class="nav-link active" href="{% url 'metabolite_search' %}">Metabolites</a>
+            <a class="nav-link active" href="{% url 'metabolite_search_age' %}">Metabolites</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
@@ -52,8 +52,8 @@
       </p>
     </div>
 
-    <form action="metabolite_search" method="get" class="form-inline my-2 my-lg-0">
-      <input id = "metabolite_search" name ='metabolite_search' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
+    <form action="metabolite_search_age" method="get" class="form-inline my-2 my-lg-0">
+      <input id = "metabolite_search_age" name ='metabolite_search_age' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
       <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
     </form>
 
@@ -261,8 +261,9 @@
       var mid = {{mean}}
       var pathways ="{{pathways | safe}}"
 
-    console.log("using values", min, mid, max, metabolite, pathways)
+
+    console.log("using values", analysis_id, min, mid, max, metabolite, pathways)
   </script>
 
-    {% render_bundle 'metabolite_search' 'js' %}
+    {% render_bundle 'metabolite_search_age' 'js' %}
 {% endblock %}

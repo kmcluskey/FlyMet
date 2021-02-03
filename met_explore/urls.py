@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 from django.views.decorators.cache import cache_page
 
@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.index, name='met_explore_index'),
     path('tissue_metabolites', views.MetaboliteListView.as_view(), name='tissue_metabolites'),
     path('metabolite_search', views.metabolite_search, name='metabolite_search'),
+    path('metabolite_search_age', views.metabolite_search_age, name='metabolite_search_age'),
     path('met_ex_tissues', views.met_ex_tissues, name='met_ex_tissues'),
     path('met_age_id', views.met_age_id, name='met_age_id'),
     path('met_ex_all/<str:cmpd_list>', views.met_ex_all, name='met_ex_all'),
@@ -36,7 +37,7 @@ urlpatterns = [
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
     # path('pathway_search_data/<str:pwy_id>', views.pathway_search_data, name='pathway_search_data'),
-    path('met_search_highchart_data/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
+    path('met_search_highchart_data/<str:analysis_id>/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
     path('peak_data/<str:peak_list>', cache_page(60 * 18000)(views.peak_data), name='peak_data'),
     path('peak_age_data/<str:peak_list>', cache_page(60 * 18000)(views.peak_age_data), name='peak_age_data'),
@@ -49,4 +50,5 @@ urlpatterns = [
     path('pals_data', cache_page(60 * 18000) (views.pals_data), name='pals_data'),
     path('pals_age_data', cache_page(60 * 18000)(views.pals_age_data), name='pals_age_data'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
+    path('plate/', include('django_spaghetti.urls')),
 ]

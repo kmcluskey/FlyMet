@@ -388,6 +388,9 @@ class CompoundSelector(object):
 
         return gp_int_dict
 
+    #Fixme: This should be related with the factors for the groups. For a group get the name of the factors and
+    # create this dictionary if desired.
+
     def get_group_tissue_ls_dicts(self, samples):
         # Given the name of the samples get dictionaries giving the groups: lifestage and/or tissue type of the group.
 

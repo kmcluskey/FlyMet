@@ -145,12 +145,13 @@ $(document).ready(function() {
 
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
-    new Awesomplete(metabolite_search, {list: data.metaboliteNames});
+    new Awesomplete(metabolite_search_age, {list: data.metaboliteNames});
   });
 
   $("fieldset[class^='peak_details']").hide();
 
   console.log(pathways)
+  console.log(analysis_id)
 
   //Wait for the table to exist before we try to use it Try/Catch block.
 
