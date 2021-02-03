@@ -44,6 +44,7 @@ tqdm = "*"
 bioservices = "*"
 "reactome2py" = "*"
 appnope = "*"
+django-spaghetti-and-meatballs = "*"
 
 [dev-packages]
 
