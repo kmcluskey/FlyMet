@@ -542,7 +542,7 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    analysis = Analysis.objects.get(name="M/F Comparisons")
+    analysis = Analysis.objects.get(name="M/F comparisons")
     view_df, min, mean, max = get_peak_mf_compare_df(analysis)
     column_names = view_df.columns.tolist()
 
