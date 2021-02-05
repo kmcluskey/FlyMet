@@ -241,6 +241,13 @@ function add_highchart_tooltips(probability){
   $('#F').tooltip({title: "MS/MS Fragmentation data suggests that a peak is "+ probability + "% likely to be "+ metabolite, placement: "top"});
   $('#A').tooltip({title: "This peak, annotated as Histidine, also annotates 15 other compounds", placement: "top"});
 };
+};
+
+function add_met_tooltips(obj){
+
+    $('.AM_met_WT_ratio').tooltip({title: "Fold Change of metabolite Intensity in Adult Male vs Whole Fly", placement: "top"});
+    $('.AF_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Adult Female vs Whole Fly", placement: "top"});
+    $('.L_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Larvae vs Whole Fly", placement: "top"});
 
 }
 
@@ -254,5 +261,10 @@ function updateEnzymeSidePanel(obj){
     $("legend[class^='tissue']").text(tissue_name);
 }
 
-
-export {initialise_table, init_met_side_table, show_hide_tables, updateMetSidePanel, updateEnzymeSidePanel}
+export {initialise_table,
+        add_met_tootips,
+        init_met_side_table,
+        show_hide_tables,
+        updateMetSidePanel,
+        updateEnzymeSidePanel,
+      }

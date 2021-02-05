@@ -4,7 +4,7 @@
 {% block title %} Search Pathways {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'pathway_metabolites' 'css' %}
+    {% render_bundle 'pathway_age_metabolites' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -20,8 +20,8 @@
 
     <nav>
       <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
-        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+        <a class="navdark nav-item nav-link " href="{% url 'metabolite_search' %}">Tissues</a>
+        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
       </div>
     </nav>
 
@@ -30,13 +30,13 @@
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
+            <a class="nav-link" href="{% url 'metabolite_search_age' %}">Metabolites</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+            <a class="nav-link" href="{% url 'pathway_age_search' %}">Pathways</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+            <a class="nav-link active" href="{% url 'pathway_age_metabolites' %}">Pathway Metabolites</a>
           </li>
         </ul>
       </div>
@@ -46,8 +46,8 @@
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>pathway</b> and find out how the associated metabolites in <i> Drosophila
-        </i> tissues change from those found in the Whole Fly.
+        Search for a <b>pathway</b> and find out how the associated metabolites in different ages of <i> Drosophila
+        </i> change from those found in the Whole Fly (7 days old).
       </p>
     </div>
 
@@ -68,7 +68,7 @@
 
       {% if met_peak_list|length > 0 %}
       <div class="info card-header pb-0 table-card-header">
-      Changes observed in the {{pathway_name}} metabolites and associated peaks found in <i> Drosophila </i> tissues
+      Changes observed in the {{pathway_name}} metabolites and associated peaks found in different ages of <i> Drosophila </i>
       </div>
       <div class="container-fluid pb-0" >
         <div class="row pb-0">
@@ -191,5 +191,5 @@
 
       </script>
 
-      {% render_bundle 'pathway_metabolites' 'js' %}
+      {% render_bundle 'pathway_age_metabolites' 'js' %}
   {% endblock %}

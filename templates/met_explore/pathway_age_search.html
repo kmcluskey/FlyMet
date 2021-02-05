@@ -4,7 +4,7 @@
 {% block title %} Search Pathways {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'pathway_search' 'css' %}
+    {% render_bundle 'pathway_age_search' 'css' %}
     <script type="text/javascript" language="javascript" src="https://reactome.org/DiagramJs/diagram/diagram.nocache.js"></script>
 {% endblock %}
 
@@ -15,40 +15,38 @@
 
   <div>
     <p class="mt-2 lead">
-        Choose to search for <i> Drosophila </i> metabolites or pathways:
+      Choose to search for <i> Drosophila </i> metabolites or pathways:
     </p>
   </div>
 
   <nav>
     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-      <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
-      <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+      <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' %}">Tissues</a>
+      <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
     </div>
   </nav>
 
-
-  <!--Tabs to go to new pages-->
+    <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
           <li class="nav-item">
-          <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
+          <a class="nav-link" href="{% url 'metabolite_search_age' %}">Metabolites</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'pathway_search' %}">Pathways</a>
+          <a class="nav-link active" href="{% url 'pathway_age_search' %}">Pathways</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
-        </li>
+          <a class="nav-link" href="{% url 'pathway_age_metabolites' %}">Pathway Metabolites</a>
+          </li>
         </ul>
       </div>
     </div>
 
-
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>pathway</b> and find out which metabolites are present in <i> Drosophila
+        Search for a <b>pathway</b> and find out which metabolites are present in different ages of <i> Drosophila
         </i>.
       </p>
     </div>
@@ -70,8 +68,8 @@
 
       {% if pathway_id|length > 0 %}
       <div class="info card-header pb-0 table-card-header">
-      {{pathway_name}} and metabolites found in <i> Drosophila </i> tissues.
-      <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway metabolites, between whole flies and individual tissues.</small></p>
+      {{pathway_name}} and metabolites found in <i> aged Drosophila </i>.
+      <p><small>The smallest p-values reveal the ages with the most significant changes in the pathway metabolites from whole flies (7 days old).</small></p>
       </div>
       {% endif %}
 
@@ -83,7 +81,7 @@
                     <table id="pwy_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
                       <thead class="thead-light">
                         <tr>
-                          <th class="col vw150">Tissue-Type</th>
+                          <th class="col vw150">Age</th>
                           <th id = 'AF-pvalue' class="col vw150">Adult F/W p-value</th>
                           <th id = 'AM-pvalue'class="col vw150">Adult M/W p-value</th>
                           <th id = 'L-pvalue'class="col vw150">Larvae/W p-value </th>
@@ -145,9 +143,6 @@
         {% endif %}
         {% endif %}
 
-
-
-
       <!--end of main div-->
       <!--Spacer so that content is not hidden-->
       <div class="spacer">
@@ -172,5 +167,5 @@
 
       </script>
 
-      {% render_bundle 'pathway_search' 'js' %}
+      {% render_bundle 'pathway_age_search' 'js' %}
   {% endblock %}

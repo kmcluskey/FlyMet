@@ -28,6 +28,8 @@ module.exports = {
         peak_age_compare: './static/js/peak_age_compare',
         peak_mf_age_compare: './static/js/peak_mf_age_compare',
         pathway_age_explorer:'./static/js/pathway_age_explorer',
+        pathway_age_search: './static/js/pathway_age_search',
+        pathway_age_metabolites: './static/js/pathway_age_metabolites',
         index:'./static/js/index',
     },
 

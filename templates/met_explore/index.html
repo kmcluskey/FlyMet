@@ -30,8 +30,8 @@
 
     <nav>
       <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link active" href="{% url 'peak_explorer' 'All' %}">Tissues</a>
-        <a class="navdark nav-item nav-link" href="{% url 'peak_age_explorer' 'All' %}">Aged Flies</a>
+        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
+        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
       </div>
     </nav>
 
@@ -39,9 +39,6 @@
     <div class="card text-center">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
-          </li> -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
           </li>

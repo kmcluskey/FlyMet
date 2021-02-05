@@ -86,10 +86,11 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint){
                           $(td).addClass("data");
                         }
                     }
-
                     }
                   },
+
         ],
+
     })
 
     let t1 = performance.now();
@@ -99,14 +100,14 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint){
   }
 
   function add_table_tooltips(obj){
-    $('.notMeasured').tooltip({title: "A sample has not been measured for this tissue/life stage combination", placement: "top"})
+    $('.notMeasured').tooltip({title: "A sample has not been measured for this age/life stage combination", placement: "top"})
   }
 
   function add_pwy_tooltips(obj, pathway_name){
 
-    $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female tissue & female whole Flies", placement: "top"});
-    $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male tissues & male whole Flies", placement: "top"});
-    $('#L-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name+ " between larvae tissue & whole larvae", placement: "top"});
+    $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female aged & female whole (7 day) Flies", placement: "top"});
+    $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male aged & male whole (7 day) Flies", placement: "top"});
+    $('#L-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name+ " between larvae aged & whole larvae", placement: "top"});
 
   }
 
@@ -159,7 +160,7 @@ $(document).ready(function() {
       add_pwy_tooltips(pwy_table, pathway_name)
 
       updatePathwayDetails(this);
-  
+
   }
   catch(e) {
   //

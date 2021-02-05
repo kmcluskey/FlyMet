@@ -14,7 +14,7 @@
 
     <div>
       <p class="mt-2 lead">
-        Choose to search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+        Choose to search for <i> Drosophila </i> metabolites or pathways:
       </p>
     </div>
 
@@ -29,17 +29,14 @@
     <div class="card text-center">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
-          </li> -->
           <li class="nav-item">
             <a class="nav-link active" href="{% url 'metabolite_search_age' %}">Metabolites</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+            <a class="nav-link" href="{% url 'pathway_age_search' %}">Pathways</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+              <a class="nav-link" href="{% url 'pathway_age_metabolites' %}">Pathway Metabolites</a>
             </li>
         </ul>
       </div>
@@ -48,7 +45,7 @@
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>metabolite</b> and find out the abundance in <i> Drosophila </i> tissues:
+        Search for a <b>metabolite</b> and find out the abundance in different ages of <i> Drosophila </i>.
       </p>
     </div>
 
@@ -69,7 +66,7 @@
 
       {% if met_table_data|length > 0 %}
       <div class="card-header pb-0 table-card-header">
-      {{metabolite}} levels in <i> Drosophila </i> tissues
+      {{metabolite}} levels in different aged <i> Drosophila </i>
       </div>
       <div class="container-fluid pb-0" >
         <div class="row pb-0">
@@ -78,7 +75,7 @@
             <table id="tissue_met_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
               <thead class="thead-light">
                 <tr>
-                  <th class="data">Tissue-Type</th>
+                  <th class="data">Age</th>
                   <th class="AM_met_WT_ratio data">Adult Female FC</th>
                   <th class="AF_met_WT_ratio data">Adult Male FC</th>
                   <th class="L_met_WT_ratio data">Larvae FC</th>
@@ -162,7 +159,7 @@
 
               <fieldset id="click_info" class="fieldset-details">
                 <div class="p-2">
-                  <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated with {{metabolite}}</p>
+                  <p class="m-2">Click on an age to see the intensities of the peaks associated with {{metabolite}}</p>
                 </div>
               </fieldset>
 
