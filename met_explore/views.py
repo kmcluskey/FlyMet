@@ -9,8 +9,6 @@ from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
-from django.views.generic.list import ListView
 from django.core.exceptions import ObjectDoesNotExist
 
 from loguru import logger
@@ -901,7 +899,7 @@ def peak_mf_compare_data(request):
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+    analysis = Analysis.objects.get(name="M/F comparisons")
     view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
     view_df = view_df1.fillna("-")
     #

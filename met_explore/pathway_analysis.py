@@ -22,7 +22,7 @@ from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
 MIN_HITS =2
-
+PALS_FILENAME ='pals_df'
 # """
 # FixMe: For FlyMet the Analyses IDs for PALS are 1 and 3 this will be different for other projects
 # this should be refactored.
@@ -45,13 +45,15 @@ def get_pals_ds(analysis):
 def get_cache_ds(analysis):
     # cache.delete('pals_ds')
     a_id = str(analysis.id)
-    if cache.get('pals_ds'+a_id) is None:
+    cache_name = 'pals_ds'+a_id
+
+    if cache.get(cache_name) is None:
         logger.info("we dont have cache so running the pals_ds function")
         cache.set('pals_ds'+a_id, get_pals_ds(analysis), 60 * 180000)
-        pals_ds = cache.get('pals_ds'+a_id)
+        pals_ds = cache.get(cache_name)
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
-        pals_ds = cache.get('pals_ds'+a_id)
+        pals_ds = cache.get(cache_name)
 
     return pals_ds
 
@@ -64,19 +66,30 @@ def get_pals_df(min_hits, analysis):
 
     return pathway_df_return
 
-
 def get_cache_df(min_hits, analysis):
     # cache.delete('pals_df')
     a_id = str(analysis.id)
-    if cache.get('pals_df'+a_id) is None:
-        logger.info("we dont have cache so running the pals_df function")
-        cache.set('pals_df'+a_id, get_pals_df(min_hits, analysis), 60 * 180000)
-        pals_df = cache.get('pals_df'+a_id)
-    else:
-        logger.info("we have cache for the pals df, so retrieving it")
-        pals_df = cache.get('pals_df'+a_id)
+
+    fname = PALS_FILENAME+'_'+str(a_id)+".pkl"
+    try:
+        pals_df = pd.read_pickle("./data/" + fname)
+        logger.info("The file %s has been found" % fname)
+
+    except FileNotFoundError:
+
+        logger.info("The file %s has not been found" % fname)
+        pals_df = get_pals_df(min_hits, analysis)
+        try:
+            pals_df.to_pickle("./data/" + fname)
+            logger.info("Written %s" % "./data/" + fname)
+
+        except Exception as e:
+            logger.error("Pickle didn't work because of %s ", e)
+            traceback.print_exc()
+            pass
 
     return pals_df
+
 
 def get_cache_annot_df():
     # cache.delete('pals_annot_df')
