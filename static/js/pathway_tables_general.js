@@ -3,6 +3,99 @@ const d3 = require('d3');
 require('bootstrap/js/dist/tooltip');
 
 
+function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project){
+    let t0 = performance.now();
+    const tName = '#'+tableName;
+    console.log("tablename", tName)
+    console.log("Project", project)
+    const MIN_VAL = 3000;
+    // const pals_data = document.getElementById('pals_data').getAttribute('url');
+    const nmType = $.fn.dataTable.absoluteOrderNumber({
+                    value: 'nm', position: 'bottom'
+                });
+    let table = $(tName).DataTable({
+
+        "scrollY": "100vh",
+        "scrollCollapse": true,
+        scrollX: true,
+        fixedheader: true,
+        colReorder: true,
+        select: {
+            style: 'single'
+        },
+        //code to override bootstrap and keep buttons on one line.
+        dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
+        "<'row'<'col-sm-12'rt>>" +
+        "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        buttons: [ 'colvis', 'copy',
+
+            {
+                extend: 'collection',
+                text: 'Export',
+                buttons: [ 'csv', 'pdf' ]
+            }
+        ],
+        //Code to add the colours to the data - temporary numbers have been added.
+
+        "columnDefs": [
+            {className: "dt-center", "targets":"_all"},
+            {className: "px300", "targets": "_all"}, // Here - try and make this a maximum column width
+            {
+                "targets": '_all',
+                'type': nmType,
+                "createdCell": function (td, cellData, rowData, row, col) {
+
+                    let $td = $(td);
+                    // console.log($td.text())
+                    let $th = $(".col").eq($td.index());
+
+                    const colorScale = d3.scaleLinear()
+                        .domain([lowpoint, midpoint, highpoint])
+                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                    //If the column header doesn't include the string Tissue then colour the column.
+
+                    if (!($th.text().includes(project))) {
+                        if (!(isNaN(cellData))){
+                            const colour = colorScale(cellData);
+                            $(td).css('background-color', colour)
+                         }
+                    }
+                    // Format the column numbers
+                    //Ignore for the peak ID
+                    if ($th.text().includes(project)){
+                      $(td).addClass("text-centre")
+                      $(td).addClass("px300")
+                    }
+
+                    // If the number is some of the tissue data
+
+                    else {
+                      const value = $td.text()
+                      if (value == 'nm') {
+                        $(td).addClass("notMeasured");
+                      }
+                        else {
+                          const num = parseFloat(value).toExponential(1)
+                          $td.empty();
+                          $td.append(num);
+                          $(td).addClass("data");
+                        }
+                    }
+                    }
+                  },
+
+        ],
+
+    })
+
+    let t1 = performance.now();
+    console.log("This is the Time to initialise the table " + (t1 - t0) + " milliseconds.")
+    console.log("returning table")
+    return table;
+  }
+
+
 function initialise_pals_table(tableName, lowpoint, midpoint, highpoint, data_url, met_ex_url){
     let t0 = performance.now();
     const tName = '#'+tableName;
@@ -308,4 +401,4 @@ function updateReactomePathway(pathway_id, pathway_name){
 }
 
 export
-{initialise_pals_table, updatePathwaySidePanel}
+{initialise_pwy_table, initialise_pals_table, updatePathwaySidePanel}

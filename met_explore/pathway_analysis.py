@@ -49,7 +49,7 @@ def get_cache_ds(analysis):
 
     if cache.get(cache_name) is None:
         logger.info("we dont have cache so running the pals_ds function")
-        cache.set('pals_ds'+a_id, get_pals_ds(analysis), 60 * 180000)
+        cache.set(cache_name, get_pals_ds(analysis), 60 * 180000)
         pals_ds = cache.get(cache_name)
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
@@ -67,10 +67,8 @@ def get_pals_df(min_hits, analysis):
     return pathway_df_return
 
 def get_cache_df(min_hits, analysis):
-    # cache.delete('pals_df')
-    a_id = str(analysis.id)
 
-    fname = PALS_FILENAME+'_'+str(a_id)+".pkl"
+    fname = PALS_FILENAME+'_'+str(analysis.id)+".pkl"
     try:
         pals_df = pd.read_pickle("./data/" + fname)
         logger.info("The file %s has been found" % fname)
@@ -153,7 +151,6 @@ def get_chebi_relation_dict():
             r_chebis.remove(k) #remove original key from list
 
             chebi_bfs_relation_dict[k] = r_chebis
-
         try:
             logger.info("saving chebi_relation_dict")
             save_object(chebi_bfs_relation_dict, "./data/" + CHEBI_BFS_RELATION_DICT + ".pkl")

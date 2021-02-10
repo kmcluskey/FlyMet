@@ -276,15 +276,22 @@ def pathway_search(request):
 
                 single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
 
-                samples = Sample.objects.all()
-                real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
-                aged_flies = list(set([s.age for s in samples if s.age != 'nan']))
+                # samples = Sample.objects.all()
+
+                samples = analysis.get_case_samples()
+                control_s = analysis.get_control_samples()
+
+                all_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+                control_tissues = list(set([s.tissue for s in control_s if s.tissue != 'nan']))
+
+                tissues = [t for t in all_tissues if t not in control_tissues]
 
                 #Fixme: this is the factor groups required for the tables - could be more general?
-                tissues = real_tissues+aged_flies
+                # tissues = real_tissues+aged_flies
 
                 # tissues.remove('Whole') #Whole not present in this table
-                columns = ['F', 'M', 'L']
+                columns = list(set([s.life_stage for s in control_s if s.life_stage != 'nan']))
+
                 nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
 
                 for tissue in tissues:
@@ -302,13 +309,14 @@ def pathway_search(request):
                 pwy_table_data = []
 
                 for t, v in zip(index, pwy_values):
-                    pwy_table_data .append(([t] + v))
+                    pwy_table_data.append(([t] + v))
 
             except KeyError:
 
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
                 pass
 
+        print("p_search", pwy_table_data)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
@@ -327,7 +335,7 @@ def pathway_search(request):
 
         return render(request, 'met_explore/pathway_search.html', context)
 
-
+#Fixme: These views and the js can be consolidated.
 def pathway_age_search(request):
     """
     View to return the metabolite serach page
@@ -363,15 +371,38 @@ def pathway_age_search(request):
 
                 single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
 
-                samples = Sample.objects.all()
+                # samples = Sample.objects.all()
+
+                samples = analysis.get_case_samples()
+                control_s = analysis.get_control_samples()
+
+                #Fixme this should be rewitten as factors.
                 real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
-                aged_flies = list(set([s.age for s in samples if s.age != 'nan']))
+                age_tissues = list(set([s.age for s in samples if s.age != 'nan']))  # List of individual tissues.
+                all_tissues = real_tissues + age_tissues
+
+                control_tissues = list(set([s.tissue for s in control_s if s.tissue != 'nan']))
+
+                tissues = [t for t in all_tissues if t not in control_tissues]
+
+                print(tissues)
+
+                # # samples = Sample.objects.all()
+                #
+                # samples = analysis.get_case_samples()
+                # # control_s = analysis.get_control_samples()
+                # # samples = case_s | control_s
+                #
+                # # real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+                # tissues = list(set([s.age for s in samples if s.age != 'nan']))
 
                 #Fixme: this is the factor groups required for the tables - could be more general?
-                tissues = real_tissues+aged_flies
+                # tissues = real_tissues+aged_flies
 
                 # tissues.remove('Whole') #Whole not present in this table
-                columns = ['F', 'M', 'L']
+                columns = list(set([s.life_stage for s in control_s if s.life_stage != 'nan']))
+
+                print ("columns ", columns)
                 nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
 
                 for tissue in tissues:
@@ -395,7 +426,6 @@ def pathway_age_search(request):
 
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
                 pass
-
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table

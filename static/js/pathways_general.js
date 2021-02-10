@@ -50,7 +50,7 @@ function updateReactomePathway(pathway_id, pathway_name, reactome_token){
       $("#diagram_info").show();
       enableTooltips();
 }
-function updatePathwayInfo(returned_data, pathway_name){
+function updatePathwayInfo(returned_data, pathway_name, met_ex_url){
   let cmpd_details = returned_data.cmpd_details
   let cmpds = Object.keys(cmpd_details)
   let no_cmpds = cmpds.length;
@@ -62,7 +62,7 @@ function updatePathwayInfo(returned_data, pathway_name){
   let cmpd_list = cmpds.toString()
 
   //Set the header with a link to all metabolites in the cmpd_list
-  let url_pwm = `met_ex_all/${cmpd_list}`; //pathway metabolites
+  let url_pwm = `${met_ex_url}/${cmpd_list}`; //pathway metabolites
 
   let met_tooltip =  `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
 
@@ -78,7 +78,7 @@ function updatePathwayInfo(returned_data, pathway_name){
       let cmpdDiv = document.createElement('div');
       cmpdDiv.setAttribute('class', 'p-2 small');
 
-      let url_cmpd = `met_ex_all/${cmpds[i]}`;
+      let url_cmpd = `${met_ex_url}/${cmpds[i]}`;
       let name = cmpd_details[cmpds[i]].name
       let formula = cmpd_details[cmpds[i]].formula
       let chebi_id = cmpd_details[cmpds[i]].chebi_id
