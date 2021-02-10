@@ -15,9 +15,6 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project)
                 });
     let table = $(tName).DataTable({
 
-        "scrollY": "100vh",
-        "scrollCollapse": true,
-        scrollX: true,
         fixedheader: true,
         colReorder: true,
         select: {
@@ -39,7 +36,7 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project)
 
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {className: "px300", "targets": "_all"}, // Here - try and make this a maximum column width
+            // {className: "px300", "targets": "_all"}, // Here - try and make this a maximum column width
             {
                 "targets": '_all',
                 'type': nmType,
@@ -65,7 +62,6 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project)
                     //Ignore for the peak ID
                     if ($th.text().includes(project)){
                       $(td).addClass("text-centre")
-                      $(td).addClass("px300")
                     }
 
                     // If the number is some of the tissue data

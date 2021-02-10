@@ -21,8 +21,8 @@
 
   <nav>
     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-      <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
-      <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+      <a class="navdark nav-item nav-link active" href="{% url 'pathway_search' %}">Tissues</a>
+      <a class="navdark nav-item nav-link" href="{% url 'pathway_age_search' %}">Aged Flies</a>
     </div>
   </nav>
 
@@ -80,7 +80,7 @@
         <div class="container-fluid pb-0">
           <div class="row pb-0">
             <div class="myspan75 p-2 mt-2">
-                    <table id="pwy_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
+                    <table id="pwy_table" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
                       <thead class="thead-light">
                         <tr>
                           <th class="col vw150">Tissue-Type</th>

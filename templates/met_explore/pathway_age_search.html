@@ -21,8 +21,8 @@
 
   <nav>
     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-      <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' %}">Tissues</a>
-      <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+      <a class="navdark nav-item nav-link" href="{% url 'pathway_search' %}">Tissues</a>
+      <a class="navdark nav-item nav-link active" href="{% url 'pathway_age_search' %}">Aged Flies</a>
     </div>
   </nav>
 
@@ -83,11 +83,10 @@
                         <tr>
                           <th class="col vw150">Age</th>
                           <th id = 'AF-pvalue' class="col vw150">Adult F/W p-value</th>
-                          <th id = 'AM-pvalue'class="col vw150">Adult M/W p-value</th>
+                          <th id = 'AM-pvalue' class="col vw150">Adult M/W p-value</th>
                         </tr>
                       </thead>
                       <tbody>
-
                         {% for pwy_data in pwy_table_data %}
                         <tr>
                           {% for p in pwy_data %}
