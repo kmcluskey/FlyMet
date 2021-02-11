@@ -1670,7 +1670,10 @@ def get_metabolite_search_page(analysis, search_query):
 
             # Get the metabolite/tissue comparison DF
             # Fixme: This can be taken from the factors once refactored.
-            columns = ['F', 'M', 'L']
+
+            columns = list(set([s.life_stage for s in control_s if s.life_stage != 'nan']))
+            # print ("columns ", columns)
+            # columns = ['F', 'M', 'L']
             df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
             nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
             gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
@@ -1725,7 +1728,6 @@ def get_metabolite_search_page(analysis, search_query):
 
             if pathway_ids:
                 pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
-
 
     return met_table_data, min, max, mean, pathways, references
 

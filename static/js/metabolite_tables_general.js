@@ -279,7 +279,18 @@ function add_side_tooltips(){
 
 };
 
+// Given an array return a simple array index that corresponds to the data in the table
+// Basically this is just columns in Table-1 for the Tissue or Age column
+ function get_data_index(data_table){
+   let data_index = []
+   for (var i = 1; i < data_table[0].length; i++) {
+     data_index.push(i);
+  }
+  return data_index
+};
+
 export {
     initialise_met_table,
     updateMetboliteSidePanel,
+    get_data_index
   }

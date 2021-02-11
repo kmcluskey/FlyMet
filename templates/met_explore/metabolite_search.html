@@ -109,22 +109,10 @@
                 <ul>
                   {% for id, name in pathways.items %}
                   <li><a href="{% url 'pathway_search' %}?pathway_search={{name}}">{{ name }}</a>
-                    <p class="m-2">This is currently a placeholder for {{name}}.</p>
+                    <p class="m-2">This is currently a placeholder for details of {{name}}.</p>
                   </li>
                   {% endfor %}
                 </ul>
-
-
-                  <!-- <li><a href="{% url 'pathway_search' %}">{{metabolite}} catabolism</a>
-                    <p class="m-2">This is currently a placeholder for pathways containing {{metabolite}}.</p>
-                  </li>
-                  <li><a href="#!">{{metabolite}}, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism</a>
-                    <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
-                  </li>
-                  <li><a href="#!">Synthesis of {{metabolite}}</a>
-                    <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in another species.</p>
-                  </li>
-                </ul> -->
               </div>
             </fieldset>
           </div>
@@ -257,6 +245,8 @@
       var max = {{max}}
       var mid = {{mean}}
       var pathways ="{{pathways | safe}}"
+      var met_table_data = {{met_table_data | safe}}
+
 
     console.log("using values", min, mid, max, metabolite, pathways)
   </script>

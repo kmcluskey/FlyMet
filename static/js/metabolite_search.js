@@ -7,6 +7,7 @@ require('awesomplete/awesomplete.css');
 require('../css/awesomechanges.css')
 
 import {initialise_table, updateMetSidePanel} from './flymet_tables';
+import {get_data_index} from './metabolite_tables_general';
 
 function add_table_tooltips(obj){
   $('.notDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
@@ -40,12 +41,12 @@ $(document).ready(function() {
 
   $("fieldset[class^='peak_details']").hide();
 
-  console.log(pathways)
-
+  let project = `Tissue`;
+  let num_index = get_data_index(met_table_data)
   //Wait for the table to exist before we try to use it Try/Catch block.
 
   try {
-    let met_table = initialise_table("tissue_met_table", min, mid, max);
+    let met_table = initialise_table("tissue_met_table", min, mid, max, project, num_index);
     add_met_tooltips(met_table, metabolite);
     add_table_tooltips(tissue_met_table);
 
