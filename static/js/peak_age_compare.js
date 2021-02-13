@@ -57,3 +57,5 @@ $(document).ready(function() {
         updatePeakSidePanel(this, peak_side_url, peak_side_text, met_url);
       } );
 });
+
+export {headerTips}

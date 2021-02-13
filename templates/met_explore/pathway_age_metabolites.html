@@ -20,8 +20,8 @@
 
     <nav>
       <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link " href="{% url 'metabolite_search' %}">Tissues</a>
-        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+        <a class="navdark nav-item nav-link " href="{% url 'pathway_metabolites' %}">Tissues</a>
+        <a class="navdark nav-item nav-link active" href="{% url 'pathway_age_metabolites' %}">Aged Flies</a>
       </div>
     </nav>
 
@@ -51,8 +51,8 @@
       </p>
     </div>
 
-    <form action="pathway_metabolites" method="get" class="form-inline my-2 my-lg-0">
-      <input id = "pathway_metabolites" name ='pathway_metabolites' class="form-control mr-sm-2" type="text" placeholder="Pathway Search">
+    <form action="pathway_age_metabolites" method="get" class="form-inline my-2 my-lg-0">
+      <input id = "pathway_age_metabolites" name ='pathway_age_metabolites' class="form-control mr-sm-2" type="text" placeholder="Pathway Search">
       <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
     </form>
 
@@ -75,7 +75,7 @@
           <div class="myspan80 mt-2">
             {% for cmpd_id, metabolite, peak_table_data in name_data %}
             <div class='pt-3 pb-4'>
-            <p class="text_box">Peaks associated with <a href="met_ex_all/{{cmpd_id}}">{{metabolite}}</a></p>
+            <p class="text_box">Peaks associated with <a href="met_age_all/{{cmpd_id}}">{{metabolite}}</a></p>
             </div>
             <table id="pwy_met_table_{{forloop.counter0}}" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
                 <thead class="thead-light">
@@ -112,8 +112,6 @@
                       <div class>
                         <p class=" m-2">Metabolite Coverage:</p>
                       </div>
-                      <!-- <legend class="sidebar">Metabolites</legend> -->
-                      <!-- <div class = "p-2"> -->
 
                       <div class="pl-2 pb-0 table-responsive">
                         <table class="table table-sm table-bordered side_table">
