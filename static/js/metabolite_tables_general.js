@@ -132,12 +132,12 @@ $("p[id^='compound_id']").text('Peak groups annotated as ' + cmpd_name);
 }
 
 
-function updateAdducts(returned_data, cmpd_name){
+function updateAdducts(returned_data, cmpd_name, pk_url){
 //
   console.log("Updating adducts")
   let radio_all = document.getElementById('all_adducts');
   let radio_all_check = radio_all.checked
-  updatePeakData(returned_data, radio_all_check);
+  updatePeakData(returned_data, radio_all_check, cmpd_name, pk_url);
  }
 
 // Update the compound names and any details we want on the side panel

@@ -21,7 +21,7 @@ from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound
     AnalysisComparison, Analysis
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
-MIN_HITS =2
+MIN_HITS = 2
 PALS_FILENAME ='pals_df'
 # """
 # FixMe: For FlyMet the Analyses IDs for PALS are 1 and 3 this will be different for other projects

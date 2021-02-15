@@ -276,7 +276,7 @@ function updatePeakSidePanel(obj, pk_side_url, pk_side_text, met_url){
 
     // Redraw the adduct data if the radio button is clicked.
     $("input[name='radio_adducts']" ).click(function(){
-      {updateAdducts(returned_data)};
+      {updateAdducts(returned_data, met_url)};
     });
 
 };
@@ -294,12 +294,12 @@ $("p[id^='peak_id']").html(`<a href="${pk_url}" target="_blank" >${pk_side_text}
 
 }
 //
-function updateAdducts(returned_data){
+function updateAdducts(returned_data, met_url){
 
-  console.log("Updating adducts")
+  console.log("Updating adducts with", met_url)
   let radio_all = document.getElementById('all_adducts');
   let radio_all_check = radio_all.checked
-  updatePeakData(returned_data, radio_all_check);
+  updatePeakData(returned_data, radio_all_check, met_url);
 }
 
 // Update the compound names and any details we want on the side panel
@@ -326,12 +326,9 @@ function updatePeakData(returned_data, radio_all_check, met_url){
       const conf = conf_fact[i];
       const cmpd_id = cmpd_ids[i];
 
-
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
       var url_met = `${met_url}${cmpd_id}`
-
-      console.log("url_met", url_met)
 
       let success ="";
       let identified="";

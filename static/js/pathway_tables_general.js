@@ -259,13 +259,14 @@ function get_lifestage(ls_string){
 }
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updatePathwaySidePanel(obj, data_url, met_ex_url){
+function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url){
 
   let currentRow = $(obj).closest("tr");
   let reactome_id = $(`#${data_url}`).DataTable().row(currentRow).data()[0];
   let pathway_name = $(`#${data_url}`).DataTable().row(currentRow).data()[1];
 
   console.log("updating for pathway", reactome_id, pathway_name)
+  console.log("pathway met url", pwy_url)
 
 
   const handleUpdate = function(returned_data) {
@@ -283,7 +284,7 @@ function updatePathwaySidePanel(obj, data_url, met_ex_url){
   // find all the paragraphs with id peak in the side panel
   $("fieldset[id='click_info']").hide();
   $("fieldset[class^='pathway_details']").show();
-  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
+  $("p[id^='pwy_id']").html(`<a href="${pwy_url}?${pwy_url}=${pathway_name}" data-toggle="tooltip"
   title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
   enableTooltips();
@@ -299,7 +300,6 @@ function enableTooltips(){
 // Update the compound names and any details for the side panel.
 function updatePathwayInfo(returned_data, pathway_name, met_ex_url){
   let cmpd_details = returned_data.cmpd_details
-  console.log (returned_data.cmpd_details)
   let cmpds = Object.keys(cmpd_details)
   let no_cmpds = cmpds.length;
 
@@ -335,7 +335,6 @@ function updatePathwayInfo(returned_data, pathway_name, met_ex_url){
       let related_chebi
 
       if ( r_chebi != null) {
-        console.log(r_chebi)
         related_chebi = `or ${r_chebi}`
       }
       else {
