@@ -119,8 +119,6 @@ def metabolite_data(request, cmpd_ids):
     :return: The cached url of the ajax data for the metabolite data table.
     """
 
-    logger.debug("METABOLITE DATA REQUEST")
-
     logger.info("Metabolite data requested")
 
     start = timeit.default_timer()
@@ -192,7 +190,7 @@ def metabolite_search(request):
         columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
 
         logger.debug("met_table_data %s" % met_table_data)
-        logger.debug("with columns %s" % columns)
+        logger.debug("columns %s" % columns)
 
         context = {
             'columns': columns,
@@ -1662,6 +1660,12 @@ def get_metabolite_search_page(analysis, search_query):
 
             # Standardise the DF by dividing by the Whole cell/Lifestage
             whole_row = df.loc['Whole']
+
+            # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
+            # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
+            # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
+            whole_row = whole_row.replace(np.nan, WF_MIN)
+
             sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
             log_df = np.log2(sdf)
             view_df = log_df.drop(index='Whole').round(2)
