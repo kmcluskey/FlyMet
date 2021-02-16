@@ -189,11 +189,13 @@ def metabolite_search(request):
 
         analysis = Analysis.objects.get(name="Tissue Comparisons")
 
-        met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
-
+        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
 
         logger.debug("met_table_data %s" % met_table_data)
+        logger.debug("with columns %s" % columns)
+
         context = {
+            'columns': columns,
             'metabolite': search_query,
             'analysis_id': analysis.id,
             'met_table_data': met_table_data,
@@ -221,10 +223,13 @@ def metabolite_search_age(request):
         search_query = request.GET.get('metabolite_search_age', None)
         analysis = Analysis.objects.get(name="Age Comparisons")
 
-        met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
+        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
 
-        logger.debug("met_table_data %s" % met_table_data)
+        logger.debug("met_table_data %s " % met_table_data)
+        logger.debug("with columns %s" % columns)
+
         context = {
+            'columns': columns,
             'metabolite': search_query,
             'analysis_id': analysis.id,
             'met_table_data': met_table_data,
@@ -1618,7 +1623,7 @@ def get_metabolite_search_page(analysis, search_query):
     ages = list(set([s.age for s in samples if s.age != 'nan']))
     tissues = ages + real_tissues
 
-    met_table_data = []
+    met_table_data, columns = [], []
     min = MIN
     max = MAX
     mean = MEAN
@@ -1696,7 +1701,7 @@ def get_metabolite_search_page(analysis, search_query):
             if pathway_ids:
                 pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
 
-    return met_table_data, min, max, mean, pathways, references
+    return columns, met_table_data, min, max, mean, pathways, references
 
 
 def sort_df_and_headers(view_df):

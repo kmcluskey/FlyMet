@@ -76,8 +76,15 @@
               <thead class="thead-light">
                 <tr>
                   <th class="data">Age</th>
-                  <th class="AM_met_WT_ratio data">Adult Female FC</th>
-                  <th class="AF_met_WT_ratio data">Adult Male FC</th>
+                  {% for c in columns %}
+                  {% if c == "F" %}
+                  <th class="AM_met_WT_ratio data">Adult Female FC </th>
+                  {% elif c == "M" %}
+                  <th class="AF_met_WT_ratio data">Adult Male FC </th>
+                  {% elif c == "L" %}
+                  <th class="L_met_WT_ratio data">Larvae FC </th>
+                  {% endif %}
+                {% endfor %}
                 </tr>
               </thead>
               <tbody>
