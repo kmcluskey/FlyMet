@@ -601,17 +601,11 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
+
     analysis = Analysis.objects.get(name="M/F comparisons")
     view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+    column_headers = get_peak_mf_header(view_df)
 
-    sorted_view_df = sort_df_and_headers(view_df)
-    column_heads = sorted_view_df.columns.tolist()
-
-    column_headers = []
-    for new_header in column_heads:
-        if new_header.endswith('(F)'):
-            new_header = new_header.replace('(F)', "(F/M)")
-        column_headers.append(new_header)
 
     stop = timeit.default_timer()
 
@@ -634,14 +628,7 @@ def peak_mf_age_compare(request):
     analysis = Analysis.objects.get(name="Age M/F Comparisons")
     view_df, min, mean, max = get_peak_mf_compare_df(analysis)
 
-    sorted_view_df = sort_df_and_headers(view_df)
-    column_heads = sorted_view_df.columns.tolist()
-
-    column_headers = []
-    for new_header in column_heads:
-        if new_header.endswith('(F)'):
-            new_header = new_header.replace('(F)', "(F/M)")
-        column_headers.append(new_header)
+    column_headers = get_peak_mf_header(view_df)
 
     stop = timeit.default_timer()
 
@@ -678,7 +665,7 @@ def peak_explorer(request, peak_list):
     # group_df = cmpd_selector.get_group_df(peaks)
 
     ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
-    cache.delete('my_group_df')
+    # cache.delete('my_group_df')
     if cache.get('my_group_df') is None:
         logger.debug("we dont have cache so running the function")
         cache.set('my_group_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
@@ -1444,12 +1431,16 @@ def get_peak_mf_compare_df(analysis):
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    # analysis = Analysis.objects.get(name='M/F Comparisons')
-    group_df = cmpd_selector.get_group_df(analysis, peaks)
+    cache_name = "peak_mf_df_"+str(analysis.id)
 
-    # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
+    if cache.get(cache_name) is None:
+        logger.debug("we dont have cache so running the function")
+        cache.set(cache_name, cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get(cache_name)
+    else:
+        logger.debug("we have cache so retrieving %s " % cache_name)
+        group_df = cache.get(cache_name)
 
-    # group_df = group_df.replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1738,6 +1729,23 @@ def sort_df_and_headers(view_df):
 
     return view_df
 
+def get_peak_mf_header(view_df):
+    """
+
+    :param view_df: A dataframe with group
+    :return: A list of view headers for the DF
+    """
+
+    sorted_view_df = sort_df_and_headers(view_df)
+    column_heads = sorted_view_df.columns.tolist()
+
+    column_headers = []
+    for new_header in column_heads:
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)', "(F/M)")
+        column_headers.append(new_header)
+
+    return column_headers
 
 def enzyme_search(request):
 

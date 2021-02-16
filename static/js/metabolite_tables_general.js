@@ -115,7 +115,7 @@ function updateMetboliteSidePanel(obj, peak_url){
   //
     // Redraw the adduct data is the radio button is clicked.
     $("input[name='radio_adducts']" ).click(function(){
-      {updateAdducts(returned_data, cmpd_name)};
+      {updateAdducts(returned_data, cmpd_name, peak_url)};
       });
 };
 
@@ -149,6 +149,7 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name, pk_url){
   const columns = returned_data.columns
 
   console.log("peak_groups", peak_groups)
+  console.log("peak_url", pk_url)
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
