@@ -149,8 +149,6 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint){
               },
     })
 
-    // add data here
-
 //Return the table so that the it is resuable.
 
     let t1 = performance.now();
@@ -196,7 +194,7 @@ function updatePathwaySidePanel(obj){
   // find all the paragraphs with id peak in the side panel
   $("fieldset[id='click_info']").hide();
   $("fieldset[class^='pathway_details']").show();
-  $("p[id^='pwy_id']").html(`<a href="pathway_search?pathway_search=${pathway_name}" data-toggle="tooltip"
+  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
   title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
   enableTooltips();

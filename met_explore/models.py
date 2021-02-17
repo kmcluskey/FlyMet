@@ -9,10 +9,24 @@ class Sample(models.Model):
     """
     # Here the sample name is unique as this is important for processing FlyMet data
     name = models.CharField(max_length=250, unique=True, blank=False)
-    life_stage = models.CharField(max_length=250, blank=False)
-    tissue = models.CharField(max_length=250)
     group = models.CharField(max_length=250, blank=True, null=True)
-    mutant = models.CharField(max_length=250, blank=True, null=True)
+
+    def get_factor_value(self, name):
+        values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
+        value = values[0] if len(values) > 0 else None
+        return value
+
+    @property
+    def life_stage(self): # for flymet compatibility
+        return self.get_factor_value('life_stage')
+
+    @property
+    def tissue(self): # for flymet compatibility
+        return self.get_factor_value('tissue')
+
+    @property
+    def mutant(self): # for flymet compatibility
+        return self.get_factor_value('mutant')
 
     def  __str__(self):
         """
@@ -20,6 +34,19 @@ class Sample(models.Model):
         """
 
         return "Sample " + self.name
+
+
+class Factor(models.Model):
+    """
+    Model class defining an experimental factor of a sample, e.g. tissue and life-stage from which it came
+    """
+    sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+    name = models.CharField(max_length=250, blank=False, null=False)
+    value = models.CharField(max_length=250, blank=False, null=False)
+
+    def  __str__(self):
+        return "Sample %s factor %s value %s " % (self.sample, self.name, self.value)
+
 
 class Peak(models.Model):
     """

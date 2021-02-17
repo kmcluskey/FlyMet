@@ -13,6 +13,7 @@ urlpatterns = [
     path('enzyme_search', views.enzyme_search, name='enzyme_search'),
     path('tissue_search', views.tissue_search, name='tissue_search'),
     path('pathway_search', views.pathway_search, name='pathway_search'),
+    path('pathway_metabolites', views.pathway_metabolites, name='pathway_metabolites'),
     path('temp_his_pw', views.temp_his_pw, name='temp_his_pw'),
     path('background', views.background, name='background'),
     path('credits', views.credits, name='credits'),

@@ -16,7 +16,7 @@ from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
-from met_explore.helpers import load_object, save_object
+from met_explore.helpers import load_object, save_object, get_samples_by_factor
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
@@ -184,12 +184,29 @@ def bfs_get_related(graph_dict, node):
 
 
 def get_pathway_id_names_dict():
+    """
+       Given a pathway ID get its name
+       :return: pathway_id_names_dict
+       """
     pals_df = get_cache_df(MIN_HITS)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
 
     return pathway_id_names_dict
+
+
+def get_name_id_dict():
+    """
+    Given the name of a pathway get it's reactome ID
+    :return: name_pw_id_dict
+    """
+    pals_df = get_cache_df(MIN_HITS)
+    name_pw_id_dict = {}
+    for ix, row in pals_df.iterrows():
+        name_pw_id_dict[ix] = row.pw_name
+
+    return name_pw_id_dict
 
 
 def get_pals_int_df():
@@ -482,8 +499,8 @@ def get_pals_experimenal_design():
 
     exp_groups = {}  # Experimental group dictionary for use in the pals exp_design dict.
     for g in groups:
-        sample = Sample.objects.filter(group=g)
-        gp_files = list(sample.values_list('name', flat=True))
+        samples = Sample.objects.filter(group=g)
+        gp_files = [sample.name for sample in samples]
         exp_groups[group_dict[g]] = gp_files
 
     comparison_dict_list = []
@@ -593,3 +610,31 @@ def get_reactome_highlight_token():
     logger.info("Returning the Reactome token %s " % token)
 
     return token
+
+
+def get_cmpd_pwys(cmpd_id):
+    """
+    Given a compound ID, return all of the pathways that compound is found in
+
+    :param cmpd_id: The cmpd_id
+    :return: List of pathways containing the compound.
+    """
+    pals_ds = get_cache_ds()
+    cmpd = Compound.objects.get(id=cmpd_id)
+    cmpd_pw_dict = pals_ds.mapping_dict
+    pwy_list = []
+
+    try:
+        if cmpd.chebi_id is not None:
+            pwy_list = cmpd_pw_dict[cmpd.chebi_id]
+    except KeyError:
+        if cmpd.related_chebi is not None:
+            alt_list = [chebi.strip() for chebi in cmpd.related_chebi.split(",")]
+            for alt_c in alt_list:
+                try:
+                    pwy_list = cmpd_pw_dict[alt_c]
+                    if pwy_list: #If we get a match return what we find a
+                        break
+                except KeyError:
+                    logger.info ("No pathways returned for cmpd %s " % cmpd)
+    return pwy_list
