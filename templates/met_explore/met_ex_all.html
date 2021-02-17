@@ -20,6 +20,13 @@
         </div>
       </div>
 
+      <nav>
+        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+          <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
+        </div>
+      </nav>
+      
   <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
@@ -30,12 +37,6 @@
         <li class="nav-item">
           <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_mutants' %}">Mutants</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_gconditions' %}">Growth Conditions</a>
-        </li> -->
       </ul>
       <div class="top-right" >
         <p class ="title_text">Metabolite Explorer</p>

@@ -8,15 +8,13 @@ require('bootstrap/js/dist/tooltip');
 require ('./init_datatables')
 
   function add_table_tooltips(obj){
-    $('.notMeasured').tooltip({title: "A sample has not been measured for this tissue/life stage combination", placement: "top"})
+    $('.notMeasured').tooltip({title: "A sample has not been measured for this age/life stage combination", placement: "top"})
   }
 
   function add_pwy_tooltips(obj, pathway_name){
 
-    $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female tissue & female whole Flies", placement: "top"});
-    $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male tissues & male whole Flies", placement: "top"});
-    $('#L-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name+ " between larvae tissue & whole larvae", placement: "top"});
-
+    $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female aged & female whole (7 day old) flies", placement: "top"});
+    $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male aged & male whole (7 day old) flies", placement: "top"});
   }
 
 function updatePathwayDetails(obj, met_ex_url) {
@@ -55,13 +53,12 @@ $(document).ready(function() {
   $("[class^='pathway_details']").hide();
   $("#diagram_info").hide();
 
-  let met_ex_url = `met_ex_all`;
-  let project = `Tissue`;
-
+  let met_ex_url = `met_age_all`;
+  let project =`Age`;
 
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
-    new Awesomplete(pathway_search, {list: data.pathwayNames});
+    new Awesomplete(pathway_age_search, {list: data.pathwayNames});
   });
   // If the pathway_id has been returned from tne page
   if (pathway_id) {
@@ -70,7 +67,6 @@ $(document).ready(function() {
       add_table_tooltips(pwy_table);
       add_pwy_tooltips(pwy_table, pathway_name)
       updatePathwayDetails(this, met_ex_url);
-
   }
   catch(e) {
   //
@@ -80,7 +76,5 @@ $(document).ready(function() {
     }
   }
 }
-  console.log('pathway passed', pathway_name);
-  console.log('url', url)
 
 });

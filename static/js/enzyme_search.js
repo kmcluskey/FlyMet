@@ -2,7 +2,7 @@ require('./init_datatables')
 require('bootstrap/js/dist/tooltip');
 import {initialise_table} from './flymet_tables';
 import {init_met_side_table} from './flymet_tables';
-import {add_met_tooltips} from './flymet_tables';
+// import {add_met_tooltips} from './flymet_tables';
 import {updateEnzymeSidePanel} from './flymet_tables';
 
 // import {singleMet_intensity_chart} from './flymet_highcharts.js';
@@ -36,7 +36,7 @@ $(document).ready(function() {
     updateEnzymeSidePanel(this);
   } )
   var side_table = init_met_side_table("reaction_metabolites",0.0,6.0,13.0);
-  add_met_tooltips(side_table);
+  // add_met_tooltips(side_table);
 });
 
 // </script>

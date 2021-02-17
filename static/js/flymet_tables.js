@@ -4,9 +4,10 @@
 require ('./init_datatables')
 const d3 = require('d3');
 
+import {singleMet_intensity_chart} from './flymet_highcharts.js';
 
 
-function initialise_table(tableName, lowpoint, midpoint, highpoint){
+function initialise_table(tableName, lowpoint, midpoint, highpoint, project, data_index){
     const tName = '#'+tableName;
     console.log(tName)
     let table = $(tName).DataTable({
@@ -33,7 +34,7 @@ function initialise_table(tableName, lowpoint, midpoint, highpoint){
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {type: "num", "targets":[1,2,3]},
+            {type: "num", "targets":data_index},
 
             {
                 "targets": '_all',
@@ -49,7 +50,7 @@ function initialise_table(tableName, lowpoint, midpoint, highpoint){
                         .domain([lowpoint, midpoint, highpoint]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
-                    if (!($th.text().includes('Tissue'))) {
+                    if (!($th.text().includes(project))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
                             const colour = colorScale(cellData);
                             $(td).css('background-color', colour);
@@ -137,37 +138,111 @@ function show_hide_tables(pw_form, dict){
     }
 }
 
-//Update the metabolite side panel depending on which row is selected.
-//Let tissue name = the first text sent back from the row (more or less)
-// function updateMetSidePanel(obj){
-//     let tissue_name = $(obj).children().first().text();
-//
-//     // find all the paragraphs with id peak in the side panel
-//
-//     $("fieldset[id='click_info']").hide();
-//     $("fieldset[class^='peak_details']").show();
-//     $("p[id^='tissue_type']").text('Intensities in ' +tissue_name);
-//
-//
-//     singleMet_intensity_chart('highchart');
-//     singleMet_intensity_chart('highchart1');
-//     singleMet_intensity_chart('highchart2');
-//
-//     // Add table header tooltips --these are temporary.
-//     //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
-//
-//     $('#I').tooltip({title: "MS peak has been Identified as Histidine using a library standard", placement: "top"});
-//     $('#I2').tooltip({title: "MS peak has been Identified as Histidine using a library standard", placement: "top"});
-//     $('#F').tooltip({title: "MS/MS Fragmentation data suggests that a peak is 96.2% likely to be Histidine", placement: "top"});
-//     $('#F1').tooltip({title: "MS/MS Fragmentation data suggests that a peak is 99% likely to be Histidine", placement: "top"});
-//     $('#A').tooltip({title: "This peak, annotated as Histidine, also annotates 15 other compounds", placement: "top"});
-//     $('#A1').tooltip({title: "This peak, annotated as Histidine, also annotates 4 other compounds", placement: "top"});
-//     $('#A2').tooltip({title: "This peak, annotated as Histidine, also annotates 47 other compounds", placement: "top"});
-//     $('#F0').tooltip({title: "There is no fragmenetation data associated with this peak", placement: "top"});
-//
-//
-// }
-//
+function updateMetSidePanel(obj, metabolite){
+  let tissue_name = $(obj).children().first().text();
+
+  console.log(tissue_name)
+
+  const series_data = [ { xAxis: 0, name: "Life Stages", id: "master_1", data: null},
+  { name: 'IQR',
+  type: 'errorbar',
+  linkedTo: "master_1",
+  data: null,
+  marker: {
+    enabled: false
+  },
+  pointWidth: 15, // Sets the width of the error bar -- Must be added, otherwise the width will change unexpectedly #8558
+  pointRange: 0,  //Prevents error bar from adding extra padding on the X-axis
+  tooltip: {
+    pointFormat: ''
+  }
+  //stemWidth: 10,
+  //whiskerLength: 5
+}
+];
+
+const drilldown_data = [
+  {
+    xAxis: 1,
+    name: "F",
+    id: "1",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "FW",
+    id: "2",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "M",
+    id: "3",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "MW",
+    id: "4",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "L",
+    id: "5",
+    data: null
+  },
+  {
+    xAxis: 1,
+    name: "LW",
+    id: "6",
+    data: null
+  },
+
+];
+
+const handleUpdate = function(returned_data) {
+
+  const probability = returned_data.probability;
+
+  series_data[0].data = returned_data.series_data;
+  series_data[1].data = returned_data.error_bar_data;
+
+  // Fill in the drill down data for each lifestage.
+  const returned_drill =  returned_data.drilldown_data;
+  var i;
+  for (i = 0; i < returned_drill.length; i++) {
+    drilldown_data[i].data = returned_data.drilldown_data[i];
+  }
+
+  // Send on to highchart function
+  singleMet_intensity_chart('highchart', series_data, drilldown_data);
+  // Add tooltips to the highchart
+  add_highchart_tooltips(probability);
+};
+
+
+
+//const url = 'http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name+'/'+ metabolite;
+const url = `/met_explore/met_search_highchart_data/${analysis_id}/${tissue_name}/${metabolite}`
+fetch(url)
+.then(res => res.json())//response type
+.then(handleUpdate);
+
+// find all the paragraphs with id peak in the side panel
+$("fieldset[id='click_info']").hide();
+$("fieldset[class^='peak_details']").show();
+$("p[id^='tissue_type']").text('Intensities in ' + tissue_name);
+
+// Add table header tooltips --these are temporary.
+//KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
+function add_highchart_tooltips(probability){
+  $('#I').tooltip({title: "MS peak has been Identified as " + metabolite + " using a library standard", placement: "top"});
+  $('#F').tooltip({title: "MS/MS Fragmentation data suggests that a peak is "+ probability + "% likely to be "+ metabolite, placement: "top"});
+  $('#A').tooltip({title: "This peak, annotated as Histidine, also annotates 15 other compounds", placement: "top"});
+};
+};
+
 function add_met_tooltips(obj){
 
     $('.AM_met_WT_ratio').tooltip({title: "Fold Change of metabolite Intensity in Adult Male vs Whole Fly", placement: "top"});
@@ -175,6 +250,7 @@ function add_met_tooltips(obj){
     $('.L_met_WT_ratio').tooltip({title: "Fold change of metabolite Intensity in Larvae vs Whole Fly", placement: "top"});
 
 }
+
 
 function updateEnzymeSidePanel(obj){
     let tissue_name = $(obj).children().first().text();
@@ -185,5 +261,10 @@ function updateEnzymeSidePanel(obj){
     $("legend[class^='tissue']").text(tissue_name);
 }
 
-
-export {initialise_table, init_met_side_table, show_hide_tables, updateEnzymeSidePanel, add_met_tooltips }
+export {initialise_table,
+        add_met_tootips,
+        init_met_side_table,
+        show_hide_tables,
+        updateMetSidePanel,
+        updateEnzymeSidePanel,
+      }

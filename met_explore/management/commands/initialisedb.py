@@ -7,37 +7,42 @@ from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import set_log_level_info
 from met_explore.peak_selection import PeakSelector
 from met_explore.population_scripts import populate_samples, populate_peaks_cmpds_annots, add_related_chebis, \
-    populate_peaksamples
+    populate_peaksamples, populate_analysis_comparisions
 
 
 # Run from the command line using:
-# python manage.py initialisedb 'tissues_life_stages_v2.csv' '67_peak_cmpd_export_1.json' '67_peak_int_export.json'
+# python manage.py initialisedb 'tissues_life_stages_v2.csv' '67_peak_cmpd_export_1.json' '67_peak_int_export.json' 'flymet_analysis_config.json'
 # This should be done after deleting DB and removing all migrations.
 
 
 class Command(BaseCommand):
     args = 'Takes in the FlyMet tissue/sample csv file [0] along with Peak [1] and Intensity [2] json files ' \
            'exported from PiMP'
-    help = 'Takes in the above files assigns peaks to compounds and inialises the FlyMet DB ' \
+    help = 'Takes in the above files assigns peaks to compounds and initialises the FlyMet DB ' \
            'FlyMet DB'
 
     def add_arguments(self, parser):
         parser.add_argument('sample_csv', type=str)
         parser.add_argument('peak_json', type=str)
         parser.add_argument('int_json', type=str)
+        parser.add_argument('analysis_json', type=str)
 
     def handle(self, *args, **options):
 
         sample_csv = options['sample_csv']
         peak_json = options['peak_json']
         int_json = options['int_json']
+        analysis_json= options['analysis_json']
 
         try:
             set_log_level_info()
-            logger.info("the files we are using are: %s %s %s" % (sample_csv, peak_json, int_json))
+            logger.info("the files we are using are: %s %s %s %s" % (sample_csv, peak_json, int_json, analysis_json))
 
             # Populate sample information to database
             populate_samples(sample_csv)
+
+            # Populate the information relating to the different Analyses and their comparisons.
+            populate_analysis_comparisions(analysis_json)
 
             # Add Chebi IDs and other identifiers. Additionally ensure Chebi IDs represent unique cmpds.
             peak_select = PeakSelector(peak_json, int_json)
@@ -70,7 +75,7 @@ class Command(BaseCommand):
             compound_select.add_preferred_annotations(single_cmpds_df)
             compound_select.update_std_cmpds()
 
-            logger.info('Completed')
+            logger.info('DB initialisation complete')
 
         except Exception as e:
             traceback.print_exc()

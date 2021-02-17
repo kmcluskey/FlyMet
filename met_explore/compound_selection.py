@@ -5,16 +5,18 @@ import traceback
 
 import numpy as np
 import pandas as pd
+import itertools
 from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
 
-from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_factor_of_sample
+from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_group_names
 
 k = KEGG()
 
-from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, Factor
+from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, \
+    AnalysisComparison, Analysis, Group
 
 INTENSITY_FILE_NAME = 'current_int_df'
 HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
@@ -140,17 +142,24 @@ class CompoundSelector(object):
 
         return int_df
 
-    def get_group_df(self, peaks):
+    def  get_group_df(self, analysis, peaks):
 
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
 
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
-                                                                                            'sample_id__group')
+                                                                                            'sample_id__sample_group__name')
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
-        group_series = int_df.groupby(["peak", "group"]).apply(self.get_average)
+
+        # gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
+        # gp_ids = set(itertools.chain(*gp_ids_all))
+        group_names = get_group_names(analysis)
+
+        analysis_int_df = int_df[int_df['group'].isin(group_names)]
+
+        group_series = analysis_int_df.groupby(["peak", "group"]).apply(self.get_average)
         # Put the returned series into a DF (KMCL: no idea why I can't keep the DF with the line above but this works)
         gp_df = group_series.to_frame()
         # Remove groups from the index and just keep peaks.
@@ -190,7 +199,7 @@ class CompoundSelector(object):
 
         for group in sample_groups:
             logger.info("Working on group %s" % group)
-            gp_samples = Sample.objects.filter(group=group)
+            gp_samples = Sample.objects.filter(sample_group__name=group)
             for i in df_index:
                 int_list = []
                 for g in gp_samples:
@@ -219,31 +228,35 @@ class CompoundSelector(object):
         :param column_names:This is the names of the groups.
         :return: Dictionary with group: user-friendly column name
         """
+
         group_name_dict = {}
+        data_name_dict = {}
         groups = column_names
 
         for g in groups:
             if g == 'max_value':
-                group_name_dict[g] = "Max" + " " + "Value"
+                data_name_dict[g] = "Max" + " " + "Value"
             elif g == 'Metabolite':
-                group_name_dict[g] = g
+                data_name_dict[g] = g
             elif g == 'cmpd_id':
-                group_name_dict[g] = g
+                data_name_dict[g] = g
             elif g == 'm_z':
-                group_name_dict[g] = "m/z"
+                data_name_dict[g] = "m/z"
             elif g == 'rt':
-                group_name_dict[g] = "RT"
+                data_name_dict[g] = "RT"
             elif g == 'id':
-                group_name_dict[g] = "Peak ID"
+                data_name_dict[g] = "Peak ID"
             else:
-                samples = Sample.objects.filter(group=g)
+                samples = Sample.objects.filter(sample_group__name=g)
                 if len(samples) > 0:
                     first_sample = samples[0] # Get the first sample of this group.
                     tissue = first_sample.tissue
+                    if tissue=='nan':
+                        tissue = first_sample.age #Fixme: this is just for flymet if this is not tissue it will be age.
                     ls = first_sample.life_stage
                     group_name_dict[g] = tissue + " " + "(" + ls + ")"
 
-        return group_name_dict
+        return group_name_dict, data_name_dict
 
     # KMcL: I think this is will only work with an intensity df of the high confidence DF.
     def get_single_cmpd_df(self, hc_int_df):
@@ -332,7 +345,13 @@ class CompoundSelector(object):
         :param tissue: The tissue of interest
         :return: The groups that this tissue is found in
         """
-        filtered_sps = get_samples_by_factor('tissue', tissue)
+        #Fixme: this will need to be rewritten for more generic factors.
+        if get_samples_by_factor('tissue', tissue):
+
+            filtered_sps = get_samples_by_factor('tissue', tissue)
+        else:
+            filtered_sps = get_samples_by_factor('age', tissue)
+
         groups = set([f.group for f in filtered_sps])
         lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)
         life_stages = [ls[1] for ls in lifestage_dict.values()]
@@ -369,6 +388,9 @@ class CompoundSelector(object):
 
         return gp_int_dict
 
+    #Fixme: This should be related with the factors for the groups. For a group get the name of the factors and
+    # create this dictionary if desired.
+
     def get_group_tissue_ls_dicts(self, samples):
         # Given the name of the samples get dictionaries giving the groups: lifestage and/or tissue type of the group.
 
@@ -377,10 +399,14 @@ class CompoundSelector(object):
         groups = set([s.group for s in samples])
 
         # Get the first sample with of the given group and get the tissue type
-
+        #Fixme: should be fixed so that the code is more generic.
         for gp in groups:
-            group_attributes = Sample.objects.filter(group=gp)[0]
-            gp_tissue_ls_dict[gp] = [group_attributes.tissue, group_attributes.life_stage]
+            group_attributes = Sample.objects.filter(sample_group__name=gp)[0]
+            if group_attributes.tissue != 'nan':
+                factor = group_attributes.tissue
+            else:
+                factor = group_attributes.age
+            gp_tissue_ls_dict[gp] = [factor, group_attributes.life_stage]
 
         return gp_tissue_ls_dict
 
@@ -393,7 +419,7 @@ class CompoundSelector(object):
 
         met_int_df = int_df.loc[peak_id]
 
-        sample_group = Sample.objects.filter(group=group)
+        sample_group = Sample.objects.filter(sample_group__name=group)
         sample_names = [s.name for s in sample_group]
 
         sample_ints = met_int_df[sample_names].values[0]
@@ -495,7 +521,7 @@ def get_kegg_id(cmpd_name):
     :return: The kegg_id associated with the compound name or None if an association doesn't exist
     """
 
-    logger.info ('finding a ID for %s', cmpd_name)
+    logger.info ('finding a ID for %s' % cmpd_name)
 
     try:
         res = k.find('compound', cmpd_name)

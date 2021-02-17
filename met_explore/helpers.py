@@ -4,11 +4,24 @@ import os
 import pathlib
 import pickle
 import sys
+import re
+import itertools
 
 from loguru import logger
 
-from met_explore.models import Factor
+from met_explore.models import Factor, Group, Analysis, AnalysisComparison
 
+
+def atoi(text):
+    return int(text) if text.isdigit() else text
+
+def natural_keys(text):
+    '''
+    alist.sort(key=natural_keys) sorts in human order
+    http://nedbatchelder.com/blog/200712/human_sorting.html
+    (See Toothy's implementation in the comments)
+    '''
+    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
 
 def get_filename_from_string(fname):
     """
@@ -89,4 +102,27 @@ def get_samples_by_factors(names, values):
 
 def get_factor_of_sample(sample, name):
     results = Factor.objects.filter(sample=sample, name=name)
-    return results.first()
+    return results.first
+
+def get_control_from_case(case, analysis_comparisions):
+    """
+    :param case: The group name of the sample that are the case in the study
+    :return: String of the control group name
+    """
+    group = Group.objects.get(name=case)
+    control = analysis_comparisions.get(case_group=group).control_group.name
+
+    return control
+
+def get_group_names(analysis):
+    """
+    A method to get all of the names of the groups given an analysis
+    :param analysis:
+    :return: list of group names (string)
+    """
+
+    gp_ids_all = ((AnalysisComparison.objects.filter(analysis=analysis).values_list('control_group', 'case_group')))
+    gp_ids = set(itertools.chain(*gp_ids_all))
+    group_names = [Group.objects.get(id=g).name for g in gp_ids]
+
+    return group_names

@@ -24,17 +24,21 @@
         </p>
 
       <p class="mt-2 lead">
-        Search for <i> individual Drosophila </i> metabolites or pathways:
+        Search for <i> individual Drosophila </i> metabolites or pathways in Tissues or Aged flies:
       </p>
     </div>
+
+    <nav>
+      <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
+        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+      </div>
+    </nav>
 
     <!--Tabs to go to new pages-->
     <div class="card text-center">
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="{% url 'enzyme_search' %}">Enzymes</a>
-          </li> -->
           <li class="nav-item">
             <a class="nav-link" href="{% url 'metabolite_search' %}">Metabolites</a>
           </li>

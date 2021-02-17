@@ -4,6 +4,7 @@ require('bootstrap/js/dist/tooltip');
 
 const MIN_VAL = 3000;
 
+
 function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_title, ajax_url, headerTips){
     let t0 = performance.now();
     const tName = '#'+tableName;
@@ -14,8 +15,7 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
                 value: '-', position: 'bottom'
             });
 
-
-    const peak_data = document.getElementById('peak_list').getAttribute('url');
+    // const peak_data = document.getElementById('peak_list').getAttribute('url');
 
     let table = $(tName).DataTable({
 
@@ -74,7 +74,6 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
                       .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
 
                     //If the column header doesn't include the string Tissue then colour the column.
-
                     if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
                             if (lowpoint > 100){
@@ -137,19 +136,130 @@ function initialise_pcompare_table(tableName, lowpoint, midpoint, highpoint, nd_
         // Add the tooltips to the dataTable header
         "initComplete": headerTips
 
-    })
+    });
 
 //Return the table so that the it is resuable.
 
     let t1 = performance.now();
     console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
-    console.log("returning table")
     return table;
-}
+};
+
+// This is the fucntion used in the pathway-metabolites pages - for several reasons resuing the
+// initialise_pcompare_table (above) didn't work but it could probably be refactored to do so.
+function pcompare_pathways_table(tableName, lowpoint, midpoint, highpoint, headerTips){
+    let t0 = performance.now();
+    const tName = '#'+tableName;
+    let table = $(tName).DataTable({
+
+      drawCallback: function(settings){
+          /* Add some tooltips for demonstration purposes */
+          $('.NotDetected2').tooltip({title: "This MS peak was not detected for this tissue/life stage combination", placement: "top", position:"relative"})
+      },
+
+        // responsive: true,
+        "scrollY": "100vh",
+        "scrollCollapse": true,
+        "scrollX": true,
+        fixedheader: true,
+        colReorder: true,
+        select: {
+            style: 'single'
+        },
+        //code to override bootstrap and keep buttons on one line.
+        dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
+        "<'row'<'col-sm-12'rt>>" +
+        "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        buttons: [ 'copy',
+
+        {
+            extend: 'colvis',
+            columns: ':gt(0)' //do not include first column in list of columns to remove
+        },
+
+            {
+                extend: 'collection',
+                text: 'Export',
+                buttons: [ 'csv', 'pdf' ]
+            }
+        ],
+        //Code to add the colours to the data - temporary numbers have been added.
+
+        "columnDefs": [
+            {className: "dt-center", "targets":"_all"},
+            {
+
+                "targets": '_all',
+                "createdCell": function (td, cellData, rowData, row, col) {
+
+                    let $td = $(td);
+                    // console.log($td.text())
+                    let $th = $(".col").eq($td.index());
+
+                    const colorScale = d3.scaleLinear()
+                        .domain([lowpoint, midpoint, highpoint])
+                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                    //If the column header doesn't include the string Tissue then colour the column.
+
+                    if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
+                        if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
+                            // if (cellData==0.00){
+                            //   cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                            // };
+                            const colour = colorScale(cellData);
+                            $(td).css('background-color', colour)
+                        }
+                    }
+                    // Format the column numbers
+                    //Ignore for the peak ID
+                    if ($th.text().includes('Peak ID')){
+                      $(td).addClass('"text-center"')
+                    }
+                    // If m_z or RT reformat the number to 2 dec places.
+                   else if ($th.text().includes('RT')){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(2)
+                      $td.empty();
+                      $td.append(num);
+                    }
+                    else if ($th.text().includes('m/z')){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(4)
+                      $td.empty();
+                      $td.append(num);
+                    }
+
+                    // If the number is some of the tissue data
+                    else {
+                      const value = $td.text()
+                      if (value == '-') {
+                        $(td).addClass("NotDetected2");
+                      }
+                      else {
+                      const num = parseFloat(value).toFixed(2)
+                      $td.empty();
+                      $td.append(num);
+                      $(td).addClass("data");
+                    }
+                    }
+                    }
+                  }
+        ],
+
+        // Add the tooltips to the dataTable header
+        "initComplete": headerTips
+      });
+
+        //Return the table so that the it is resuable.
+        let t1 = performance.now();
+        console.log("Time to initialise the table " + (t1 - t0) + " milliseconds.")
+        return table;
+        }
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updatePeakSidePanel(obj, pk_side_url, pk_side_text){
+function updatePeakSidePanel(obj, pk_side_url, pk_side_text, met_url){
   let peak_id = $(obj).children().first().text();
   console.log("pk_side_text", pk_side_text)
   console.log("peak_side ", pk_side_url)
@@ -162,11 +272,11 @@ function updatePeakSidePanel(obj, pk_side_url, pk_side_text){
     let radio_all_check = radio_all.checked
 
     // Update the peak table
-    updatePeakData(returned_data, radio_all_check)
+    updatePeakData(returned_data, radio_all_check, met_url)
 
     // Redraw the adduct data if the radio button is clicked.
     $("input[name='radio_adducts']" ).click(function(){
-      {updateAdducts(returned_data)};
+      {updateAdducts(returned_data, met_url)};
     });
 
 };
@@ -184,16 +294,16 @@ $("p[id^='peak_id']").html(`<a href="${pk_url}" target="_blank" >${pk_side_text}
 
 }
 //
-function updateAdducts(returned_data){
+function updateAdducts(returned_data, met_url){
 
-  console.log("Updating adducts")
+  console.log("Updating adducts with", met_url)
   let radio_all = document.getElementById('all_adducts');
   let radio_all_check = radio_all.checked
-  updatePeakData(returned_data, radio_all_check);
+  updatePeakData(returned_data, radio_all_check, met_url);
 }
 
 // Update the compound names and any details we want on the side panel
-function updatePeakData(returned_data, radio_all_check){
+function updatePeakData(returned_data, radio_all_check, met_url){
 
   const cmpd_names = returned_data.cmpd_names;
   const adducts = returned_data.adducts;
@@ -216,10 +326,9 @@ function updatePeakData(returned_data, radio_all_check){
       const conf = conf_fact[i];
       const cmpd_id = cmpd_ids[i];
 
-
       var nm1 = Number(neutral_mass[i]);
       var nm = nm1.toFixed(4);
-      var url_met = `met_ex_all/${cmpd_id}`
+      var url_met = `${met_url}${cmpd_id}`
 
       let success ="";
       let identified="";
@@ -257,6 +366,19 @@ function updatePeakData(returned_data, radio_all_check){
     }
 };
 
+function get_lifestage(ls_string){
+
+  let ls = "";
+  if (ls_string=="(F)")
+    ls ="Females";
+  else if (ls_string=="(M)")
+      ls ="Males";
+  else if (ls_string=="(L)")
+        ls ="Larvae";
+
+  return ls
+};
+
 //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
 function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.I').tooltip({title: `This MS peak has been Identified as ${id_name} using a library standard`, placement: "top"});
@@ -264,7 +386,148 @@ function add_side_tooltips(id_name, frag_name, no_other_cmpds){
   $('.A').tooltip({title: `This peak also annotates ${no_other_cmpds} other compounds`, placement: "top"});
 }
 
+function pathways_pcompare_table(tableName, lowpoint, midpoint, highpoint){
+    // let t0 = performance.now();
+    const tName = '#'+tableName;
+    let table = $(tName).DataTable({
+
+      drawCallback: function(settings){
+          /* Add some tooltips for demonstration purposes */
+          $('.NotDetected2').tooltip({title: "This MS peak was not detected for this tissue/life stage combination", placement: "top", position:"relative"})
+      },
+
+        // responsive: true,
+        "scrollY": "100vh",
+        "scrollCollapse": true,
+        "scrollX": true,
+        fixedheader: true,
+        colReorder: true,
+        select: {
+            style: 'single'
+        },
+        //code to override bootstrap and keep buttons on one line.
+        dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
+        "<'row'<'col-sm-12'rt>>" +
+        "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        buttons: [ 'copy',
+
+        {
+            extend: 'colvis',
+            columns: ':gt(0)' //do not include first column in list of columns to remove
+        },
+
+            {
+                extend: 'collection',
+                text: 'Export',
+                buttons: [ 'csv', 'pdf' ]
+            }
+        ],
+        //Code to add the colours to the data - temporary numbers have been added.
+
+        "columnDefs": [
+            {className: "dt-center", "targets":"_all"},
+            {
+
+                "targets": '_all',
+                "createdCell": function (td, cellData, rowData, row, col) {
+
+                    let $td = $(td);
+                    let $th = $(".col").eq($td.index());
+
+                    const colorScale = d3.scaleLinear()
+                        .domain([lowpoint, midpoint, highpoint])
+                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                    //If the column header doesn't include the string Tissue then colour the column.
+
+                    if (!($th.text().includes('Peak ID') || $th.text().includes('m/z') || $th.text().includes('RT'))) {
+                        if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
+                            // if (cellData==0.00){
+                            //   cellData = MIN_VAL //Can't pass zero to the log so choose minimum value
+                            // };
+                            const colour = colorScale(cellData);
+                            $(td).css('background-color', colour)
+                        }
+                    }
+                    // Format the column numbers
+                    //Ignore for the peak ID
+                    if ($th.text().includes('Peak ID')){
+                      $(td).addClass('"text-center"')
+                    }
+                    // If m_z or RT reformat the number to 2 dec places.
+                   else if ($th.text().includes('RT')){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(2)
+                      $td.empty();
+                      $td.append(num);
+                    }
+                    else if ($th.text().includes('m/z')){
+                      const value = $td.text()
+                      const num = parseFloat(value).toFixed(4)
+                      $td.empty();
+                      $td.append(num);
+                    }
+
+                    // If the number is some of the tissue data
+                    else {
+                      const value = $td.text()
+                      if (value == '-') {
+                        $(td).addClass("NotDetected2");
+                      }
+                      else {
+                      const num = parseFloat(value).toFixed(2)
+                      $td.empty();
+                      $td.append(num);
+                      $(td).addClass("data");
+                    }
+                    }
+                    }
+                  }
+        ],
+        // Add the tooltips to the dataTable header
+        "initComplete": function(settings){
+
+                    $(".col").each(function(){
+
+                      let $td = $(this);
+                      let header = $td.text();
+                      let head_split = header.split(" ");
+                      let tissue ="";
+                      let string ="";
+                      let ls="";
+
+                      if (head_split[0]=="m/z"){
+                        string = "mass-to-charge ratio";
+                      }
+                      else if (head_split[0]=="Peak"){
+                        string ="";
+                      }
+                      else if (head_split[0]=="RT"){
+                        string ="Retention Time";
+                      }
+                      else {
+                        tissue =`Fold change between ${head_split[0]} tissue from`;
+                        const header_words = head_split.length;
+                        const ls_check = header_words-1;
+                        ls = get_lifestage(head_split[ls_check])
+                        string = `${tissue} ${ls} and Whole ${ls} flies`
+                      }
+                        //Change the title attribute of the column to the string/tooltip info
+                      $td.attr({title: `${string}`});
+                      $td.attr('data-toggle', "tooltip");
+                      $td.attr('data-placement', "top" );
+                  });
+                  /* Apply the tooltips */
+                  $('[data-toggle="tooltip"]').tooltip({
+                      container: 'body'
+                  });
+              },
+    })
+
+    return table;
+}
+
 export {
-    initialise_pcompare_table,
-    updatePeakSidePanel
+    initialise_pcompare_table, pcompare_pathways_table,
+    updatePeakSidePanel, updateAdducts, get_lifestage
   }

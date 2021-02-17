@@ -9,15 +9,13 @@ from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils import timezone
-from django.views.generic.list import ListView
 from django.core.exceptions import ObjectDoesNotExist
 
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import get_samples_by_factor
-from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation
+from met_explore.helpers import natural_keys, get_control_from_case, get_group_names
+from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 
@@ -76,14 +74,6 @@ def index(request):
     return render(request, 'met_explore/index.html', context)
 
 
-def temp_his_pw(request):
-    """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
-    """
-
-    return render(request, 'met_explore/temp_his_pw.html')
-
 
 def about(request):
     return render(request, 'met_explore/about.html')
@@ -128,8 +118,6 @@ def metabolite_data(request, cmpd_ids):
     :param request: Request for the metabolite data for the Met Explorer all page
     :return: The cached url of the ajax data for the metabolite data table.
     """
-
-    logger.debug("METABOLITE DATA REQUEST")
 
     logger.info("Metabolite data requested")
 
@@ -196,100 +184,18 @@ def metabolite_search(request):
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('metabolite_search', None)
-        samples = Sample.objects.all()
-        tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
 
-        met_table_data = []
-        min = MIN
-        max = MAX
-        mean = MEAN
-        references = None
-        pathways = {}
+        analysis = Analysis.objects.get(name="Tissue Comparisons")
 
-        # If we get a metabolite sent from the view
-        if search_query is not None:
-
-            met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
-
-            logger.debug(met_search_df)
-
-            # If there is a row in the DF matching the searched for metabolite
-            if met_search_df.shape[0] == 1:
-
-                peak_id = met_search_df.index.values[0]
-                cmpd_id = met_search_df.cmpd_id.values[0]
-
-                # logger.debug ("COMPOUND_ID %s" % cmpd_id)
-
-                logger.info("Getting the details for %s " % search_query)
-
-                # Get the metabolite/tissue comparison DF
-
-                columns = ['F', 'M', 'L']
-                df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
-                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
-                gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
-
-                # Fill in the DF with Tissue/Life stages and intensities.
-                for tissue in tissues:
-                    for ls in columns:
-                        for g in gp_tissue_ls_dict:
-                            if gp_tissue_ls_dict[g] == [tissue, ls]:
-                                value = met_search_df.iloc[0][g]
-                                df.loc[tissue, ls] = value
-                                nm_samples_df.loc[tissue, ls] = value
-
-                logger.debug("NOT read samples %s" % nm_samples_df)
-                # Standardise the DF by dividing by the Whole cell/Lifestage
-                whole_row = df.loc['Whole']
-                sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
-                log_df = np.log2(sdf)
-                view_df = log_df.drop(index='Whole').round(2)
-
-                nm_df = nm_samples_df.drop(index='Whole')
-
-                nm2 = nm_df[nm_df == 'NM']
-                log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
-
-                logger.debug(log_nm_df)
-
-                log_nm = log_nm_df.fillna("-")
-
-                log_values = log_nm.values.tolist()  # This is what we are sending to the user.
-
-                index = view_df.index.tolist()
-                # Get a list to return to the view
-                met_table_data = []
-
-                for t, v in zip(index, log_values):
-                    met_table_data.append(([t] + v))
-
-                actual_min = np.nanmin(view_df)
-                actual_max = np.nanmax(view_df)
-                actual_mean = np.nanmean(view_df)
-
-                # If the max and min values are outwith the standard range
-                if (actual_min < MIN) or (actual_max > MAX):
-                    min = actual_min
-                    max = actual_max
-                    mean = actual_mean
-
-                # logger.debug ("HERE %s %s" % (peak_id, cmpd_id))
-                # Here this no longer works a treat
-                references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
-                # Get the pathways associated with this compound ID
-                pathway_ids = get_cmpd_pwys(cmpd_id)
-
-                # Get pathway names based on their IDS.
-                pwy_name_id_dict = get_name_id_dict()
-
-
-                if pathway_ids:
-                    pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
+        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
 
         logger.debug("met_table_data %s" % met_table_data)
+        logger.debug("columns %s" % columns)
+
         context = {
+            'columns': columns,
             'metabolite': search_query,
+            'analysis_id': analysis.id,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
@@ -303,86 +209,58 @@ def metabolite_search(request):
         return render(request, 'met_explore/metabolite_search.html', context)
 
 
-def enzyme_search(request):
+def metabolite_search_age(request):
     """
     View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
+    # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
 
-    return render(request, 'met_explore/enzyme_search.html')
+    if request.method == 'GET':  # If the URL is loaded
 
+        search_query = request.GET.get('metabolite_search_age', None)
+        analysis = Analysis.objects.get(name="Age Comparisons")
 
-def tissue_search(request):
-    """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
-    """
+        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
 
-    return render(request, 'met_explore/tissue_search.html')
+        logger.debug("met_table_data %s " % met_table_data)
+        logger.debug("with columns %s" % columns)
+
+        context = {
+            'columns': columns,
+            'metabolite': search_query,
+            'analysis_id': analysis.id,
+            'met_table_data': met_table_data,
+            'min': min,
+            'max': max,
+            'mean': mean,
+            'pathways':pathways,
+            'references': references,
+            'json_url': reverse('get_metabolite_names')
+        }
+
+        logger.debug("The references are %s" % references)
+        return render(request, 'met_explore/metabolite_search_age.html', context)
 
 
 def pathway_search(request):
     """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
+    View to return the individual pathway search page
+    :returns: Render met_explore/pathway_search
 
     """
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('pathway_search', None)
-        pathway_id = ""
-        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data()
+        analysis = Analysis.objects.get(name="Tissue Comparisons")
 
-        # Lists for the little pathway summary table.
-        summ_values = []
-        pwy_table_data = []
+        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
+        pathway_id, summ_values, pwy_table_data = "", [], []
 
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            pathway_id_names_dict = get_pathway_id_names_dict()
-
-            try:
-                pathway_id = pathway_id_names_dict[search_query]
-                summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
-                summ_values_orig = summ_table.values.flatten().tolist()
-                summ_values = [int(i) for i in summ_values_orig[:-1]]
-
-                summ_values.append(summ_values_orig[-1])
-
-                single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
-
-                samples = Sample.objects.all()
-                tissues = list(set([s.tissue for s in samples]))  # List of individual tissues.
-
-                # tissues.remove('Whole') #Whole not present in this table
-                columns = ['F', 'M', 'L']
-                nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
-
-                for tissue in tissues:
-                    for ls in columns:
-                        try:
-                            value = single_pwy_df.iloc[0][tissue + ' (' + ls + ')']
-                            nm_samples_df.loc[tissue, ls] = value
-                        except KeyError as e:
-                            pass
-
-                pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
-
-                index = nm_samples_df.index.tolist()
-                # Get a list to return to the view
-                pwy_table_data = []
-
-                for t, v in zip(index, pwy_values):
-                    pwy_table_data .append(([t] + v))
-
-
-
-            except KeyError:
-
-                logger.warning("A pathway name %s was not passed to the search" % search_query)
-                pass
-
+            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
@@ -401,6 +279,101 @@ def pathway_search(request):
 
         return render(request, 'met_explore/pathway_search.html', context)
 
+def pathway_age_search(request):
+    """
+    View to return the pathway age search
+    :returns: Render met_explore/pathway_age_search
+
+    """
+    if request.method == 'GET':  # If the URL is loaded
+
+        search_query = request.GET.get('pathway_age_search', None)
+        analysis = Analysis.objects.get(name="Age Comparisons")
+
+        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
+        pathway_id, summ_values, pwy_table_data = "", [], []
+
+        # If we get a metabolite sent from the view
+        if search_query is not None:
+
+            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+
+        reactome_token = get_highlight_token()
+        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+
+        context = {
+            'pwy_table_data': pwy_table_data,
+            'pals_min': pals_min,
+            'pals_max': pals_max,
+            'pals_mean': pals_mean,
+            'reactome_token': reactome_token,
+            'pathway_name': search_query,
+            'pathway_id': pathway_id,
+            'summ_values': summ_values,
+            'json_url': reverse('get_pathway_names')
+        }
+
+        return render(request, 'met_explore/pathway_age_search.html', context)
+
+
+def get_pwy_search_table(pals_df, search_query, analysis):
+
+    logger.info("getting %s table data" %search_query)
+
+    pathway_id, summ_values, pwy_table_data = "", [], []
+    pathway_id_names_dict = get_pathway_id_names_dict()
+
+    try:
+        pathway_id = pathway_id_names_dict[search_query]
+        summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
+        summ_values_orig = summ_table.values.flatten().tolist()
+        summ_values = [int(i) for i in summ_values_orig[:-1]]
+
+        summ_values.append(summ_values_orig[-1])
+
+        single_pwy_df = pals_df[pals_df['Reactome ID'] == pathway_id]
+
+        samples = analysis.get_case_samples()
+        control_s = analysis.get_control_samples()
+
+        # Fixme this should be rewitten as factors.
+        real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+        age_tissues = list(set([s.age for s in samples if s.age != 'nan']))  # List of individual tissues.
+        all_tissues = real_tissues + age_tissues
+
+        control_tissues = list(set([s.tissue for s in control_s if s.tissue != 'nan']))
+
+        tissues = [t for t in all_tissues if t not in control_tissues]
+
+        # Fixme: this is the factor groups required for the tables - could be more general?
+        columns = list(set([s.life_stage for s in control_s if s.life_stage != 'nan']))
+
+        nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+
+        for tissue in tissues:
+            for ls in columns:
+                try:
+                    value = single_pwy_df.iloc[0][tissue + ' (' + ls + ')']
+                    nm_samples_df.loc[tissue, ls] = value
+                except KeyError as e:
+                    pass
+
+        pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
+
+        index = nm_samples_df.index.tolist()
+
+        # Get a list to return to the view
+        for t, v in zip(index, pwy_values):
+            pwy_table_data.append(([t] + v))
+
+    except KeyError:
+
+        logger.warning("A pathway name %s was not passed to the search" % search_query)
+        pass
+
+
+    return pathway_id, summ_values, pwy_table_data
+
 
 def pathway_metabolites(request):
     """
@@ -408,21 +381,14 @@ def pathway_metabolites(request):
     :returns: Render met_explore/metabolite_search
 
     """
-
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('pathway_metabolites', None)
-        met_peak_list = []
-        metabolite_names = []
-        cmpd_id_list = []
-        min = MIN
-        max = MAX
-        mean = MEAN
-        column_headers = []
+        met_peak_list, metabolite_names, cmpd_id_list, column_headers, summ_values = [], [], [], [], []
+        min, max, mean = MIN, MAX, MEAN
 
-        pals_df, _, _, _ = get_pals_view_data()
+        analysis = Analysis.objects.get(name="Tissue Comparisons")
+        pals_df, _, _, _ = get_pals_view_data(analysis)
 
-        # Lists for the little pathway summary table.
-        summ_values = []
         # If we get a metabolite sent from the view
         if search_query is not None:
 
@@ -430,15 +396,14 @@ def pathway_metabolites(request):
 
             try:
                 pathway_id = pathway_id_names_dict[search_query]
-                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id)
+                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, analysis)
 
-                view_df, min, mean, max = get_all_peaks_compare_df()
-                column_names = view_df.columns.tolist()
+                analysis = Analysis.objects.get(name='Tissue Comparisons')
 
-                group_names = cmpd_selector.get_list_view_column_names(column_names)
+                view_df, min, mean, max = get_all_peaks_compare_df(analysis)
 
-                for c in column_names:
-                    column_headers.append(group_names[c])  #
+                sorted_view_df = sort_df_and_headers(view_df)
+                column_headers = sorted_view_df.columns.tolist()
 
                 # Here and send back the list of reactome compounds too...
                 summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
@@ -476,36 +441,95 @@ def pathway_metabolites(request):
 
         return render(request, 'met_explore/pathway_metabolites.html', context)
 
-
-def met_ex_gconditions(request):
+def pathway_age_metabolites(request):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
+
     """
+    if request.method == 'GET':  # If the URL is loaded
+        search_query = request.GET.get('pathway_age_metabolites', None)
+        met_peak_list, metabolite_names, cmpd_id_list, column_headers, summ_values  = [],[],[],[],[]
+        min, max, mean = MIN, MAX, MEAN
 
-    return render(request, 'met_explore/met_ex_gconditions.html')
+        analysis = Analysis.objects.get(name="Age Comparisons")
+
+        pals_df, _, _, _ = get_pals_view_data(analysis)
+
+        # If we get a metabolite sent from the view
+        if search_query is not None:
+
+            pathway_id_names_dict = get_pathway_id_names_dict()
+
+            try:
+                pathway_id = pathway_id_names_dict[search_query]
+                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, analysis)
+
+                view_df, min, mean, max = get_all_peaks_compare_df(analysis)
+
+                sorted_view_df = sort_df_and_headers(view_df)
+                column_headers = sorted_view_df.columns.tolist()
+
+                # Here and send back the list of reactome compounds too...
+                summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
+                summ_values_orig = summ_table.values.flatten().tolist()
+                summ_values = [int(i) for i in summ_values_orig[:-1]]
+
+                summ_values.append(summ_values_orig[-1])
+
+            except KeyError:
+
+                logger.warning("A pathway name %s was not passed to the search" % search_query)
+                pass
 
 
-def met_ex_mutants(request):
-    """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
-    """
+        num_metabolites = len(metabolite_names)
 
-    return render(request, 'met_explore/met_ex_mutants.html')
+        name_data = zip(cmpd_id_list, metabolite_names, met_peak_list)
+        name_data_list = list(name_data)
+
+        # Get the summary list for know/all metabolites in a pathway
+
+        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+        context = {
+            'cmpd_id_list': cmpd_id_list,
+            'name_data': name_data_list,
+            'metabolite_names': metabolite_names,
+            'met_peak_list': met_peak_list,
+            'num_metabolites': num_metabolites,
+            'pathway_name': search_query,
+            'columns': column_headers, 'max_value': max, 'min_value': min, 'mean_value': mean,
+            'summ_values': summ_values,
+            'json_url': reverse('get_pathway_names')
+        }
+
+        return render(request, 'met_explore/pathway_age_metabolites.html', context)
+
 
 
 def met_ex_all(request, cmpd_list):
+    """
+    View to return the metabolite search page
+    :returns: Render met_explore/metabolite_search
+    """
+
+    columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
+    response = {'cmpd_list': cmpd_list, 'columns': columns}
+
+    return render(request, 'met_explore/met_ex_all.html', response)
+
+
+def met_age_all(request, cmpd_list):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
     """
 
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
-
     response = {'cmpd_list': cmpd_list, 'columns': columns}
 
-    return render(request, 'met_explore/met_ex_all.html', response)
+    return render(request, 'met_explore/met_age_all.html', response)
+
 
 
 def peak_ex_compare(request, peak_compare_list):
@@ -514,6 +538,9 @@ def peak_ex_compare(request, peak_compare_list):
        :param peak_list: The list of peaks required for the page
        :return: The template and required parameters for the peak explorer page.
        """
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
     if peak_compare_list == "All":
         peaks = Peak.objects.all()
     else:
@@ -523,16 +550,10 @@ def peak_ex_compare(request, peak_compare_list):
 
     logger.info("Peak comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df(peaks)
-    column_names = view_df.columns.tolist()
+    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    sorted_view_df = sort_df_and_headers(view_df)
+    column_headers = sorted_view_df.columns.tolist()
 
     stop = timeit.default_timer()
 
@@ -544,6 +565,37 @@ def peak_ex_compare(request, peak_compare_list):
     return render(request, 'met_explore/peak_ex_compare.html', response)
 
 
+def peak_age_compare(request, peak_compare_list):
+    """
+       :param request: The peak Explorer page
+       :param peak_list: The list of peaks required for the page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
+    if peak_compare_list == "All":
+        peaks = Peak.objects.all()
+    else:
+        peak_list_split = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list_split))
+
+    logger.info("Peak comparison table requested")
+    start = timeit.default_timer()
+    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
+
+    sorted_view_df = sort_df_and_headers(view_df)
+    column_headers = sorted_view_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
+
+    return render(request, 'met_explore/peak_age_compare.html', response)
+
+
 def peak_mf_compare(request):
     """
        :param request: The peak Explorer page
@@ -552,17 +604,11 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_mf_compare_df()
-    column_names = view_df.columns.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
+    analysis = Analysis.objects.get(name="M/F comparisons")
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+    column_headers = get_peak_mf_header(view_df)
 
-    column_headers = []
-    for c in column_names:
-        new_header = group_names[c]
-        if new_header.endswith('(F)'):
-            new_header = new_header.replace('(F)', "(F/M)")
-        column_headers.append(new_header)
 
     stop = timeit.default_timer()
 
@@ -571,6 +617,30 @@ def peak_mf_compare(request):
                 'mean_value': mean}
 
     return render(request, 'met_explore/peak_mf_compare.html', response)
+
+
+def peak_mf_age_compare(request):
+    """
+       :param request: The peak Explorer page
+       :return: The template and required parameters for the peak explorer page.
+       """
+
+    logger.info("Peak m/f age comparison table requested")
+    start = timeit.default_timer()
+
+    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+
+    column_headers = get_peak_mf_header(view_df)
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+                'mean_value': mean}
+
+    return render(request, 'met_explore/peak_mf_age_compare.html', response)
+
 
 
 def peak_explorer(request, peak_list):
@@ -583,14 +653,13 @@ def peak_explorer(request, peak_list):
 
     logger.info("Peak table requested")
     start = timeit.default_timer()
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
     peaks = Peak.objects.all()
 
     required_data = peaks.values('id', 'm_z', 'rt')
 
-    # peak_ids = [p.id for p in peaks]
-
     peak_df = pd.DataFrame.from_records(list(required_data))
-
     peak_df[['m_z', 'rt']].round(3).astype(str)
 
     # Get all of the peaks and all of he intensities of the sample files
@@ -599,10 +668,10 @@ def peak_explorer(request, peak_list):
     # group_df = cmpd_selector.get_group_df(peaks)
 
     ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
-
+    # cache.delete('my_group_df')
     if cache.get('my_group_df') is None:
         logger.debug("we dont have cache so running the function")
-        cache.set('my_group_df', cmpd_selector.get_group_df(peaks), 60 * 18000)
+        cache.set('my_group_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
         group_df = cache.get('my_group_df')
     else:
         logger.debug("we have cache so retrieving it")
@@ -617,15 +686,8 @@ def peak_explorer(request, peak_list):
 
     view_df = pd.merge(peak_df, group_df, on='id')
 
-    column_names = view_df.columns.tolist()
-
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
-
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
-
-    # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+    sorted_df = sort_df_and_headers(view_df)
+    column_headers = sorted_df.columns.tolist()
 
     stop = timeit.default_timer()
 
@@ -635,7 +697,55 @@ def peak_explorer(request, peak_list):
 
     return render(request, 'met_explore/peak_explorer.html', response)
 
-def get_all_peaks_compare_df():
+def peak_age_explorer(request, peak_list):
+    """
+    :param request: The peak Explorer page
+    :return: The template and required parameters for the peak explorer page.
+    """
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
+    logger.debug("PEAK EXPLORER REQUEST for peaks %s" % peak_list)
+
+    logger.info("Peak table requested")
+    start = timeit.default_timer()
+    peaks = Peak.objects.all()
+
+    required_data = peaks.values('id', 'm_z', 'rt')
+
+    peak_df = pd.DataFrame.from_records(list(required_data))
+    peak_df[['m_z', 'rt']].round(3).astype(str)
+
+    # Get all of the peaks and all of he intensities of the sample files
+
+    if cache.get('my_group_age_df') is None:
+        logger.debug("we dont have cache so running the function")
+        cache.set('my_group_age_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get('my_group_age_df')
+    else:
+        logger.debug("we have cache so retrieving it")
+        group_df = cache.get('my_group_age_df')
+
+    max_value = np.nanmax(group_df)
+    min_value = np.nanmin(group_df)
+    mean_value = np.nanmean(group_df)
+    group_df.reset_index(inplace=True)
+
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+    view_df = pd.merge(peak_df, group_df, on='id')
+
+    sorted_df = sort_df_and_headers(view_df)
+    column_headers = sorted_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the peak DF took: %s S" % str(stop - start))
+    response = {'peak_list': peak_list, 'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/peak_age_explorer.html', response)
+
+
+def get_all_peaks_compare_df(analysis):
     """
     A method to return the peak compare DF when all peaks are required and it is better to cache the result.
     :return: The peak_compare DF when all of the peaks are required. This is cached as it is used several times
@@ -643,13 +753,15 @@ def get_all_peaks_compare_df():
 
     peaks = Peak.objects.all()
 
-    if cache.get('all_compare_df') is None:
-        logger.debug("we dont have cache for all_peaks_compare so running the function")
-        cache.set('all_compare_df', get_peak_compare_df(peaks), 60 * 18000)
-        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+    df_name = 'all_compare_df_'+str(analysis.id)
+
+    if cache.get(df_name) is None:
+        logger.debug("we dont have cache for %s so running the function" % df_name)
+        cache.set(df_name, get_peak_compare_df(analysis, peaks), 60 * 18000)
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get(df_name)
     else:
-        logger.debug("we have cache for all_peaks_compare so retrieving it")
-        all_peak_compare_df, min_value, mean_value, max_value = cache.get('all_compare_df')
+        logger.debug("we have cache for %s so retrieving it" % df_name)
+        all_peak_compare_df, min_value, mean_value, max_value = cache.get(df_name)
 
     return all_peak_compare_df, min_value, mean_value, max_value
 
@@ -659,8 +771,8 @@ def pals_data(request):
     :param request: Request for the peak data for the Pathway explorer
     :return: The cached url of the ajax data for the pals data table.
     """
-
-    view_df1, _, _, _ = get_pals_view_data()
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    view_df1, _, _, _ = get_pals_view_data(analysis)
     view_df = view_df1.fillna("-")
     #
     pals_data = view_df.values.tolist()
@@ -669,22 +781,39 @@ def pals_data(request):
     return JsonResponse({'data': pals_data})
 
 
+def pals_age_data(request):
+    """
+    :param request: Request for the peak data for the Pathway explorer
+    :return: The cached url of the ajax data for the pals data table.
+    """
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    view_df1, _, _, _ = get_pals_view_data(analysis)
+    view_df = view_df1.fillna("-")
+    #
+    pals_data = view_df.values.tolist()
+
+    logger.info("returning the pals data ")
+    return JsonResponse({'data': pals_data})
+
 def peak_compare_data(request, peak_compare_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
     if peak_compare_list == "All":
 
         peaks = Peak.objects.all()
-
     else:
         peak_compare_list = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_compare_list))
 
 
-    view_df1, _, _, _ = get_peak_compare_df(peaks)
-    view_df = view_df1.fillna("-")
+    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
+    view_df_sorted = sort_df_and_headers(view_df1)
+    view_df = view_df_sorted.fillna("-")
+
     #
     peak_compare_data = view_df.values.tolist()
 
@@ -698,8 +827,11 @@ def peak_mf_compare_data(request):
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    view_df1, _, _, _ = get_peak_mf_compare_df()
-    view_df = view_df1.fillna("-")
+    analysis = Analysis.objects.get(name="M/F comparisons")
+
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
+    view_df_sorted = sort_df_and_headers(view_df1)
+    view_df = view_df_sorted.fillna("-")
     #
     peak_compare_mf_data = view_df.values.tolist()
 
@@ -707,15 +839,54 @@ def peak_mf_compare_data(request):
     return JsonResponse({'data': peak_compare_mf_data})
 
 
-def peak_data(request, peak_list):
+def peak_age_compare_data(request, peak_compare_list):
+
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
+    if peak_compare_list == "All":
+        peaks = Peak.objects.all()
+
+    else:
+        peak_compare_list = peak_compare_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_compare_list))
+
+    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
+
+    view_df_sorted = sort_df_and_headers(view_df1)
+    view_df = view_df_sorted.fillna("-")
+
+    peak_age_compare_data = view_df.values.tolist()
+
+    logger.info("returning the peak comparison data")
+    return JsonResponse({'data': peak_age_compare_data})
+
+
+def peak_mf_age_data(request):
+    """
+        :param request: Request for the peak data for the Peak Explorer page
+        :return: The cached url of the ajax data for the peak data table.
+        """
+    analysis = Analysis.objects.get(name="Age M/F Comparisons")
+
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
+    view_df_sorted = sort_df_and_headers(view_df1)
+    view_df = view_df_sorted.fillna("-")
+    #
+    peak_compare_mf_data = view_df.values.tolist()
+
+    logger.info("returning the peak comparison data")
+    return JsonResponse({'data': peak_compare_mf_data})
+
+
+def peak_age_data(request, peak_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
+    analysis = Analysis.objects.get(name='Age Comparisons')
+
     if peak_list == "All":
-
         peaks = Peak.objects.all()
-
     else:
         peak_list = peak_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_list))
@@ -725,13 +896,49 @@ def peak_data(request, peak_list):
     peak_df = pd.DataFrame.from_records(required_data)
 
     # # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    view_df1 = pd.merge(peak_df, group_df, on='id')
+
+    #Sort df to match headers
+    view_df = sort_df_and_headers(view_df1)
+    view_df = view_df.fillna("-")
+
+    peak_data = view_df.values.tolist()
+
+    logger.info("returning the peak data", peak_data)
+    return JsonResponse({'data': peak_data})
+
+def peak_data(request, peak_list):
+    """
+    :param request: Request for the peak data for the Peak Explorer page
+    :return: The cached url of the ajax data for the peak data table.
+    """
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    if peak_list == "All":
+        peaks = Peak.objects.all()
+
+    else:
+        peak_list = peak_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list))
+
+    required_data = peaks.values('id', 'm_z', 'rt')
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    # # Get all of the peaks and all of the intensities of the sample files
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     group_df.reset_index(inplace=True)
     group_df.rename(columns={'peak': 'id'}, inplace=True)
     #
     view_df1 = pd.merge(peak_df, group_df, on='id')
-    view_df = view_df1.fillna("-")
+
+    # Sort df to match headers
+    view_df_sorted = sort_df_and_headers(view_df1)
+    view_df = view_df_sorted.fillna("-")
     #
     peak_data = view_df.values.tolist()
 
@@ -739,19 +946,15 @@ def peak_data(request, peak_list):
     return JsonResponse({'data': peak_data})
 
 
-def path_ex_lifestages(request):
-    return render(request, 'met_explore/path_ex_lifestages.html')
-
-
 def pathway_explorer(request):
     """
        :param request: The pathway Explorer page for the tissue data
        :return: The template and required parameters for the pathway explorer page.
        """
-
-    logger.info("Pathway ranking table requested")
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    logger.info("Pathway ranking table requested for analysis %s " % analysis)
     start = timeit.default_timer()
-    view_df, pals_min, pals_mean, pals_max = get_pals_view_data()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
     column_headers = view_df.columns.tolist()
 
     stop = timeit.default_timer()
@@ -766,23 +969,81 @@ def pathway_explorer(request):
     return render(request, 'met_explore/pathway_explorer.html', response)
 
 
+def pathway_age_explorer(request):
+    """
+       :param request: The pathway Explorer page for the tissue data
+       :return: The template and required parameters for the pathway explorer page.
+       """
+
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    logger.info("Pathway ranking table requested for analysis %s " % analysis)
+    start = timeit.default_timer()
+    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
+    column_headers = view_df.columns.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the pals data took: %s S" % str(stop - start))
+
+    reactome_token = get_highlight_token()
+
+    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
+                'mean_value': pals_mean, 'reactome_token': reactome_token}
+
+    return render(request, 'met_explore/pathway_age_explorer.html', response)
+
+
+
+
 def met_ex_tissues(request):
     """
+    This view is equivalent to the met_age_id table.
         View to return the metabolite search page
         :returns: Render met_explore/met_ex_tissues and datatable
+
     """
 
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    group_names = get_group_names(analysis)
+    group_names.insert(0, "Metabolite")
+
     view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    select_df = view_df[group_names]
 
-    logger.debug(view_df.head())
-    met_ex_list = view_df.values.tolist()
-    column_names = view_df.columns.tolist()
+    sorted_select_df = sort_df_and_headers(select_df)
+    met_ex_list = sorted_select_df.values.tolist()
 
-    group_names = cmpd_selector.get_list_view_column_names(column_names)
+    column_headers = sorted_select_df.columns.tolist()
 
-    column_headers = []
-    for c in column_names:
-        column_headers.append(group_names[c])
+    # Get the max and mean values for the intensities to pass to the 'heat map'
+    df2 = select_df.drop(['Metabolite'], axis=1, inplace=False)
+
+    max_value = np.nanmax(df2)
+    min_value = np.nanmin(df2)
+    mean_value = np.nanmean(df2)
+
+    response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/met_ex_tissues.html', response)
+
+def met_age_id(request):
+    """
+        View to return the metabolite search page
+        :returns: Render met_explore/met_age_id and datatable
+    """
+
+    analysis = Analysis.objects.get(name="Age Comparisons")
+    group_names = get_group_names(analysis)
+    group_names.insert(0, "Metabolite")
+
+    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
+    select_df = view_df[group_names]
+
+    sorted_select_df = sort_df_and_headers(select_df)
+
+    met_ex_list = sorted_select_df.values.tolist()
+    column_headers = sorted_select_df.columns.tolist()
 
     # Get the max and mean values for the intensities to pass to the 'heat map'
     df2 = view_df.drop(['Metabolite'], axis=1, inplace=False)
@@ -791,11 +1052,10 @@ def met_ex_tissues(request):
     min_value = np.nanmin(df2)
     mean_value = np.nanmean(df2)
 
-    ######## DO WE NEED TO RETURN THIS DATA SEPERATELY FROM THE HTML??
     response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
                 'mean_value': mean_value}
 
-    return render(request, 'met_explore/met_ex_tissues.html', response)
+    return render(request, 'met_explore/met_age_id.html', response)
 
 
 def get_metabolite_names(request):
@@ -817,7 +1077,10 @@ def get_pathway_names(request):
        A method to return a list of all the Pathway names present in Reactome for the daea
        :return: A unique list of pathway names
     """
-    pals_df = get_cache_df(MIN_HITS)
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
 
     if request.is_ajax():
         pathway_names = pals_df.pw_name.tolist()
@@ -827,7 +1090,7 @@ def get_pathway_names(request):
         return JsonResponse({'pathwayNames': ['Not', 'ajax']})
 
 
-def pathway_search_data(pwy_id):
+def pathway_search_data(pwy_id, analysis):
     """
     Given the pathway ID return the list of metabolites and associated peaks
     :param pwy_id: Reactome pathway ID
@@ -836,7 +1099,10 @@ def pathway_search_data(pwy_id):
 
     cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
     # peaks = Peak.objects.all()
-    peak_compare_df, _, _, _ = get_all_peaks_compare_df()
+
+    # analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    peak_compare_df, _, _, _ = get_all_peaks_compare_df(analysis)
     peak_compare_df = peak_compare_df.fillna("-")
 
     met_name_list = []
@@ -859,7 +1125,11 @@ def pathway_search_data(pwy_id):
         peaks = Peak.objects.filter(compound__id=cmpd_id)
         peak_list = [p.id for p in peaks]
         m_peaks = peak_compare_df[peak_compare_df['id'].isin(peak_list)]
-        m_peaks_data = m_peaks.values.tolist()
+
+        # Sort data to match sorted column headers
+        m_peaks_sorted = sort_df_and_headers(m_peaks)
+
+        m_peaks_data = m_peaks_sorted.values.tolist()
         met_peak_list.append(m_peaks_data)
         cmpd_id_list.append(cmpd_id)
 
@@ -895,8 +1165,6 @@ def metabolite_peak_data(request, cmpd_id):
     gp_df_list = []
     for group_df in peak_groups:
 
-        # group_df = pd.DataFrame(a)
-        # logger.debug ("GPDF %s" % group_df)
         group_df["no_adducts"] = pd.Series([], dtype=object)
         for index, row in group_df.iterrows():
             peak = Peak.objects.get(id=row.peak_id)
@@ -936,7 +1204,6 @@ def metabolite_pathway_data(request, pw_id):
         except ObjectDoesNotExist:
             cmpd_id = Compound.objects.filter(related_chebi__contains=cmpd)[0].id
 
-
         references = cmpd_selector.get_simple_compound_details(cmpd_id)
         logger.debug(references)
         cmpd_details[cmpd_id] = references
@@ -973,7 +1240,7 @@ def peak_explore_annotation_data(request, peak_id):
                          'cmpd_names': cmpd_names, 'adducts': list(adducts), 'conf_fact': list(conf_fact)})
 
 
-def met_search_highchart_data(request, tissue, metabolite):
+def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     """
        A method to return a list of tissue/intensity values for a given cmpd.
        :return: A list of dictionaries for the metabolite/tissue highcharts.
@@ -983,16 +1250,25 @@ def met_search_highchart_data(request, tissue, metabolite):
 
     hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
 
+    analysis = Analysis.objects.get(id=analysis_id)
+    case_s = analysis.get_case_samples()
+    control_s = analysis.get_control_samples()
+
+    samples = case_s | control_s
+
     # Should only be looking at a single compound
 
     single_cmpd_indexed = s_cmpds_df.index.values
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
+
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
-    samples = Sample.objects.all()
+    # samples = Sample.objects.all()
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
 
+
+    #Fixme: These should be changed to represent the the factors in the data.
     met_series_data = [{'name': "Adult Female", 'y': None, 'drilldown': "1"},
                        {'name': "Whole Female", 'y': None, 'drilldown': "2"},
                        {'name': "Adult Male", 'y': None, 'drilldown': "3"},
@@ -1059,7 +1335,7 @@ def met_search_highchart_data(request, tissue, metabolite):
                     d[1] = i
 
     # Return the interquartile range, q25 and q75, as the error bars.
-    error_data = []
+    error_bar_data = []
 
     for d in all_intensities:
         np_data = np.array(d)
@@ -1070,10 +1346,8 @@ def met_search_highchart_data(request, tissue, metabolite):
             error_series = [q25, q75]
         else:
             error_series = None
-        error_data.append(error_series)
+        error_bar_data.append(error_series)
 
-    # Replacing the NaNs with zeros for highchart.
-    error_bar_data = (np.nan_to_num(error_data)).tolist()
     logger.debug("error_bar_data %s" % error_bar_data)
     logger.info("Passing the series data %s" % met_series_data)
     logger.info("Passing the error bar data %s" % error_bar_data)
@@ -1094,12 +1368,14 @@ def met_search_highchart_data(request, tissue, metabolite):
                          'drilldown_data': drilldown_data})
 
 
-def get_pals_view_data():
+def get_pals_view_data(analysis):
     """
     :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
 
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: Here we should select the columns for the view, probably.
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     fly_pals_df = change_pals_col_names(pals_df)
 
     # dropping colums not required for calculating the min. max and mean for the datatable.
@@ -1152,16 +1428,22 @@ def change_pals_col_names(pals_df):
     return pals_df
 
 
-def get_peak_mf_compare_df():
+def get_peak_mf_compare_df(analysis):
+
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    group_df = cmpd_selector.get_group_df(peaks)
+    cache_name = "peak_mf_df_"+str(analysis.id)
 
-    # Add a minimum value to the data. This is so that we don't flatten any of the  data if values are missing.
+    if cache.get(cache_name) is None:
+        logger.debug("we dont have cache so running the function")
+        cache.set(cache_name, cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get(cache_name)
+    else:
+        logger.debug("we have cache so retrieving %s " % cache_name)
+        group_df = cache.get(cache_name)
 
-    # group_df = group_df.replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1194,24 +1476,27 @@ def get_peak_mf_compare_df():
     return peak_compare_mf, min_value, mean_value, max_value
 
 
-def get_peak_compare_df(peaks):
+def get_peak_compare_df(analysis, peaks):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
     """
-    # peaks = Peak.objects.all()
+    analysis_comparison = AnalysisComparison.objects.filter(analysis=analysis)
+    control_ids = analysis_comparison.values_list('control_group', flat=True).distinct()
+    controls = list(Group.objects.filter(id__in=control_ids).values_list('name', flat=True).distinct())
 
+    # controls = ['Whole_f', 'Whole_m', 'Whole_l']
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
     # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(peaks)
+    group_df = cmpd_selector.get_group_df(analysis, peaks)
 
     # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
     # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
     # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
 
-    group_df[['Whole_f', 'Whole_m', 'Whole_l']] = group_df[['Whole_f', 'Whole_m', 'Whole_l']].replace(np.nan, WF_MIN)
+    group_df[controls] = group_df[controls].replace(np.nan, WF_MIN)
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1219,23 +1504,24 @@ def get_peak_compare_df(peaks):
 
     column_names = group_df.columns
 
-    # divide by the whole fly amount for the sex/life-stage.
+    # divide the cases by the controls
     for c in column_names:
-        if c.endswith('f'):
-            group_df[c] = group_df[c].div(group_df['Whole_f'])
-        elif c.endswith('l'):
-            group_df[c] = group_df[c].div(group_df['Whole_l'])
-        elif c.endswith('m'):  # it starts with m
-            group_df[c] = group_df[c].div(group_df['Whole_m'])
+        if c not in controls:
+            try:
+                control = get_control_from_case(c, analysis_comparison)
+                group_df[c] = group_df[c].div(group_df[control])
+            except ObjectDoesNotExist:
+                logger.warning('%s is not a case so skipping this column' % c )
+                pass
 
-    drop_list = ['id', 'Whole_f', 'Whole_m', 'Whole_l']
+    drop_list = ['id']+controls
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
+    peak_compare_df = peak_compare_df.drop(controls, axis=1)
 
-    peak_compare_df = peak_compare_df.drop(['Whole_f', 'Whole_m', 'Whole_l'], axis=1)
 
     return peak_compare_df, min_value, mean_value, max_value
 
@@ -1246,9 +1532,9 @@ def get_drilldown_data():
     :return: A list of lists containing the drilldown data structure - this may change depending on the number of
     whole fly replicates.
     """
-    num_FW = len(Sample.objects.filter(group="Whole_f"))
-    num_MW = len(Sample.objects.filter(group="Whole_m"))
-    num_LW = len(Sample.objects.filter(group="Whole_l"))
+    num_FW = len(Sample.objects.filter(sample_group__name="Whole_f"))
+    num_MW = len(Sample.objects.filter(sample_group__name="Whole_m"))
+    num_LW = len(Sample.objects.filter(sample_group__name="Whole_l"))
 
     whole_fly_dict = {'FW': num_FW, 'MW': num_MW, 'LW': num_LW}  # whole_female, whole_male, whole_larvae
 
@@ -1299,12 +1585,177 @@ def get_log_df(df, drop_list):
 
     return log_df, min_value, mean_value, max_value
 
+def get_column_headers(data_group_names):
 
-class MetaboliteListView(ListView):
-    model = Peak
-    template_name = 'met_explore/metabolite_list.html'
+    """
+    A method to return the column headers for a datatable given a list of group and data names.
+    :param g_names: Group names
+    :param d_names: Data names e.g. peak, mz, rt
+    :return: data headers and column headers in format used in web browser
+    """
+    group_headers = []
+    data_headers= []
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['now'] = timezone.now()
-        return context
+    group_names, data_names = cmpd_selector.get_list_view_column_names(data_group_names)
+
+    for g in group_names:
+        group_headers.append(group_names[g])
+
+    for d in data_names:
+        data_headers.append(data_names[d])
+
+    return data_headers, group_headers
+
+def get_metabolite_search_page(analysis, search_query):
+
+    case_s = analysis.get_case_samples()
+    control_s = analysis.get_control_samples()
+    samples = case_s | control_s
+
+    # samples = Sample.objects.all()
+
+    # Fixme - need to do this on analysis and factors for more general code.
+    # Fixme - refactor DB so that Group --> Samples and Group --> Factors.
+    # Fixme - so that the Factor/Sample realtionship is no longer direct.
+    real_tissues = list(set([s.tissue for s in samples if s.tissue != 'nan']))  # List of individual tissues.
+    ages = list(set([s.age for s in samples if s.age != 'nan']))
+    tissues = ages + real_tissues
+
+    met_table_data, columns = [], []
+    min = MIN
+    max = MAX
+    mean = MEAN
+    references = None
+    pathways = {}
+
+    # If we get a metabolite sent from the view
+    if search_query is not None:
+
+        met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
+
+        # If there is a row in the DF matching the searched for metabolite
+        if met_search_df.shape[0] == 1:
+
+            peak_id = met_search_df.index.values[0]
+            cmpd_id = met_search_df.cmpd_id.values[0]
+
+            logger.info("Getting the details for %s " % search_query)
+
+            # Get the metabolite/tissue comparison DF
+            # Fixme: This can be taken from the factors once refactored.
+
+            columns = list(set([s.life_stage for s in control_s if s.life_stage != 'nan']))
+            df = pd.DataFrame(index=tissues, columns=columns, dtype=float)
+            nm_samples_df = pd.DataFrame(index=tissues, columns=columns, data="NM")  # Not measured samples
+            gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(samples)
+
+            # Fill in the DF with Tissue/Life stages and intensities.
+            for tissue in tissues:
+                for ls in columns:
+                    for g in gp_tissue_ls_dict:
+                        if gp_tissue_ls_dict[g] == [tissue, ls]:
+                            value = met_search_df.iloc[0][g]
+                            df.loc[tissue, ls] = value
+                            nm_samples_df.loc[tissue, ls] = value
+
+            # Standardise the DF by dividing by the Whole cell/Lifestage
+            whole_row = df.loc['Whole']
+
+            # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
+            # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
+            # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
+            whole_row = whole_row.replace(np.nan, WF_MIN)
+
+            sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
+            log_df = np.log2(sdf)
+            view_df = log_df.drop(index='Whole').round(2)
+
+            nm_df = nm_samples_df.drop(index='Whole')
+            nm2 = nm_df[nm_df == 'NM']
+
+            log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
+            log_nm = log_nm_df.fillna("-")
+            log_values = log_nm.values.tolist()  # This is what we are sending to the user.
+
+            index = view_df.index.tolist()
+            # Get a list to return to the view
+            met_table_data = []
+
+            for t, v in zip(index, log_values):
+                met_table_data.append(([t] + v))
+
+            actual_min = np.nanmin(view_df)
+            actual_max = np.nanmax(view_df)
+            actual_mean = np.nanmean(view_df)
+
+            # If the max and min values are outwith the standard range
+            if (actual_min < MIN) or (actual_max > MAX):
+                min = actual_min
+                max = actual_max
+                mean = actual_mean
+
+            # Here this no longer works a treat
+            references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
+            # Get the pathways associated with this compound ID
+            pathway_ids = get_cmpd_pwys(cmpd_id)
+
+            # Get pathway names based on their IDS.
+            pwy_name_id_dict = get_name_id_dict()
+
+            if pathway_ids:
+                pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
+
+    return columns, met_table_data, min, max, mean, pathways, references
+
+
+def sort_df_and_headers(view_df):
+    """
+    A method to take in data for a view and return the sorted view and headers
+    :param view_df: A df that needs view headers and to be sorted (column order) to match headers.
+    :return: view_df: sorted view df and sorted view headers
+    """
+    column_names = view_df.columns.tolist()
+    data_headers, group_headers = get_column_headers(column_names)
+
+    if data_headers:
+        all_column_headers = data_headers + group_headers
+    else:
+        all_column_headers = group_headers
+
+    # Put the correct headers on the data and the reorganise as required
+    view_df.columns = all_column_headers
+
+    # Sort headers as required
+    group_headers.sort(key=natural_keys)
+
+    if data_headers:
+        view_headers = data_headers + group_headers  # Data headers not has correct header format
+    else:
+        view_headers = group_headers
+
+    # Sort the df to match the headers
+    view_df = view_df[view_headers]
+
+    return view_df
+
+def get_peak_mf_header(view_df):
+    """
+
+    :param view_df: A dataframe with group
+    :return: A list of view headers for the DF
+    """
+
+    sorted_view_df = sort_df_and_headers(view_df)
+    column_heads = sorted_view_df.columns.tolist()
+
+    column_headers = []
+    for new_header in column_heads:
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)', "(F/M)")
+        column_headers.append(new_header)
+
+    return column_headers
+
+def enzyme_search(request):
+
+    return render(request, 'met_explore/enzyme_search.html')

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Peak Tissue Compare {% endblock %}
+{% block title %} Peak Age Lists {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'peak_ex_compare' 'css' %}
+    {% render_bundle 'peak_age_explorer' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -20,12 +20,14 @@
       </div>
 
       <!-- extra Tabs for Analysis type -->
-      <nav>
-        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissues</a>
-          <a class="navdark nav-item nav-link" href="{% url 'peak_age_compare' 'All' %}">Aged Flies</a>
-        </div>
-      </nav>
+			<!-- <div class="col-xs-12 "> -->
+				<nav>
+					<div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+						<a class="navdark nav-item nav-link " href="{% url 'peak_explorer' 'All' %}">Tissues</a>
+						<a class="navdark nav-item nav-link active " href="{% url 'peak_age_explorer' 'All' %}">Aged Flies</a>
+					</div>
+				</nav>
+			<!-- </div> -->
 
   <!--Tabs to go to new pages-->
   <div class="card text-center">
@@ -33,13 +35,13 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+          <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
+          <a class="nav-link" href="{% url 'peak_age_compare' 'All' %}">Age/Whole Comparisons</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_mf_compare' %}">F/M Comparisons</a>
+          <a class="nav-link" href="{% url 'peak_mf_age_compare' %}">F/M Age Comparisons</a>
         </li>
         </ul>
         <div class="top-right" >
@@ -49,7 +51,7 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> tissues and the whole flies
+    The average peak intensity levels found in different aged <i>Drosophila</i>
     </p>
   </div>
 
@@ -62,7 +64,7 @@
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
-                  <th class = "col" >{{column_name}}</th>
+                <th class = "col" >{{column_name}}</th>
                 {% endfor %}
               </tr>
             </thead>
@@ -99,7 +101,7 @@
               <div id='dataDiv'>
 
               </div>
-            </fieldset>
+              </fieldset>
 
             </div>
 
@@ -123,10 +125,10 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    var peak_compare_list = "{{peak_compare_list | safe}}"
-    console.log(min_value, mean_value, max_value, peak_compare_list)
+    var peak_list = "{{peak_list | safe}}"
+    console.log(min_value, max_value, mean_value, peak_list)
 
     </script>
 
-  {% render_bundle 'peak_ex_compare' 'js' %}
+  {% render_bundle 'peak_age_explorer' 'js' %}
   {% endblock %}

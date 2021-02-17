@@ -35,15 +35,15 @@ django-cache-memoize = "*"
 xlrd = "*"
 notebook = ">=5"
 cameo = "*"
-tornado = "==5.0.2"
 loguru = "*"
 "neo4j-driver" = "*"
 pyparsing = "*"
-pals-pathway = ">=1.4.9"
+pals-pathway = "*"
 tqdm = "*"
 bioservices = "*"
 "reactome2py" = "*"
 appnope = "*"
+django-spaghetti-and-meatballs = "*"
 
 [dev-packages]
 

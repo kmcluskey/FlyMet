@@ -8,9 +8,7 @@ function headerTips(settings) {
     let $td = $(this);
     let header = $td.text();
     let head_split = header.split(" ");
-    let tissue ="";
     let string ="";
-    let ls="";
 
     if (head_split[0]=="m/z"){
       string = "mass-to-charge ratio";
@@ -22,7 +20,7 @@ function headerTips(settings) {
       string ="Retention Time";
     }
     else {
-      string =`Fold change between Female and Male ${head_split[0]} tissue`;
+      string =`Fold change between Female and Male ${head_split[0]} day old flies`;
     }
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string}`});
@@ -40,10 +38,10 @@ $('[data-toggle="tooltip"]').tooltip({
   $("fieldset[class^='peak_details']").hide();
 
     let nd_title = " M and/or F data was not detected for this peak";
-    let ajax_url = "peak_mf_compare_data";
-    let peak_side_url = `peak_explorer/`;
-    let peak_side_text =`Intensities for peak `
-    let met_url = `met_ex_all/`;
+    let ajax_url = "peak_mf_age_data";
+    let peak_side_url = `peak_age_explorer/`;
+    let peak_side_text =`Age intensities for peak `
+    let met_url = `met_age_all/`;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 

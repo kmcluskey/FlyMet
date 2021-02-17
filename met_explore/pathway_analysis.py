@@ -16,15 +16,25 @@ from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
-from met_explore.helpers import load_object, save_object, get_samples_by_factor
-from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken
+from met_explore.helpers import load_object, save_object, get_control_from_case
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, \
+    AnalysisComparison, Analysis
 
 CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
-MIN_HITS =2
+MIN_HITS = 2
+PALS_FILENAME ='pals_df'
+# """
+# FixMe: For FlyMet the Analyses IDs for PALS are 1 and 3 this will be different for other projects
+# this should be refactored.
+# """
+#
+# ANALYSIS_IDS = [1,3]
 
-def get_pals_ds():
-    fly_int_df = get_pals_int_df()
-    fly_exp_design = get_pals_experimenal_design()
+def get_pals_ds(analysis):
+
+
+    fly_int_df = get_pals_int_df(analysis)
+    fly_exp_design = get_pals_experimental_design(analysis)
     chebi_df = get_single_db_entity_df('chebi_id')
 
     ds = DataSource(fly_int_df, chebi_df, fly_exp_design, DATABASE_REACTOME_CHEBI,
@@ -32,39 +42,52 @@ def get_pals_ds():
     return ds
 
 
-def get_cache_ds():
+def get_cache_ds(analysis):
     # cache.delete('pals_ds')
-    if cache.get('pals_ds') is None:
+    a_id = str(analysis.id)
+    cache_name = 'pals_ds'+a_id
+
+    if cache.get(cache_name) is None:
         logger.info("we dont have cache so running the pals_ds function")
-        cache.set('pals_ds', get_pals_ds(), 60 * 180000)
-        pals_ds = cache.get('pals_ds')
+        cache.set(cache_name, get_pals_ds(analysis), 60 * 180000)
+        pals_ds = cache.get(cache_name)
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
-        pals_ds = cache.get('pals_ds')
+        pals_ds = cache.get(cache_name)
 
     return pals_ds
 
 
-def get_pals_df(min_hits):
-    ds = get_cache_ds()
+def get_pals_df(min_hits, analysis):
+    ds = get_cache_ds(analysis)
     pals = PLAGE(ds, num_resamples=5000, seed=123)
     pathway_df_chebi = pals.get_pathway_df()
     pathway_df_return = pathway_df_chebi[pathway_df_chebi.tot_ds_F >= min_hits]
 
     return pathway_df_return
 
+def get_cache_df(min_hits, analysis):
 
-def get_cache_df(min_hits):
-    # cache.delete('pals_df')
-    if cache.get('pals_df') is None:
-        logger.info("we dont have cache so running the pals_df function")
-        cache.set('pals_df', get_pals_df(min_hits), 60 * 180000)
-        pals_df = cache.get('pals_df')
-    else:
-        logger.info("we have cache for the pals df, so retrieving it")
-        pals_df = cache.get('pals_df')
+    fname = PALS_FILENAME+'_'+str(analysis.id)+".pkl"
+    try:
+        pals_df = pd.read_pickle("./data/" + fname)
+        logger.info("The file %s has been found" % fname)
+
+    except FileNotFoundError:
+
+        logger.info("The file %s has not been found" % fname)
+        pals_df = get_pals_df(min_hits, analysis)
+        try:
+            pals_df.to_pickle("./data/" + fname)
+            logger.info("Written %s" % "./data/" + fname)
+
+        except Exception as e:
+            logger.error("Pickle didn't work because of %s ", e)
+            traceback.print_exc()
+            pass
 
     return pals_df
+
 
 def get_cache_annot_df():
     # cache.delete('pals_annot_df')
@@ -128,7 +151,6 @@ def get_chebi_relation_dict():
             r_chebis.remove(k) #remove original key from list
 
             chebi_bfs_relation_dict[k] = r_chebis
-
         try:
             logger.info("saving chebi_relation_dict")
             save_object(chebi_bfs_relation_dict, "./data/" + CHEBI_BFS_RELATION_DICT + ".pkl")
@@ -188,7 +210,12 @@ def get_pathway_id_names_dict():
        Given a pathway ID get its name
        :return: pathway_id_names_dict
        """
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do
+    #  A fix is for this is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
         pathway_id_names_dict[row.pw_name] = ix
@@ -201,7 +228,12 @@ def get_name_id_dict():
     Given the name of a pathway get it's reactome ID
     :return: name_pw_id_dict
     """
-    pals_df = get_cache_df(MIN_HITS)
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    #  A fix for this is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)
     name_pw_id_dict = {}
     for ix, row in pals_df.iterrows():
         name_pw_id_dict[ix] = row.pw_name
@@ -209,13 +241,16 @@ def get_name_id_dict():
     return name_pw_id_dict
 
 
-def get_pals_int_df():
+def get_pals_int_df(analysis):
     """
     :return: A peak_id v sample_id DF containing all the peak intensity values.
     """
     logger.info("Getting the peak/sample intensity df")
     # Sample peaks are all the sample peaks that we want to look at - in the case of FlyMet this is all the peaks
-    psi = SamplePeak.objects.values_list('peak', 'sample', 'intensity')
+
+    all_samples = analysis.get_case_samples() | analysis.get_control_samples()
+    psi = SamplePeak.objects.filter(sample_id__in=all_samples).values_list('peak', 'sample', 'intensity')
+    # psi = SamplePeak.objects.values_list('peak', 'sample', 'intensity')
     peaks, samples, intensities = zip(*psi)
     dpeaks = sorted(list(set(peaks)))
     dsamples = sorted(list(set(samples)))
@@ -343,10 +378,15 @@ def get_fly_pw_cmpd_formula(pw_id):
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
     :return: Dict with cmpd chebi_id: formula for each of the cmpds in a given pathway for the fly data
     """
+    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    #  A fix is probably wise.
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
 
     fly_pw_cmpd_for_dict = {}
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
+    pals_ds = get_cache_ds(analysis)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Grab all chebi_ids from the Fly DB
@@ -371,9 +411,13 @@ def get_reactome_pw_metabolites(pw_id):
     :param pw_id: The ID of the pathway
     :return: A list of metabolites associated with this Reactome pathway.
     """
+    #Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    # A fix is probably wise.
 
-    pals_df = get_cache_df(MIN_HITS)  # possibly member variables
-    pals_ds = get_cache_ds()  # possibly member variables
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
+    pals_ds = get_cache_ds(analysis)  # possibly member variables
     pathway_ids = pals_df.index.values
 
     # Pass the summary table for the pathway from another function.
@@ -480,18 +524,28 @@ def get_single_db_entity_df(id_type):
     return annot_df
 
 
-def get_pals_experimenal_design():
-    cmpd_selector = CompoundSelector()
-    samples = Sample.objects.all()
+def get_pals_experimental_design(analysis):
 
-    groups = list(set([s.group for s in samples]))  # Names of all the groups
-    controls = ['Whole_f', 'Whole_m', 'Whole_l']  # The current control groups
-    cases = [g for g in groups if g not in controls]  # Groups not in the control group
+    # analysis_ids = [1,3]
+    cmpd_selector = CompoundSelector()
+    # samples = Sample.objects.all()
+
+    # groups = Group.objects.all().name.values_list()
+
+    analysis_comparisions = AnalysisComparison.objects.filter(analysis=analysis)
+
+    controls = list(set([a.control_group.name for a in analysis_comparisions]))
+    cases = list(set([a.case_group.name for a in analysis_comparisions]))
+
+    # controls = analysis_comparisions.control_group.name
+    # cases = analysis_comparisions.case_group.name
+
+    groups =controls+cases
 
     # This gives a dictionary of orginal names: user readable names.
-    group_dict = cmpd_selector.get_list_view_column_names(groups)
-    control_dict = cmpd_selector.get_list_view_column_names(controls)
-    case_dict = cmpd_selector.get_list_view_column_names(cases)
+    group_dict, _ = cmpd_selector.get_list_view_column_names(groups)
+    control_dict, _ = cmpd_selector.get_list_view_column_names(controls)
+    case_dict, _ = cmpd_selector.get_list_view_column_names(cases)
 
     # User friendly names for use on the web
     control_names = [v for k, v in control_dict.items()]
@@ -499,14 +553,14 @@ def get_pals_experimenal_design():
 
     exp_groups = {}  # Experimental group dictionary for use in the pals exp_design dict.
     for g in groups:
-        samples = Sample.objects.filter(group=g)
+        samples = Sample.objects.filter(sample_group__name=g)
         gp_files = [sample.name for sample in samples]
         exp_groups[group_dict[g]] = gp_files
 
     comparison_dict_list = []
-    for c in case_names:
+    for c, case in zip(case_names, cases):
         comparison_dict = {}
-        control = get_control_from_case(c)
+        control = control_dict[get_control_from_case(case, analysis_comparisions)]
         comparison_dict['case'] = c
         comparison_dict['control'] = control
         comparison_dict['name'] = c + '/' + control
@@ -520,23 +574,16 @@ def get_pals_experimenal_design():
     return experiment_design
 
 
-def get_control_from_case(case):
-    """
-    :param case: The group name of the sample that are the casein the study
-    :return:
-    """
-
-    if '(F)' in case:
-        control = "Whole (F)"
-    elif '(L)' in case:
-        control = "Whole (L)"
-    elif '(M)' in case:
-        control = "Whole (M)"
-    else:
-        logger.error("There is no control to match the passed case, returning None")
-        control = None
-
-    return control
+# def get_control_from_case(case, analysis_comparisions):
+#     """
+#     :param case: The group name of the sample that are the case in the study
+#     :return: String of the control group name
+#     """
+#
+#     group = Group.objects.get(name=case)
+#     control = analysis_comparisions.get(case_group=group).control_group.name
+#
+#     return control
 
 
 def get_highlight_token():
@@ -619,7 +666,12 @@ def get_cmpd_pwys(cmpd_id):
     :param cmpd_id: The cmpd_id
     :return: List of pathways containing the compound.
     """
-    pals_ds = get_cache_ds()
+    #Fixme: I don't think it matters which analysis we use for this as the number of metabolites are for the
+    # whole project. Might be worth a discussion/fix
+
+    analysis = Analysis.objects.get(name='Tissue Comparisons')
+
+    pals_ds = get_cache_ds(analysis)
     cmpd = Compound.objects.get(id=cmpd_id)
     cmpd_pw_dict = pals_ds.mapping_dict
     pwy_list = []

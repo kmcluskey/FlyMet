@@ -4,7 +4,7 @@
 {% block title %} Search Metabolites {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_search' 'css' %}
+    {% render_bundle 'metabolite_search_age' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -20,8 +20,8 @@
 
     <nav>
       <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' %}">Tissues</a>
-        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' %}">Tissues</a>
+        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
       </div>
     </nav>
 
@@ -30,13 +30,13 @@
       <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs">
           <li class="nav-item">
-            <a class="nav-link active" href="{% url 'metabolite_search' %}">Metabolites</a>
+            <a class="nav-link active" href="{% url 'metabolite_search_age' %}">Metabolites</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+            <a class="nav-link" href="{% url 'pathway_age_search' %}">Pathways</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+              <a class="nav-link" href="{% url 'pathway_age_metabolites' %}">Pathway Metabolites</a>
             </li>
         </ul>
       </div>
@@ -45,12 +45,12 @@
     <!--Search info and box-->
     <div>
       <p class="mt-4 mb-1" >
-        Search for a <b>metabolite</b> and find out the abundance in <i> Drosophila </i> tissues:
+        Search for a <b>metabolite</b> and find out the abundance in different ages of <i> Drosophila </i>.
       </p>
     </div>
 
-    <form action="metabolite_search" method="get" class="form-inline my-2 my-lg-0">
-      <input id = "metabolite_search" name ='metabolite_search' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
+    <form action="metabolite_search_age" method="get" class="form-inline my-2 my-lg-0">
+      <input id = "metabolite_search_age" name ='metabolite_search_age' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
       <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
     </form>
 
@@ -66,7 +66,7 @@
 
       {% if met_table_data|length > 0 %}
       <div class="card-header pb-0 table-card-header">
-      {{metabolite}} levels in <i> Drosophila </i> tissues
+      {{metabolite}} levels in different aged <i> Drosophila </i>
       </div>
       <div class="container-fluid pb-0" >
         <div class="row pb-0">
@@ -75,7 +75,7 @@
             <table id="tissue_met_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
               <thead class="thead-light">
                 <tr>
-                  <th class="data">Tissue-Type</th>
+                  <th class="data">Age</th>
                   {% for c in columns %}
                   {% if c == "F" %}
                   <th class="AM_met_WT_ratio data">Adult Female FC </th>
@@ -153,7 +153,7 @@
 
               <fieldset id="click_info" class="fieldset-details">
                 <div class="p-2">
-                  <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated with {{metabolite}}</p>
+                  <p class="m-2">Click on an age to see the intensities of the peaks associated with {{metabolite}}</p>
                 </div>
               </fieldset>
 
@@ -253,9 +253,8 @@
       var pathways ="{{pathways | safe}}"
       var met_table_data = {{met_table_data | safe}}
 
-
-    console.log("using values", min, mid, max, metabolite, pathways)
+    console.log("using values", analysis_id, min, mid, max, metabolite, pathways)
   </script>
 
-    {% render_bundle 'metabolite_search' 'js' %}
+    {% render_bundle 'metabolite_search_age' 'js' %}
 {% endblock %}

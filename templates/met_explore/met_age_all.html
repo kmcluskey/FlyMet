@@ -1,56 +1,47 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Peak Tissue Compare {% endblock %}
+{% block title %} Metabolite Explorer All Metabolites {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'peak_ex_compare' 'css' %}
+    {% render_bundle 'met_age_all' 'css' %}
 {% endblock %}
 
 {% block body_block %}
+  <!-- div for main body-->
 
   <div class="container-fluid p-4">
     <!-- Splitting into two columns using flex to display the logo-->
     <div class="logo_row">
       <div class="logo_main mt-4">
         <p class="lead">
-          Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
+          Investigate the metabolites found in <i> Drosophila </i>.
           </p>
         </div>
       </div>
 
-      <!-- extra Tabs for Analysis type -->
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissues</a>
-          <a class="navdark nav-item nav-link" href="{% url 'peak_age_compare' 'All' %}">Aged Flies</a>
+          <a class="navdark nav-item nav-link" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
+          <a class="navdark nav-item nav-link active" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
         </div>
       </nav>
 
   <!--Tabs to go to new pages-->
   <div class="card text-center">
     <div class="card-header">
-
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+          <a class="nav-link active" href="{% url 'met_age_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
+          <a class="nav-link " href="{% url 'met_age_id' %}">Identified</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_mf_compare' %}">F/M Comparisons</a>
-        </li>
-        </ul>
-        <div class="top-right" >
-          <p class ="title_text">Peak Explorer</p>
-        </div>
+      </ul>
+      <div class="top-right" >
+        <p class ="title_text">Metabolite Explorer</p>
+      </div>
     </div>
-  </div>
-  <div>
-    <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> tissues and the whole flies
-    </p>
   </div>
 
   <div class="card mt-4 p-2 pb-2 border border-table rounded">
@@ -58,30 +49,33 @@
       <div class="row pb-0">
         <div class="myspan80 p-2 mt-2">
           <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+          <table id="metabolite_list" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
-                  <th class = "col" >{{column_name}}</th>
+                  {% if column_name == 'cmpd_id' %}
+                    <th class = "cmpd_id" >{{column_name}}</th>
+                    {% else %}
+                    <th class = {{column_name}} >{{column_name}}</th>
+                    {% endif %}
                 {% endfor %}
               </tr>
             </thead>
           </table>
         </div>
 
-
         <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
           <fieldset id="click_info" class="fieldset-details">
-            <legend class="sidebar">Peak Annotations</legend>
+            <legend class="sidebar">Related Peaks</legend>
             <div class="p-2">
-              <p class="m-2">Click on a peak to see the metabolites associated with it.</p>
+              <p class="m-2">Click on a metabolite to see the related peaks</p>
             </div>
           </fieldset>
 
           <fieldset class="peak_details fieldset-details">
-            <legend class="sidebar">Peak Annotations</legend>
-            <div class="p-2">
-              <p id ="peak_id"></p>
+            <legend class="sidebar">Related Peaks</legend>
+            <div class="pr-2 pl-2">
+              <p id ="compound_id" class="m-2"></p>
 
               <div class="row">
                 <div class ="col-6">
@@ -91,11 +85,8 @@
                 <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off"><small>All adducts</small>
                 </div>
               </div>
+              <p class='pt-2 pb-0 mb-0'>Key: <span class="I badge badge-pill badge-success">I</span><span class="F badge badge-pill badge-warning">F</span><span class="A badge badge-pill badge-danger">AX</span></p>
               </div>
-
-              <hr class="my-3">
-
-
               <div id='dataDiv'>
 
               </div>
@@ -105,7 +96,7 @@
 
         </div>
         </div>
-  </div>
+        </div>
 
   </div>
 
@@ -114,19 +105,16 @@
   <div class="spacer">
   </div>
 
-
   {% endblock %}
-
 
   {% block js_block %}
+
   <script type='text/javascript'>
-    var min_value = {{min_value}}
-    var max_value = {{max_value}}
-    var mean_value = {{mean_value}}
-    var peak_compare_list = "{{peak_compare_list | safe}}"
-    console.log(min_value, mean_value, max_value, peak_compare_list)
+    var cmpd_list = "{{cmpd_list | safe}}"
+    console.log("The cmpd list is "+ cmpd_list)
 
-    </script>
+  </script>
 
-  {% render_bundle 'peak_ex_compare' 'js' %}
-  {% endblock %}
+ {% render_bundle 'met_age_all' 'js' %}
+
+{% endblock %}

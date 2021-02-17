@@ -6,7 +6,10 @@ from loguru import logger
 from tqdm import tqdm
 
 from met_explore.constants import CSV_GROUP_COLNAME
-from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak
+from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak,\
+Group, Analysis, AnalysisComparison
+
+
 from met_explore.pathway_analysis import get_related_chebi_ids
 
 
@@ -24,12 +27,16 @@ def populate_samples(sample_csv):
     factor_names = sample_details.columns.values
     assert CSV_GROUP_COLNAME in factor_names, 'Missing group information in CSV'
 
-    try:
-        for idx, row in sample_details.iterrows():
+    for idx, row in sample_details.iterrows():
+        try:
             # save sample and the group column
             sample_name = idx.strip()
-            group = row[CSV_GROUP_COLNAME]
-            sample = Sample(name=sample_name, group=group)
+
+            group_name = row[CSV_GROUP_COLNAME]
+            group, group_created = Group.objects.get_or_create(name=group_name)
+            if group_created:
+                group.save()
+            sample = Sample(name=sample_name, sample_group=group)
             sample.save()
 
             # save other columns as factors
@@ -40,16 +47,52 @@ def populate_samples(sample_csv):
                 factor = Factor(sample=sample, name=factor_name, value=factor_value)
                 factor.save()
 
-    except IntegrityError:
-        logger.warning('Samples have been inserted, skipping')
+        except IntegrityError as e:
+            logger.warning('Samples %s have been inserted, skipping, check input for duplicates' % sample)
+            continue
 
-    logger.warning('All samples loaded to database')
+    logger.info('All samples loaded to database')
+
+
+def populate_analysis_comparisions(analysis_set):
+    """
+    :param analysis_set: JSON file containing all the analysis and comparisons information for a project
+    :return: populate the Analysis and AnalysisComparison objects
+    """
+
+    logger.info('Populating the analysis_set and comparisons')
+
+    f = open(analysis_set,)
+    x = f.read()
+    analysis_dict = json.loads(x)
+
+    analysis_sets = analysis_dict["analysis_sets"]
+
+    for analysis in analysis_sets:
+
+        try:
+
+            new_analysis, analysis_created = Analysis.objects.get_or_create(name=analysis["analysis_name"], type=analysis["analysis_type"])
+            if analysis_created:
+                new_analysis.save()
+                logger.info("Saving the analysis and comparisons for %s" % new_analysis)
+
+                comparisons = analysis["comparisons"]
+                for c in comparisons:
+                    comp_case = Group.objects.get(name=c['case'])
+                    comp_control = Group.objects.get(name=c['control'])
+                    comparison = AnalysisComparison(analysis = new_analysis, name=c['comparison_name'], case_group=comp_case, control_group=comp_control)
+                    comparison.save()
+
+        except IntegrityError as e:
+            logger.warning(e)
+
+    logger.info('Analysis_set population complete')
 
 # This requires the input taken from the construct_peak_df method/
 # It requires all secondary_ids to be unique and reports any errors (throw?)
 # To get the list and dict back from the json.dumps just use json.loads
 # This has been refactored to populate Peak, Annotation and Compound models.
-
 
 def populate_peaks_cmpds_annots(peak_df):
     """

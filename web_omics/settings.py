@@ -63,8 +63,14 @@ class Common(Configuration):
         'web_omics.users',
         'registration',
         'rest_framework',
+        'django_spaghetti',
         'met_explore',
     ]
+
+    SPAGHETTI_SAUCE = {
+  'apps':['met_explore'],
+  'show_fields':True,
+  'exclude':{'auth':['user']}}
 
     LOGGING = {
         'version': 1,
