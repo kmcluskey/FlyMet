@@ -262,7 +262,7 @@ function updateEnzymeSidePanel(obj){
 }
 
 export {initialise_table,
-        add_met_tootips,
+        add_met_tooltips,
         init_met_side_table,
         show_hide_tables,
         updateMetSidePanel,
