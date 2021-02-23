@@ -2,12 +2,44 @@ from django.db import models
 from django.utils import timezone
 
 
+class Project(models.Model):
+    """
+    A model to store the project - this can be related to several different Analyses
+    """
+    name = models.CharField(max_length=250, unique=True)
+    description = models.CharField(max_length=500)
+
+    def __str__(self):
+        """
+        Method to return a representation of the Sample
+        """
+        return "Project" + self.name
+
+class Category(models.Model):
+    """
+    This model allows a project to be split into different categories, some projects may only have one Category
+    FlyMet currently has 2: Tissue and Ages all from the same metabolomics and genomics files.
+    """
+    name = models.CharField(max_length=250, unique=True)
+    description = models.CharField(max_length=500)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, default=None)
+
+
+    def __str__(self):
+        """
+        Method to return a representation of the Sample
+        """
+        return "Category " + self.name
+
+
 class Group(models.Model):
     """
     This is a model to store the name of the groups that collects triplicate samples and can be used for case/control
     studies.
     """
     name = models.CharField(max_length=250, unique=True)
+    # factor = models.ForeignKey(Factor, on_delete=models.CASCADE, default=None)
+
 
     def __str__(self):
         """
@@ -15,6 +47,17 @@ class Group(models.Model):
         """
         return "Group " + self.name
 
+class Factor(models.Model):
+    """
+    Model class defining an individual experimental factor of a sample, e.g. tissue and life-stage from which it came
+    """
+
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
+    type = models.CharField(max_length=250, blank=False, null=False) #previously name
+    name = models.CharField(max_length=250, blank=False, null=False) #previously value
+
+    def  __str__(self):
+        return "Factor %s value %s " % (self.type, self.name)
 
 class Sample(models.Model):
     """
@@ -22,12 +65,13 @@ class Sample(models.Model):
     """
     # Here the sample name is unique as this is important for processing FlyMet data
     name = models.CharField(max_length=250, unique=True, blank=False)
-    sample_group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
 
-    def get_factor_value(self, name):
-        values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
-        value = values[0] if len(values) > 0 else None
-        return value
+    #
+    # def get_factor_value(self, name):
+    #     values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
+    #     value = values[0] if len(values) > 0 else None
+    #     return value
     #
     # def get_sample_group(self):
     #     group = Group.objects.filter(sample=self).valuess_list('name', flat=True)
@@ -35,26 +79,26 @@ class Sample(models.Model):
     #     return group
 
 
-    @property
-    def life_stage(self): # for flymet compatibility
-        return self.get_factor_value('life_stage')
-
-    @property
-    def tissue(self): # for flymet compatibility
-        return self.get_factor_value('tissue')
-
-    @property
-    def mutant(self): # for flymet compatibility
-        return self.get_factor_value('mutant')
-
-    @property
-    def age(self):  # for flymet compatibility
-        return self.get_factor_value('age')
-
-    @property
-    def group(self): # for flymet compatibility
-        group = self.sample_group.name
-        return group
+    # @property
+    # def life_stage(self): # for flymet compatibility
+    #     return self.get_factor_value('life_stage')
+    #
+    # @property
+    # def tissue(self): # for flymet compatibility
+    #     return self.get_factor_value('tissue')
+    #
+    # @property
+    # def mutant(self): # for flymet compatibility
+    #     return self.get_factor_value('mutant')
+    #
+    # @property
+    # def age(self):  # for flymet compatibility
+    #     return self.get_factor_value('age')
+    #
+    # @property
+    # def group(self): # for flymet compatibility
+    #     group = self.sample_group.name
+    #     return group
 
     def  __str__(self):
         """
@@ -64,17 +108,6 @@ class Sample(models.Model):
         return "Sample " + self.name
 
 
-class Factor(models.Model):
-    """
-    Model class defining an experimental factor of a sample, e.g. tissue and life-stage from which it came
-    """
-    sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
-    name = models.CharField(max_length=250, blank=False, null=False)
-    value = models.CharField(max_length=250, blank=False, null=False)
-
-    def  __str__(self):
-        return "Sample %s factor %s value %s " % (self.sample, self.name, self.value)
-
 class Analysis(models.Model):
 
     """
@@ -82,6 +115,8 @@ class Analysis(models.Model):
     """
     name = models.CharField(max_length=250, unique=True, blank=False)
     type = models.CharField(max_length=250, blank=False, null=False)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, default=None)
+
 
     def  __str__(self):
         """
@@ -93,14 +128,14 @@ class Analysis(models.Model):
     def get_control_samples(self):
 
         control_groups = set(Group.objects.filter(control_group__in=AnalysisComparison.objects.filter(analysis=self)))
-        control_samples = Sample.objects.filter(sample_group__in=control_groups)
+        control_samples = Sample.objects.filter(group__in=control_groups)
 
         return control_samples
 
     def get_case_samples(self):
 
         case_groups = set(Group.objects.filter(case_group__in=AnalysisComparison.objects.filter(analysis=self)))
-        case_samples = Sample.objects.filter(sample_group__in=case_groups)
+        case_samples = Sample.objects.filter(group__in=case_groups)
 
         return case_samples
 
@@ -108,7 +143,7 @@ class Analysis(models.Model):
 
 class AnalysisComparison(models.Model):
 
-    name = models.CharField(max_length=250, unique=True, blank=False)
+    name = models.CharField(max_length=250, blank=False) #This can be duplicated for different analyses.
     case_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='case_group')
     control_group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='control_group')
     analysis = models.ForeignKey(Analysis, on_delete=models.CASCADE) #deleting the analysis deletes this comparison

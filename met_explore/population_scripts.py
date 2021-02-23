@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from met_explore.constants import CSV_GROUP_COLNAME
 from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak,\
-Group, Analysis, AnalysisComparison
+Group, Analysis, AnalysisComparison, Project, Category
 
 
 from met_explore.pathway_analysis import get_related_chebi_ids
@@ -44,8 +44,10 @@ def populate_samples(sample_csv):
                 if factor_name == CSV_GROUP_COLNAME: # skip the group column as it has been saved
                     continue
                 factor_value = row[factor_name]
-                factor = Factor(sample=sample, name=factor_name, value=factor_value)
-                factor.save()
+                factor, factor_created = Factor.objects.get_or_create(group=group, type=factor_name, name=factor_value)
+                if factor_created:
+                    factor.save()
+                    logger.info("saving factor %s " % factor )
 
         except IntegrityError as e:
             logger.warning('Samples %s have been inserted, skipping, check input for duplicates' % sample)
@@ -64,29 +66,47 @@ def populate_analysis_comparisions(analysis_set):
 
     f = open(analysis_set,)
     x = f.read()
-    analysis_dict = json.loads(x)
 
-    analysis_sets = analysis_dict["analysis_sets"]
+    config_dict = json.loads(x)
+    projects = config_dict["projects"]
 
-    for analysis in analysis_sets:
-
+    for project in projects:
         try:
+            new_project, project_created =Project.objects.get_or_create(name=project["project_name"], description=project["project_description"])
+            if project_created:
+                new_project.save()
+                logger.info("Saving the project for %s" % new_project)
 
-            new_analysis, analysis_created = Analysis.objects.get_or_create(name=analysis["analysis_name"], type=analysis["analysis_type"])
-            if analysis_created:
-                new_analysis.save()
-                logger.info("Saving the analysis and comparisons for %s" % new_analysis)
+                metabolomics = project['metabolomics']
+                project_categories = metabolomics['categories']
 
-                comparisons = analysis["comparisons"]
-                for c in comparisons:
-                    comp_case = Group.objects.get(name=c['case'])
-                    comp_control = Group.objects.get(name=c['control'])
-                    comparison = AnalysisComparison(analysis = new_analysis, name=c['comparison_name'], case_group=comp_case, control_group=comp_control)
-                    comparison.save()
+                for category in project_categories:
+                    new_category, category_created = Category.objects.get_or_create(name=category['category_name'], description = category['description'], project = new_project)
+                    if new_category:
+                        new_category.save()
+                        logger.info("Saving the category for %s" % new_category)
+
+                    analysis_sets = category['analysis_sets']
+
+                    for analysis in analysis_sets:
+
+                        new_analysis, analysis_created = Analysis.objects.get_or_create(name=analysis["analysis_name"], type=analysis["analysis_type"], category=new_category)
+                        if analysis_created:
+                            new_analysis.save()
+                            logger.info("Saving the analysis and comparisons for %s" % new_analysis)
+
+                            comparisons = analysis["comparisons"]
+                            for c in comparisons:
+                                comp_case = Group.objects.get(name=c['case'])
+                                comp_control = Group.objects.get(name=c['control'])
+                                comparison = AnalysisComparison(analysis = new_analysis, name=c['comparison_name'], case_group=comp_case, control_group=comp_control)
+                                comparison.save()
+                                logger.info("Saving the comparison for %s" % comparison)
+
 
         except IntegrityError as e:
             logger.warning(e)
-
+            raise
     logger.info('Analysis_set population complete')
 
 # This requires the input taken from the construct_peak_df method/

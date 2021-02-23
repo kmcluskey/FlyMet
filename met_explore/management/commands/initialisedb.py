@@ -11,7 +11,7 @@ from met_explore.population_scripts import populate_samples, populate_peaks_cmpd
 
 
 # Run from the command line using:
-# python manage.py initialisedb 'tissues_life_stages_v2.csv' '67_peak_cmpd_export_1.json' '67_peak_int_export.json' 'flymet_analysis_config.json'
+# python manage.py initialisedb 'tissues_life_stages_combine_whole_flymet4.csv' '1724_peak_cmpd_export.json' '1724_peak_int_export.json' 'flymet_config_Feb21_2.json'
 # This should be done after deleting DB and removing all migrations.
 
 

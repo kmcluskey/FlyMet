@@ -16,7 +16,7 @@ from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, g
 k = KEGG()
 
 from met_explore.models import Peak, SamplePeak, Sample, Compound, Annotation, CompoundDBDetails, DBNames, \
-    AnalysisComparison, Analysis, Group
+    AnalysisComparison, Analysis, Group, Factor
 
 INTENSITY_FILE_NAME = 'current_int_df'
 HC_INTENSITY_FILE_NAME = 'current_hc_int_df'
@@ -149,7 +149,7 @@ class CompoundSelector(object):
 
         samples = SamplePeak.objects.filter(peak__in=peaks).order_by('peak_id').values_list('peak_id', 'intensity',
                                                                                             'sample_id__name',
-                                                                                            'sample_id__sample_group__name')
+                                                                                            'sample_id__group__name')
         columns = ['peak', 'intensity', 'filename', 'group']
         int_df = pd.DataFrame(samples, columns=columns)
 
@@ -193,13 +193,13 @@ class CompoundSelector(object):
         logger.info("Getting the sample groups with average intensitites (group_df)")
 
         samples = Sample.objects.all()
-        sample_groups = set([sp.group for sp in samples])
+        sample_groups = set([sp.group.name for sp in samples])
         df_index = list(int_df.index.values)
         group_df = pd.DataFrame(index=df_index, columns=sample_groups, dtype=float)
 
         for group in sample_groups:
             logger.info("Working on group %s" % group)
-            gp_samples = Sample.objects.filter(sample_group__name=group)
+            gp_samples = Sample.objects.filter(group__name=group)
             for i in df_index:
                 int_list = []
                 for g in gp_samples:
@@ -247,14 +247,12 @@ class CompoundSelector(object):
             elif g == 'id':
                 data_name_dict[g] = "Peak ID"
             else:
-                samples = Sample.objects.filter(sample_group__name=g)
+                samples = Sample.objects.filter(group__name=g)
                 if len(samples) > 0:
-                    first_sample = samples[0] # Get the first sample of this group.
-                    tissue = first_sample.tissue
-                    if tissue=='nan':
-                        tissue = first_sample.age #Fixme: this is just for flymet if this is not tissue it will be age.
-                    ls = first_sample.life_stage
-                    group_name_dict[g] = tissue + " " + "(" + ls + ")"
+                    factors = Factor.objects.filter(group__name=g)
+                    factor_names = [f.name for f in factors if f.name != 'nan']
+                    factor_names.sort(key=len, reverse=True) #Flymet this is Tissue, lifestage or Age, lifestage.
+                    group_name_dict[g] = factor_names[0] + " " + "(" + factor_names[1] + ")"
 
         return group_name_dict, data_name_dict
 
@@ -396,12 +394,12 @@ class CompoundSelector(object):
 
         gp_tissue_ls_dict = {}
 
-        groups = set([s.group for s in samples])
+        groups = set([s.group.name for s in samples])
 
         # Get the first sample with of the given group and get the tissue type
         #Fixme: should be fixed so that the code is more generic.
         for gp in groups:
-            group_attributes = Sample.objects.filter(sample_group__name=gp)[0]
+            group_attributes = Sample.objects.filter(group__name=gp)[0]
             if group_attributes.tissue != 'nan':
                 factor = group_attributes.tissue
             else:
@@ -419,7 +417,7 @@ class CompoundSelector(object):
 
         met_int_df = int_df.loc[peak_id]
 
-        sample_group = Sample.objects.filter(sample_group__name=group)
+        sample_group = Sample.objects.filter(group__name=group)
         sample_names = [s.name for s in sample_group]
 
         sample_ints = met_int_df[sample_names].values[0]
