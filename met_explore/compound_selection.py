@@ -11,7 +11,7 @@ from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
 from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_group_names, \
-    get_factor_type_from_analysis, get_factors_from_samples
+    get_factor_type_from_analysis, get_factors_from_samples, get_control_from_case
 
 k = KEGG()
 
@@ -335,7 +335,7 @@ class CompoundSelector(object):
 
         return cmpd_details
 
-    ### *** Here
+
     def get_groups(self, analysis, factor_name):
 
         """
@@ -351,36 +351,26 @@ class CompoundSelector(object):
 
         return groups, sfactors
 
-    def get_gp_intensity(self, analysis, metabolite, tissue, single_cmpds_df):
+    def get_gp_intensity(self, analysis, metabolite, factor_name, single_cmpds_df):
 
         """
-        Given a metabolite and tissue, this method returns the group name and the intensity.
+        Given a metabolite and factor_name, this method returns the group name and the intensity.
         The average intensity has already been calculated in the single_cmpds_df
         This also returns the whole fly data for the compound for comparisons.
 
         :param metabolite:
-        :param tissue:
-        :return: The group name of the tissue and metabolite and
+        :param factor_name:
+        :return: The group name of the factor and metabolite
         """
-        groups, sfactors = self.get_groups(analysis, tissue)  # This is the tissue groups without the whole fly
 
-        all_groups = []
+        groups, sfactors = self.get_groups(analysis, factor_name)  # This is the tissue groups without the whole fly
+        analysis_comparisions = AnalysisComparison.objects.filter(analysis=analysis)
 
-        control_s = analysis.get_control_samples()
-        primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
-        secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
+        all_groups = [ ]
 
-        control_factors = get_factors_from_samples(control_s, primary_factor_type)
-
-        assert len(control_factors) == 1, 'The number of control factors should be 1, please check'
-        control = control_factors[0]
-        # control = "Whole"
-
-        for g, ls in zip(groups, sfactors):
-            all_groups.append(g)
-            samples = get_samples_by_factors([primary_factor_type, secondary_factor_type], [control, ls])
-            whole_gp = samples[0].group
-            all_groups.append(whole_gp)
+        for g in groups:
+            all_groups.append(g.name)
+            all_groups.append(get_control_from_case(g.name,analysis_comparisions))
 
         met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == metabolite]
         gp_int_dict = {}

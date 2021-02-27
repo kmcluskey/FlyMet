@@ -356,7 +356,6 @@ def get_pwy_search_table(pals_df, search_query, analysis):
                 except KeyError as e:
                     pass
 
-        print ("nm_samples_df ", nm_samples_df)
         pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
 
         index = nm_samples_df.index.tolist()
@@ -409,7 +408,6 @@ def pathway_metabolites(request):
                 summ_values = [int(i) for i in summ_values_orig[:-1]]
 
                 summ_values.append(summ_values_orig[-1])
-
 
             except KeyError:
 
@@ -1246,9 +1244,7 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     """
     cmpd_selector = CompoundSelector()
-
     hc_int_df_duplicates = cmpd_selector.get_hc_int_df()
-
     analysis = Analysis.objects.get(id=analysis_id)
 
     case_s = analysis.get_case_samples()
@@ -1264,7 +1260,6 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
-    # samples = Sample.objects.all()
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
 
 
@@ -1281,7 +1276,7 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     all_intensities[:] = np.nan
 
     # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
-    # AF = data[0], AFW = data[1], AM = data[2], AFW = data[3] L = data[4], AFW = data[5]
+    # AF = data[0], AFW = data[1], AM = data[2], AFW = data[3] L = data[4], ALW = data[5]
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
     # The group intensities just have the group name so have to work out the LS from this.
     for gp, v in gp_intensities.items():
@@ -1372,8 +1367,6 @@ def get_pals_view_data(analysis):
     """
     :return: The pals DF and the min, mean and max values for the datatable colouring.
     """
-
-    # Fixme: Here we should select the columns for the view, probably.
 
     pals_df = get_cache_df(MIN_HITS, analysis)
     fly_pals_df = change_pals_col_names(pals_df)
