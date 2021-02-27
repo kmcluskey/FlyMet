@@ -9,7 +9,9 @@ import itertools
 
 from loguru import logger
 
-from met_explore.models import Factor, Group, Analysis, AnalysisComparison
+from met_explore.models import Factor, Group, Analysis, AnalysisComparison, Sample
+from met_explore.constants import factor_order_dict
+from collections import Counter
 
 
 def atoi(text):
@@ -82,17 +84,18 @@ def set_log_level_debug():
     logger.add(sys.stderr, level=logging.DEBUG)
 
 
-def get_samples_by_factor(name, value):
-    factors = Factor.objects.filter(name=name, value=value)
-    samples = [factor.sample for factor in factors]
+def get_samples_by_factor(type, name):
+    factors = Factor.objects.filter(type=type, name=name)
+    groups = [f.group for f in factors]
+    samples = Sample.objects.filter(group__in=groups)
     return samples
 
 
-def get_samples_by_factors(names, values):
-    assert len(names) == len(values)
+def get_samples_by_factors(types, names):
+    assert len(types) == len(names)
     sets = []
-    for i in range(len(names)):
-        samples = set(get_samples_by_factor(names[i], values[i])) # convert the list of samples to a set
+    for i in range(len(types)):
+        samples = set(get_samples_by_factor(types[i], names[i])) # convert the list of samples to a set
         sets.append(samples)
 
     # https://stackoverflow.com/questions/2541752/best-way-to-find-the-intersection-of-multiple-sets
@@ -100,9 +103,9 @@ def get_samples_by_factors(names, values):
     return list(intersection_results)
 
 
-def get_factor_of_sample(sample, name):
-    results = Factor.objects.filter(sample=sample, name=name)
-    return results.first
+# def get_factor_of_sample(sample, name):
+#     results = Factor.objects.filter(sample=sample, name=name)
+#     return results.first
 
 def get_control_from_case(case, analysis_comparisions):
     """
@@ -126,3 +129,40 @@ def get_group_names(analysis):
     group_names = [Group.objects.get(id=g).name for g in gp_ids]
 
     return group_names
+
+def get_factor_type_from_analysis(analysis, factor_rank):
+    """
+    A method to return the primary factor or secondary factor given an analysis. Based on the number of instances of the factor type.
+    :param analysis, factor_rank is either 'primary_factor' or 'secondary_factor'
+    :return:
+    """
+
+    analysis_case_factors = Factor.objects.filter(group__case_group__analysis=analysis)
+    factor_types = [a.type for a in analysis_case_factors if a.name != 'nan']
+
+    ps_factors = [f for f in factor_types if f in factor_order_dict[factor_rank]]
+    factor_count = Counter(ps_factors)
+    ps_factor = max(factor_count, key=factor_count.get)
+
+    return ps_factor
+
+
+def get_factors_from_samples(samples, factor_type):
+    """
+    :param samples: queryset of samples to be used
+    :param factor: Type of factor that we want the names for (string)
+    :return: List of factor names (string)
+    """
+    factor_set = set()
+    for s in samples:
+        fact_dict = s.get_factor_dict()
+        try:
+            factor_set.add(fact_dict[factor_type])
+        except KeyError as e:
+            logger.info("This key is not of the factor type requested %s " % e)
+            continue
+
+    factor_list = list(factor_set)
+
+    return factor_list
+

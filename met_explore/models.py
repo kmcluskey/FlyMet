@@ -27,7 +27,7 @@ class Category(models.Model):
 
     def __str__(self):
         """
-        Method to return a representation of the Sample
+        Method to return a representation of the Category
         """
         return "Category " + self.name
 
@@ -43,7 +43,7 @@ class Group(models.Model):
 
     def __str__(self):
         """
-        Method to return a representation of the Sample
+        Method to return a representation of the Group
         """
         return "Group " + self.name
 
@@ -57,7 +57,7 @@ class Factor(models.Model):
     name = models.CharField(max_length=250, blank=False, null=False) #previously value
 
     def  __str__(self):
-        return "Factor %s value %s " % (self.type, self.name)
+        return "Factor type %s name %s " % (self.type, self.name)
 
 class Sample(models.Model):
     """
@@ -67,16 +67,28 @@ class Sample(models.Model):
     name = models.CharField(max_length=250, unique=True, blank=False)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, default=None)
 
-    #
-    # def get_factor_value(self, name):
-    #     values = Factor.objects.filter(sample=self, name=name).values_list('value', flat=True)
+
+    # def get_factor_value(self):
+    #     values = Factor.objects.filter(group=self.group, name=name).values_list('value', flat=True)
     #     value = values[0] if len(values) > 0 else None
     #     return value
-    #
-    # def get_sample_group(self):
-    #     group = Group.objects.filter(sample=self).valuess_list('name', flat=True)
-    #     print ("getting sample_group")
-    #     return group
+
+
+    def get_factor_dict(self):
+        """
+        :return: Dict of Factor type: factor Name where the name of the Factor is not 'nan'
+        """
+        factor_dict = {}
+        factors = Factor.objects.filter(group=self.group)
+        for f in factors:
+            if f.name != 'nan':
+                factor_dict[f.type] = f.name
+
+        return factor_dict
+
+    def get_sample_group(self):
+        group = Group.objects.filter(sample=self).values_list('name', flat=True)
+        return group
 
 
     # @property

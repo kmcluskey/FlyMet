@@ -543,9 +543,9 @@ def get_pals_experimental_design(analysis):
     groups =controls+cases
 
     # This gives a dictionary of orginal names: user readable names.
-    group_dict, _ = cmpd_selector.get_list_view_column_names(groups)
-    control_dict, _ = cmpd_selector.get_list_view_column_names(controls)
-    case_dict, _ = cmpd_selector.get_list_view_column_names(cases)
+    group_dict, _ = cmpd_selector.get_list_view_column_names(groups, analysis)
+    control_dict, _ = cmpd_selector.get_list_view_column_names(controls, analysis)
+    case_dict, _ = cmpd_selector.get_list_view_column_names(cases, analysis)
 
     # User friendly names for use on the web
     control_names = [v for k, v in control_dict.items()]

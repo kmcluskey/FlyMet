@@ -10,8 +10,8 @@ from django.db.models import Q
 from loguru import logger
 from tqdm import tqdm
 from bioservices.kegg import KEGG
-
-from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_group_names
+from met_explore.helpers import get_samples_by_factor, get_samples_by_factors, get_group_names, \
+    get_factor_type_from_analysis, get_factors_from_samples
 
 k = KEGG()
 
@@ -221,17 +221,19 @@ class CompoundSelector(object):
         logger.info("Returning the group DF")
         return group_sorted
 
-    def get_list_view_column_names(self, column_names):
+    def get_list_view_column_names(self, column_names, analysis):
         """
         A method to return user friendly column names given the group name. This also returns a heading for the maximum value
         This is created for the list view but could be modified for general use.
         :param column_names:This is the names of the groups.
         :return: Dictionary with group: user-friendly column name
         """
-
-        group_name_dict = {}
-        data_name_dict = {}
+        group_name_dict, data_name_dict  = {}, {}
         groups = column_names
+
+        samples = analysis.get_case_samples() | analysis.get_control_samples()
+
+        group_fact_dict = self.get_group_tissue_ls_dicts(analysis, samples)
 
         for g in groups:
             if g == 'max_value':
@@ -247,12 +249,8 @@ class CompoundSelector(object):
             elif g == 'id':
                 data_name_dict[g] = "Peak ID"
             else:
-                samples = Sample.objects.filter(group__name=g)
-                if len(samples) > 0:
-                    factors = Factor.objects.filter(group__name=g)
-                    factor_names = [f.name for f in factors if f.name != 'nan']
-                    factor_names.sort(key=len, reverse=True) #Flymet this is Tissue, lifestage or Age, lifestage.
-                    group_name_dict[g] = factor_names[0] + " " + "(" + factor_names[1] + ")"
+                f_list = group_fact_dict[g]
+                group_name_dict[g] = f_list[0]+" " + "(" + f_list[1] + ")"
 
         return group_name_dict, data_name_dict
 
@@ -337,26 +335,23 @@ class CompoundSelector(object):
 
         return cmpd_details
 
-    def get_groups(self, tissue):
+    ### *** Here
+    def get_groups(self, analysis, factor_name):
 
         """
         :param tissue: The tissue of interest
         :return: The groups that this tissue is found in
         """
-        #Fixme: this will need to be rewritten for more generic factors.
-        if get_samples_by_factor('tissue', tissue):
 
-            filtered_sps = get_samples_by_factor('tissue', tissue)
-        else:
-            filtered_sps = get_samples_by_factor('age', tissue)
+        groups = Group.objects.filter(factor__name=factor_name)
+        secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
+        samples = analysis.get_case_samples() | analysis.get_control_samples()
 
-        groups = set([f.group for f in filtered_sps])
-        lifestage_dict = self.get_group_tissue_ls_dicts(filtered_sps)
-        life_stages = [ls[1] for ls in lifestage_dict.values()]
+        sfactors = get_factors_from_samples(samples, secondary_factor_type)
 
-        return groups, life_stages
+        return groups, sfactors
 
-    def get_gp_intensity(self, metabolite, tissue, single_cmpds_df):
+    def get_gp_intensity(self, analysis, metabolite, tissue, single_cmpds_df):
 
         """
         Given a metabolite and tissue, this method returns the group name and the intensity.
@@ -367,14 +362,23 @@ class CompoundSelector(object):
         :param tissue:
         :return: The group name of the tissue and metabolite and
         """
-        groups, life_stages = self.get_groups(tissue)  # This is the tissue groups without the whole fly
+        groups, sfactors = self.get_groups(analysis, tissue)  # This is the tissue groups without the whole fly
 
         all_groups = []
-        whole_tissue = "Whole"
 
-        for g, ls in zip(groups, life_stages):
+        control_s = analysis.get_control_samples()
+        primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
+        secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
+
+        control_factors = get_factors_from_samples(control_s, primary_factor_type)
+
+        assert len(control_factors) == 1, 'The number of control factors should be 1, please check'
+        control = control_factors[0]
+        # control = "Whole"
+
+        for g, ls in zip(groups, sfactors):
             all_groups.append(g)
-            samples = get_samples_by_factors(['tissue', 'life_stage'], [whole_tissue, ls])
+            samples = get_samples_by_factors([primary_factor_type, secondary_factor_type], [control, ls])
             whole_gp = samples[0].group
             all_groups.append(whole_gp)
 
@@ -386,27 +390,22 @@ class CompoundSelector(object):
 
         return gp_int_dict
 
-    #Fixme: This should be related with the factors for the groups. For a group get the name of the factors and
-    # create this dictionary if desired.
 
-    def get_group_tissue_ls_dicts(self, samples):
+    def get_group_tissue_ls_dicts(self, analysis, samples):
         # Given the name of the samples get dictionaries giving the groups: lifestage and/or tissue type of the group.
 
-        gp_tissue_ls_dict = {}
+        primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
+        secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
 
-        groups = set([s.group.name for s in samples])
+        gp_factor_dict = {}
 
-        # Get the first sample with of the given group and get the tissue type
-        #Fixme: should be fixed so that the code is more generic.
-        for gp in groups:
-            group_attributes = Sample.objects.filter(group__name=gp)[0]
-            if group_attributes.tissue != 'nan':
-                factor = group_attributes.tissue
-            else:
-                factor = group_attributes.age
-            gp_tissue_ls_dict[gp] = [factor, group_attributes.life_stage]
+        for s in samples:
+            fact_dict = s.get_factor_dict()
+            pfact = fact_dict[primary_factor_type]
+            sfact = fact_dict[secondary_factor_type]
+            gp_factor_dict[s.group.name] = [pfact, sfact]
 
-        return gp_tissue_ls_dict
+        return gp_factor_dict
 
     def get_group_ints(self, metabolite, group, int_df):
 
