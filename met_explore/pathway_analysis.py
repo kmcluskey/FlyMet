@@ -223,15 +223,11 @@ def get_pathway_id_names_dict():
     return pathway_id_names_dict
 
 
-def get_name_id_dict():
+def get_name_id_dict(analysis):
     """
     Given the name of a pathway get it's reactome ID
     :return: name_pw_id_dict
     """
-    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
-    #  A fix for this is probably wise.
-
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
 
     pals_df = get_cache_df(MIN_HITS, analysis)
     name_pw_id_dict = {}
@@ -307,7 +303,6 @@ def get_pals_annot_df():
         annotation_df.loc[ix, 'chebi_id'] = chebi_id
         annotation_df.loc[ix, 'related_chebi'] = related_chebi
 
-
         db_set = cmpd.compounddbdetails_set.all()
         for db in db_set:
             db_name = db.db_name.db_name
@@ -320,41 +315,6 @@ def get_pals_annot_df():
 
     return annotation_df
 
-
-# def add_num_fly_formulas(pals_ds, pals_df):
-#     """
-#
-#     :param pals_ds: The pals datasource for this experiment
-#     :param pals_df: The original pals df
-#     :return: Pals DF with the unique formulas belonging to the annotated compound in a dataset
-#     """
-#     logger.info("Updating the DS F to those identified by Chebi Ids in Fly")
-#     pathway_ids = pals_df.index.values
-#
-#     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
-#     related_chebis = set(Compound.objects.filter(related_chebi__isnull=False).values_list('related_chebi', flat=True))
-#
-#     # Split the string into indiviual chebi ids --> list of list
-#     split_related_chebis = [s.replace(" ", "").split(",") for s in related_chebis]
-#     # Change the above to a flat list
-#     fly_related_chebis = {chebi for sublist in split_related_chebis for chebi in sublist}
-#
-#     all_chebi_ids = fly_chebi_ids.union(fly_related_chebis)
-#     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)
-#
-#     for index, row in pals_df.iterrows():
-#         reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[index]
-#         fly_pw_cmpds = reactome_pw_cmpds.intersection(all_chebi_ids)
-#         fly_pw_formula = get_formula_set(list(fly_pw_cmpds))
-#         pals_df.loc[index, 'tot_ds_F'] = len(fly_pw_formula)
-#
-#     # pals_df_fly = pals_df.drop('tot_ds_F', axis=1).copy() #Drop the calculation of DF formula
-#     pals_df['tot_ds_F'] = pals_df['tot_ds_F'].astype(int)  # Make sure this new column has int values
-#
-#     # Recalculate the coverage for the new values.
-#     pals_df['F_coverage'] = (((pals_df['tot_ds_F']) / pals_df['unq_pw_F']) * 100).round(2)
-#
-#     return pals_df
 
 def get_all_chebi_ids():
 
@@ -378,7 +338,7 @@ def get_fly_pw_cmpd_formula(pw_id):
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
     :return: Dict with cmpd chebi_id: formula for each of the cmpds in a given pathway for the fly data
     """
-    # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    # Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
     #  A fix is probably wise.
 
     analysis = Analysis.objects.get(name='Tissue Comparisons')
@@ -411,7 +371,7 @@ def get_reactome_pw_metabolites(pw_id):
     :param pw_id: The ID of the pathway
     :return: A list of metabolites associated with this Reactome pathway.
     """
-    #Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do.
+    #Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
     # A fix is probably wise.
 
     analysis = Analysis.objects.get(name='Tissue Comparisons')
@@ -514,7 +474,6 @@ def get_single_db_entity_df(id_type):
                     annot_cmpd_df = annot_cmpd_df.append(new_row, ignore_index=True)
 
 
-
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]
     annotation_df.set_index('peak_ids', inplace=True)
     annotation_df.index.name = 'row_id'
@@ -526,19 +485,12 @@ def get_single_db_entity_df(id_type):
 
 def get_pals_experimental_design(analysis):
 
-    # analysis_ids = [1,3]
     cmpd_selector = CompoundSelector()
-    # samples = Sample.objects.all()
-
-    # groups = Group.objects.all().name.values_list()
 
     analysis_comparisions = AnalysisComparison.objects.filter(analysis=analysis)
 
     controls = list(set([a.control_group.name for a in analysis_comparisions]))
     cases = list(set([a.case_group.name for a in analysis_comparisions]))
-
-    # controls = analysis_comparisions.control_group.name
-    # cases = analysis_comparisions.case_group.name
 
     groups =controls+cases
 
@@ -572,18 +524,6 @@ def get_pals_experimental_design(analysis):
     experiment_design['comparisons'] = comparison_dict_list
 
     return experiment_design
-
-
-# def get_control_from_case(case, analysis_comparisions):
-#     """
-#     :param case: The group name of the sample that are the case in the study
-#     :return: String of the control group name
-#     """
-#
-#     group = Group.objects.get(name=case)
-#     control = analysis_comparisions.get(case_group=group).control_group.name
-#
-#     return control
 
 
 def get_highlight_token():

@@ -1275,6 +1275,20 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     all_intensities = np.empty((6), dtype=object)
     all_intensities[:] = np.nan
 
+    # met_series_data = []
+    #
+    # i=0
+    # for gp, v in gp_intensities.items():
+    #         print ("I", i)
+    #         pfact = group_ls_tissue_dict[gp][0]
+    #         sfact = group_ls_tissue_dict[gp][1]
+    #         met_series_data.append({'name': pfact+" "+sfact, v: None, 'drilldown': "1"})
+    #         all_intensities[i] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+    #         i += 1
+    #
+    # print ("MET SERIES DATA ", met_series_data)
+    # print ("ALL INTENSITIES ", all_intensities)
+
     # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
     # AF = data[0], AFW = data[1], AM = data[2], AFW = data[3] L = data[4], ALW = data[5]
     # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
@@ -1307,7 +1321,7 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
             all_intensities[5] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
 
     logger.info("Passing the series data %s" % met_series_data)
-    logger.info("all intensities F, M and Larvae are %s" % all_intensities)
+    # logger.info("all intensities F, M and Larvae are %s" % all_intensities)
 
     # Return all the intensities as drilldown data to highcharts
     # The all_intensities data is a list of lists as 4 replicates for the LS: F, M and L
@@ -1692,7 +1706,7 @@ def get_metabolite_search_page(analysis, search_query):
             pathway_ids = get_cmpd_pwys(cmpd_id)
 
             # Get pathway names based on their IDS.
-            pwy_name_id_dict = get_name_id_dict()
+            pwy_name_id_dict = get_name_id_dict(analysis)
 
             if pathway_ids:
                 pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
