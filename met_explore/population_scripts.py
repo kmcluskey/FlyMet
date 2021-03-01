@@ -22,12 +22,13 @@ def populate_samples(sample_csv):
     # Assume the first column is the sample
     # Drop empty rows where it's all NaN if they're present
     sample_details = pd.read_csv(sample_csv, index_col=0).dropna(how='all')
-
+    print (sample_details)
     # Assume other columns are the experimental factors
     factor_names = sample_details.columns.values
     assert CSV_GROUP_COLNAME in factor_names, 'Missing group information in CSV'
 
     for idx, row in sample_details.iterrows():
+        print (idx)
         try:
             # save sample and the group column
             sample_name = idx.strip()
@@ -36,7 +37,7 @@ def populate_samples(sample_csv):
             group, group_created = Group.objects.get_or_create(name=group_name)
             if group_created:
                 group.save()
-            sample = Sample(name=sample_name, sample_group=group)
+            sample = Sample(name=sample_name, group=group)
             sample.save()
 
             # save other columns as factors
