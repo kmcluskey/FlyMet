@@ -36,7 +36,7 @@ def populate_samples(sample_csv):
             group, group_created = Group.objects.get_or_create(name=group_name)
             if group_created:
                 group.save()
-            sample = Sample(name=sample_name, sample_group=group)
+            sample = Sample(name=sample_name, group=group)
             sample.save()
 
             # save other columns as factors
