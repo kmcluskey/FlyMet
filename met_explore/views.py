@@ -304,8 +304,6 @@ def pathway_age_search(request):
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-        print("PWY_TABLE", pwy_table_data)
-
         context = {
             'pwy_table_data': pwy_table_data,
             'pals_min': pals_min,
@@ -1261,78 +1259,26 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
-
-
-    #Fixme: These should be changed to represent the the factors in the data.
-    met_series_data = [{'name': "Adult Female", 'y': None, 'drilldown': "1"},
-                       {'name': "Whole Female", 'y': None, 'drilldown': "2"},
-                       {'name': "Adult Male", 'y': None, 'drilldown': "3"},
-                       {'name': "Whole Male", 'y': None, 'drilldown': "4"},
-                       {'name': "Larvae", 'y': None, 'drilldown': "5"},
-                       {'name': "Whole Larvae", 'y': None, 'drilldown': "6"}]
-
     gp_intensities = cmpd_selector.get_gp_intensity(analysis, metabolite, tissue, single_cmpds_df)
-    all_intensities = np.empty((6), dtype=object)
-    all_intensities[:] = np.nan
 
-    # met_series_data = []
-    #
-    # i=0
-    # for gp, v in gp_intensities.items():
-    #         print ("I", i)
-    #         pfact = group_ls_tissue_dict[gp][0]
-    #         sfact = group_ls_tissue_dict[gp][1]
-    #         met_series_data.append({'name': pfact+" "+sfact, v: None, 'drilldown': "1"})
-    #         all_intensities[i] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-    #         i += 1
-    #
-    # print ("MET SERIES DATA ", met_series_data)
-    # print ("ALL INTENSITIES ", all_intensities)
+    all_intensities,  met_series_data, gp_names  =[], [], []
 
-    # KMcL it might be better to pass these and check the correct data is matched - currently this is a reminder.
-    # AF = data[0], AFW = data[1], AM = data[2], AFW = data[3] L = data[4], ALW = data[5]
-    # Get all the intensities for Female, Male and Larvae from the gp_intensities to pass to the highcharts.
-    # The group intensities just have the group name so have to work out the LS from this.
+    i=0
     for gp, v in gp_intensities.items():
-        if math.isnan(v):
-            v = np.nan_to_num(v)  # Can't pass NaN to JSON so return a zero to the highchart.
-        if group_ls_tissue_dict[gp][1] == 'F' and group_ls_tissue_dict[gp][0] != 'Whole':
-            met_series_data[0]['y'] = v  # The average int
-            all_intensities[0] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
+            pfact = group_ls_tissue_dict[gp][0]
+            sfact = group_ls_tissue_dict[gp][1]
+            met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
+            all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
+            gp_name = pfact + " " + sfact
+            gp_names.append(gp_name)
+            i += 1
 
-        elif group_ls_tissue_dict[gp][1] == 'F' and group_ls_tissue_dict[gp][0] == 'Whole':
-            met_series_data[1]['y'] = v
-            all_intensities[1] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-
-        elif group_ls_tissue_dict[gp][1] == 'M' and group_ls_tissue_dict[gp][0] != 'Whole':
-            met_series_data[2]['y'] = v
-            all_intensities[2] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-
-        elif group_ls_tissue_dict[gp][1] == 'M' and group_ls_tissue_dict[gp][0] == 'Whole':
-            met_series_data[3]['y'] = v
-            all_intensities[3] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-
-        elif group_ls_tissue_dict[gp][1] == 'L' and group_ls_tissue_dict[gp][0] != 'Whole':
-            met_series_data[4]['y'] = v
-            all_intensities[4] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-
-        elif group_ls_tissue_dict[gp][1] == 'L' and group_ls_tissue_dict[gp][0] == 'Whole':
-            met_series_data[5]['y'] = v
-            all_intensities[5] = cmpd_selector.get_group_ints(metabolite, gp, hc_int_df)
-
-    logger.info("Passing the series data %s" % met_series_data)
-    # logger.info("all intensities F, M and Larvae are %s" % all_intensities)
-
-    # Return all the intensities as drilldown data to highcharts
-    # The all_intensities data is a list of lists as 4 replicates for the LS: F, M and L
-    # 12 replicates for Whole M and Whole F and Whole L change and hence the get_drilldown_data method.
-
-    drilldown_data = get_drilldown_data()
+    groups = list(gp_intensities.keys())
+    drilldown_data = get_drilldown_data_structure(groups, analysis)
 
     df = pd.DataFrame({'ints': all_intensities})
 
     # Change the NaNs to empty lists []
-
     df.loc[df['ints'].isnull(), ['ints']] = df.loc[df['ints'].isnull(), 'ints'].apply(lambda x: [])
     int_data = df.ints.values.tolist()
 
@@ -1345,7 +1291,6 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     # Return the interquartile range, q25 and q75, as the error bars.
     error_bar_data = []
-
     for d in all_intensities:
         np_data = np.array(d)
         np_data = np_data[~np.isnan(np_data)]  # for error bar calcs Nans are removed.
@@ -1357,10 +1302,10 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
             error_series = None
         error_bar_data.append(error_series)
 
-    logger.debug("error_bar_data %s" % error_bar_data)
-    logger.info("Passing the series data %s" % met_series_data)
-    logger.info("Passing the error bar data %s" % error_bar_data)
-    logger.info("Passing the drilldown data %s" % drilldown_data)
+    #
+    logger.debug("Passing the series data %s" % met_series_data)
+    logger.debug("Passing the error bar data %s" % error_bar_data)
+    logger.debug("Passing the drilldown data %s" % drilldown_data)
 
     peak_id = cmpd_selector.get_peak_id(metabolite, single_cmpds_df)
 
@@ -1373,7 +1318,7 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     if frank_annots is not None:
         probability = round(float(frank_annots['probability']), 1)
 
-    return JsonResponse({'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data,
+    return JsonResponse({'group_names': gp_names, 'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data,
                          'drilldown_data': drilldown_data})
 
 
@@ -1532,39 +1477,36 @@ def get_peak_compare_df(analysis, peaks):
     return peak_compare_df, min_value, mean_value, max_value
 
 
-def get_drilldown_data():
+def get_drilldown_data_structure(groups, analysis):
     """
     A method to return the structure of the drilldown data structure
     :return: A list of lists containing the drilldown data structure - this may change depending on the number of
     whole fly replicates.
     """
-    num_FW = len(Sample.objects.filter(group__name="Whole_f"))
-    num_MW = len(Sample.objects.filter(group__name="Whole_m"))
-    num_LW = len(Sample.objects.filter(group__name="Whole_l"))
+    # Get number of samples in this group.
 
-    whole_fly_dict = {'FW': num_FW, 'MW': num_MW, 'LW': num_LW}  # whole_female, whole_male, whole_larvae
-
-    # Structure of the drilldown data for the tissue samples
-    f_list = [["F1", None], ["F2", None], ["F3", None], ["F4", None]]
-    m_list = [["M1", None], ["M2", None], ["M3", None], ["M4", None]]
-    l_list = [["L1", None], ["L2", None], ["L3", None], ["L4", None]]
-
+    secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
+    primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
     drilldown_data = []
 
-    for whole_type, numf in whole_fly_dict.items():
+    for g in groups:
+
+        s = Factor.objects.get(type=secondary_factor_type, group__name=g).name
+        p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
+
+        num_samples = len(Sample.objects.filter(group__name=g))
+
         fw_list = []
-        for f in range(1, numf + 1):
-            f_num = whole_type + str(f)
+        for f in range(1, num_samples + 1):
+            f_num = p+s + str(f) #Male Brain would be shown as BM etc
             f_sample = [f_num, None]
             fw_list.append(f_sample)
+
         drilldown_data.append(fw_list)
 
-    # Add the tissue F, M, L in the appropriate position...
-    drilldown_data.insert(0, f_list)
-    drilldown_data.insert(2, m_list)
-    drilldown_data.insert(4, l_list)
 
-    logger.debug("Returning drilldown_data %s" % drilldown_data)
+
+    # logger.debug("Returning drilldown_data structure as %s" % drilldown_data)
 
     return drilldown_data
 

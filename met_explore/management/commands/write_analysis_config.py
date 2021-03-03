@@ -51,10 +51,10 @@ class Command(BaseCommand):
 
                 m_f_controls = [x for x in unique_groups if x.endswith('_f')]
                 m_f_cases = [x for x in unique_groups if x.endswith('_m')]
-                whole_tissue_controls = ["Whole_f", "Whole_m", "Whole_l"]
-                whole_tissue_cases = [x for x in unique_groups if x not in whole_tissue_controls]
+                whole_factor_controls = ["Whole_f", "Whole_m", "Whole_l"]
+                whole_factor_cases = [x for x in unique_groups if x not in whole_factor_controls]
 
-                case_control_dict = {'whole_tissue': [whole_tissue_cases, whole_tissue_controls],
+                case_control_dict = {'whole_factor': [whole_factor_cases, whole_factor_controls],
                                      'm_f': [m_f_cases, m_f_controls]}
 
                 comparisons_list = []

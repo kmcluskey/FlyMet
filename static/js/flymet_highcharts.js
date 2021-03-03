@@ -8,8 +8,7 @@ require('highcharts/modules/drilldown')(Highcharts);
 require('highcharts/highcharts-more')(Highcharts);
 require('highcharts/themes/sand-signika.js')(Highcharts);
 
-function singleMet_intensity_chart(container, series_data, drilldown_data){
-
+function singleMet_intensity_chart(container, series_data, drilldown_data, group_names){
   // Create the chart
   Highcharts.chart(container, {
     chart: {
@@ -27,8 +26,7 @@ function singleMet_intensity_chart(container, series_data, drilldown_data){
 
     xAxis: [{
       id: 0,
-      categories:['Female', 'WholeF', 'Male', 'WholeM', 'Larvae', 'WholeL'], //Static x-axis required for error bars.
-
+      categories:group_names, //Static x-axis required for error bars.
     }, {
       id: 1,
       type: 'category', //reads from the name of the drilldown/samples
@@ -60,10 +58,8 @@ function singleMet_intensity_chart(container, series_data, drilldown_data){
     },
 
     series: series_data,
-  // [[ 654127655, 641653789, 621125456] [745231112, 723223855, 1100098987], [1120993441, 850003341, 1384887665], [ 45000456, 670881112, 512986512]]
 
   drilldown: {
-
     series: drilldown_data
   },
 });
