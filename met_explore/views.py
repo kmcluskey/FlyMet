@@ -189,12 +189,13 @@ def metabolite_search(request):
         #fixme: this should be fixed so that these values are not hard-coded.
         analysis = Analysis.objects.get(name="Tissue Comparisons")
 
-        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
+        columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
 
         logger.debug("met_table_data %s" % met_table_data)
         logger.debug("columns %s" % columns)
 
         context = {
+            'peak_id': peak_id,
             'columns': columns,
             'metabolite': search_query,
             'analysis_id': analysis.id,
@@ -224,12 +225,12 @@ def metabolite_search_age(request):
         search_query = request.GET.get('metabolite_search_age', None)
         analysis = Analysis.objects.get(name="Age Comparisons")
 
-        columns, met_table_data, min, max, mean, pathways, references = get_metabolite_search_page(analysis, search_query)
+        columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
 
         logger.debug("met_table_data %s " % met_table_data)
         logger.debug("with columns %s" % columns)
-
         context = {
+            'peak_id': peak_id,
             'columns': columns,
             'metabolite': search_query,
             'analysis_id': analysis.id,
@@ -1569,7 +1570,7 @@ def get_metabolite_search_page(analysis, search_query):
     assert len(control_factors) == 1, 'The number of control factors should be 1, please check'
     control = control_factors[0]
 
-
+    peak_id = None
     met_table_data, columns = [], []
     min = MIN
     max = MAX
@@ -1653,7 +1654,7 @@ def get_metabolite_search_page(analysis, search_query):
             if pathway_ids:
                 pathways = {k: v for k, v in pwy_name_id_dict.items() if k in pathway_ids}
 
-    return columns, met_table_data, min, max, mean, pathways, references
+    return columns, met_table_data, min, max, mean, pathways, references, peak_id
 
 
 def sort_df_and_headers(view_df, analysis):

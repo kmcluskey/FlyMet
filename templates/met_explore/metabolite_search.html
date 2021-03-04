@@ -167,7 +167,10 @@
                   <span id ="F" class="badge badge-pill badge-warning">F</span>
                   {{references.frank_annots.probability}}
                   {% else %}
-                  <span id="A" class="badge badge-pill badge-danger">A15</span>
+                  <span id="A" class="badge badge-pill badge-danger">A</span>
+                  {% endif %}
+                  {% if peak_id > 0 %}
+                  <p><a href="{% url 'peak_explorer' peak_id %}"> Peak {{peak_id}}</a></p>
                   {% endif %}
                   <hr>
                   <div class="row">
