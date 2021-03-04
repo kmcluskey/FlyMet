@@ -176,15 +176,15 @@ def metabolite_data(request, cmpd_ids):
     return JsonResponse({'data': data_list})
 
 
-def metabolite_search(request):
+def metabolite_search_tissue(request):
     """
     View to return the metabolite search page
-    :returns: Render met_explore/metabolite_search
+    :returns: Render met_explore/metabolite_search_tissue
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
 
     if request.method == 'GET':  # If the URL is loaded
-        search_query = request.GET.get('metabolite_search', None)
+        search_query = request.GET.get('metabolite_search_tissue', None)
 
         #fixme: this should be fixed so that these values are not hard-coded.
         analysis = Analysis.objects.get(name="Tissue Comparisons")
@@ -208,13 +208,13 @@ def metabolite_search(request):
         }
 
         logger.debug("The references are %s" % references)
-        return render(request, 'met_explore/metabolite_search.html', context)
+        return render(request, 'met_explore/metabolite_search_tissue.html', context)
 
 
 def metabolite_search_age(request):
     """
     View to return the metabolite search page
-    :returns: Render met_explore/metabolite_search
+    :returns: Render met_explore/metabolite_search_age
     """
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
 

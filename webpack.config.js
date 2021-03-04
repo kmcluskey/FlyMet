@@ -12,7 +12,7 @@ module.exports = {
         base: './static/js/base',
         init_datatables: './static/js/init_datatables',
         metabolite_list: './static/js/metabolite_list',
-        metabolite_search: './static/js/metabolite_search',
+        metabolite_search_tissue: './static/js/metabolite_search_tissue',
         metabolite_search_age: './static/js/metabolite_search_age',
         met_ex_all:'./static/js/met_ex_all',
         met_age_id: './static/js/met_age_id',

@@ -18,6 +18,6 @@ $(document).ready(function() {
 
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
-    new Awesomplete(metabolite_search, {list: data.metaboliteNames});
+    new Awesomplete(metabolite_search_tissue, {list: data.metaboliteNames});
   });
 });

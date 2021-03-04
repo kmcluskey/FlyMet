@@ -27,7 +27,7 @@ urlpatterns = [
     # Tissue specific views
 
     path('met_ex_all/<str:cmpd_list>', views.met_ex_all, name='met_ex_all'),
-    path('metabolite_search', views.metabolite_search, name='metabolite_search'),
+    path('metabolite_search_tissue', views.metabolite_search_tissue, name='metabolite_search_tissue'),
     path('met_ex_tissues', views.met_ex_tissues, name='met_ex_tissues'),
     path('peak_ex_compare/<str:peak_compare_list>', c(views.peak_ex_compare), name='peak_ex_compare'),
     path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
