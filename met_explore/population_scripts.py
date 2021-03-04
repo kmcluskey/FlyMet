@@ -22,7 +22,6 @@ def populate_samples(sample_csv):
     # Assume the first column is the sample
     # Drop empty rows where it's all NaN if they're present
     sample_details = pd.read_csv(sample_csv, index_col=0).dropna(how='all')
-
     # Assume other columns are the experimental factors
     factor_names = sample_details.columns.values
     assert CSV_GROUP_COLNAME in factor_names, 'Missing group information in CSV'
@@ -151,7 +150,6 @@ def populate_peaks_cmpds_annots(peak_df):
 
             store_cmpd, cmpd_created = Compound.objects.get_or_create(pc_sec_id=row.cmpd_id, cmpd_formula=row.formula,
                                                                       chebi_id=row.chebi_id, chebi_name=row.chebi_name)
-
             if not cmpd_created:
                 if store_cmpd.smiles == 'nan' and row.smiles:
                     store_cmpd.smiles = row.smiles
@@ -177,7 +175,6 @@ def populate_peaks_cmpds_annots(peak_df):
                                                                                                identifier=dbid,
                                                                                                cmpd_name=name,
                                                                                                compound=store_cmpd)
-
             if created_cmpd_details:
                 logger.debug("New cmpd details were created %s" % (store_cmpd_details))
                 store_cmpd_details.save()

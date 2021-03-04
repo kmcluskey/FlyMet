@@ -169,6 +169,9 @@
                   {% else %}
                   <span id="A" class="badge badge-pill badge-danger">A15</span>
                   {% endif %}
+                  {% if peak_id > 0 %}
+                  <p><a href="{% url 'peak_explorer' peak_id %}"> Peak {{peak_id}}</a></p>
+                  {% endif %}
                   <hr>
                   <div class="row">
                     <div class="col-sm-6 peak_data"><b>Ion: </b>{{references.adduct}}</div><div class="col-sm-6 peak_data"><b>RT: </b>{{references.rt|stringformat:".2f"}}</div>

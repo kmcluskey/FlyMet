@@ -143,7 +143,7 @@ function updateMetSidePanel(obj, metabolite){
 
   console.log(tissue_name)
 
-  const series_data = [ { xAxis: 0, name: "Life Stages", id: "master_1", data: null},
+  const series_data = [ { xAxis: 0, name: "Average Intensities", id: "master_1", data: null},
   { name: 'IQR',
   type: 'errorbar',
   linkedTo: "master_1",
@@ -161,66 +161,27 @@ function updateMetSidePanel(obj, metabolite){
 }
 ];
 
-const drilldown_data = [
-  {
-    xAxis: 1,
-    name: "F",
-    id: "1",
-    data: null
-  },
-  {
-    xAxis: 1,
-    name: "FW",
-    id: "2",
-    data: null
-  },
-  {
-    xAxis: 1,
-    name: "M",
-    id: "3",
-    data: null
-  },
-  {
-    xAxis: 1,
-    name: "MW",
-    id: "4",
-    data: null
-  },
-  {
-    xAxis: 1,
-    name: "L",
-    id: "5",
-    data: null
-  },
-  {
-    xAxis: 1,
-    name: "LW",
-    id: "6",
-    data: null
-  },
-
-];
-
 const handleUpdate = function(returned_data) {
 
   const probability = returned_data.probability;
+  let group_names = returned_data.group_names;
 
   series_data[0].data = returned_data.series_data;
   series_data[1].data = returned_data.error_bar_data;
 
   // Fill in the drill down data for each lifestage.
   const returned_drill =  returned_data.drilldown_data;
+
+  let drilldown_data = get_drilldown_data(returned_drill, group_names)
   var i;
   for (i = 0; i < returned_drill.length; i++) {
     drilldown_data[i].data = returned_data.drilldown_data[i];
   }
-
   // Send on to highchart function
-  singleMet_intensity_chart('highchart', series_data, drilldown_data);
+  singleMet_intensity_chart('highchart', series_data, drilldown_data, group_names);
   // Add tooltips to the highchart
   add_highchart_tooltips(probability);
 };
-
 
 
 //const url = 'http://127.0.0.1:8000/met_explore/met_search_highchart_data/'+ tissue_name+'/'+ metabolite;
@@ -260,6 +221,25 @@ function updateEnzymeSidePanel(obj){
     $("p[id^='tissue_type']").text(tissue_name+' metabolites found in Histamine Biosynthesis. ');
     $("legend[class^='tissue']").text(tissue_name);
 }
+
+
+function get_drilldown_data(returned_drill, group_names){
+  console.log(group_names)
+  let drilldown_data = []
+  var i;
+  for (i = 0; i < returned_drill.length; i++) {
+    let id = i+1
+    let drill_gp = {
+      xAxis: 1,
+      name: group_names[i],
+      id: id.toString(),
+      data: null,
+    };
+    drilldown_data.push(drill_gp)
+  };
+return drilldown_data
+};
+
 
 export {initialise_table,
         add_met_tooltips,
