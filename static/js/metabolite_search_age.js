@@ -10,14 +10,16 @@ import {initialise_table, updateMetSidePanel} from './flymet_tables';
 import {get_data_index} from './metabolite_tables_general';
 
 function add_table_tooltips(obj){
-  $('.notDetected').tooltip({title: "A MS peak was not detected for this tissue/life stage combination", placement: "top"})
-  $('.notMeasured').tooltip({title: "A sample has not been measured for this tissue/life stage combination", placement: "top"})
+  $('.notDetected').tooltip({title: "A MS peak was not detected for this Age/life stage combination", placement: "top"})
+  $('.notMeasured').tooltip({title: "A sample has not been measured for this Age/life stage combination", placement: "top"})
+
 }
 
 function add_met_tooltips(obj, metabolite){
-  $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Female: Whole Fly vs Tissue", placement: "top"});
-  $('.AF_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Adult Male: Whole Fly vs Tissue", placement: "top"});
-  $('.L_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Larvae: Whole Fly vs Tissue", placement: "top"});
+
+  $('.AM_met_WT_ratio').tooltip({title: "Fold Change of " + metabolite + " intensity in Adult Female: Whole (7 day old) Fly vs Aged Flies", placement: "top"});
+  $('.AF_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Adult Male: Whole (7 day old) Fly vs Aged Flies", placement: "top"});
+  $('.L_met_WT_ratio').tooltip({title: "Fold change of " + metabolite + " intensity in Larvae: Whole (7 day old) Fly vs Aged Flies", placement: "top"});
 
 }
 
