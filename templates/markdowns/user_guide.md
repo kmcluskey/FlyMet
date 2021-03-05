@@ -38,7 +38,7 @@
 
 FlyMet is a web-based metabolomics atlas that provides user-friendly visualization of metabolite profiles across *Drosophila melanogaster* (fruit-fly) tissues. It is a collaboration between the Universities of Glasgow (Dow lab (link) and Glasgow Polyomics (link)) and the University of Edinburgh (Burgess lab (link)). To obtain the data for FlyMet, 20 separate reference tissues were obtained by micro-dissection of adult (male (M) and female (F)) and larval *Drosophila* and individual metabolomes were collected for each, using LC/MS.
 
-FlyMet aims to present this data in a user-friendly and transparent manner. Users can search for individual metabolites found in *Drosophila* and examine how these are related to each other Reactome metabolic pathways. In addition, annotated MS peak intensity data is also made available. The peak intensities in the various tissues can be  compared to those found in whole flies or between F/M flies.
+FlyMet aims to present this data in a user-friendly and transparent manner. Users can search for individual metabolites found in *Drosophila* and examine how these are related to each other Reactome metabolic pathways. In addition, annotated MS peak intensity data is also made available. The peak intensities in the various tissues can be  compared to those found in whole flies or between M/F flies.
 
 Users can search for **individual** metabolites and pathways from the FlyMet Home Page as well as view the **comprehensive** datasets for MS peaks, metabolites and pathways using the Peak, Metabolite and Pathway Explorer pages, respectively.  
 
@@ -61,7 +61,7 @@ The metabolite search function provides details of metabolites that have been an
 
 1. A table showing how the metabolite (peak intensity) changes in the different tissues compared to its abundance in the whole fly, separated into M/F/L.
 
-  - **Click on a column** (F/M or L) to order the tissues by an abundance or deficit of the chosen metabolite in F, M or L *Drosophila*.
+  - **Click on a column** (M/F or L) to order the tissues by an abundance or deficit of the chosen metabolite in F, M or L *Drosophila*.
   - **Click on row** (tissue-type), to view the associated intensity data a drilldown chart for each of the individual LC-MS samples collected.
 
 
