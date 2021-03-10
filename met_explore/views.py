@@ -6,21 +6,20 @@ import django
 import numpy as np
 import pandas as pd
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
-
-
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, get_factors_from_samples
-from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group, Factor
+from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
+    get_factors_from_samples
+from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
+    Group, Factor
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
-
+    get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
@@ -176,7 +175,7 @@ def metabolite_data(request, cmpd_ids):
     return JsonResponse({'data': data_list})
 
 
-def metabolite_search_tissue(request):
+def metabolite_search(request, analysis_id):
     """
     View to return the metabolite search page
     :returns: Render met_explore/metabolite_search_tissue
@@ -184,10 +183,9 @@ def metabolite_search_tissue(request):
     # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
 
     if request.method == 'GET':  # If the URL is loaded
-        search_query = request.GET.get('metabolite_search_tissue', None)
-
-        #fixme: this should be fixed so that these values are not hard-coded.
-        analysis = Analysis.objects.get(name="Tissue Comparisons")
+        search_query = request.GET.get('metabolite_search', None)
+        analysis = Analysis.objects.get(id=analysis_id)
+        logger.debug('Found analysis_name = %s' % analysis.name)
 
         columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
 
@@ -209,42 +207,7 @@ def metabolite_search_tissue(request):
         }
 
         logger.debug("The references are %s" % references)
-        return render(request, 'met_explore/metabolite_search_tissue.html', context)
-
-
-def metabolite_search_age(request):
-    """
-    View to return the metabolite search page
-    :returns: Render met_explore/metabolite_search_age
-    """
-    # Min/Max values to send back to the view for colouring the table - these only change if the values from  the table are outwith this range.
-
-    if request.method == 'GET':  # If the URL is loaded
-
-        #Fixme: these should be fixed so that these values are not hard-coded.
-        search_query = request.GET.get('metabolite_search_age', None)
-        analysis = Analysis.objects.get(name="Age Comparisons")
-
-        columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
-
-        logger.debug("met_table_data %s " % met_table_data)
-        logger.debug("with columns %s" % columns)
-        context = {
-            'peak_id': peak_id,
-            'columns': columns,
-            'metabolite': search_query,
-            'analysis_id': analysis.id,
-            'met_table_data': met_table_data,
-            'min': min,
-            'max': max,
-            'mean': mean,
-            'pathways':pathways,
-            'references': references,
-            'json_url': reverse('get_metabolite_names')
-        }
-
-        logger.debug("The references are %s" % references)
-        return render(request, 'met_explore/metabolite_search_age.html', context)
+        return render(request, 'met_explore/metabolite_search.html', context)
 
 
 def pathway_search(request):
@@ -599,15 +562,10 @@ def peak_mf_compare(request):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
-    peaks = Peak.objects.all()
 
     analysis = Analysis.objects.get(name="M/F Comparisons")
-    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
-
-    sorted_view_df = sort_df_and_headers(view_df, analysis)
-    # column_headers = sorted_view_df.columns.tolist()
-
-    column_headers = get_peak_mf_header(sorted_view_df, analysis)
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+    column_headers = get_peak_mf_header(view_df, analysis)
 
 
     stop = timeit.default_timer()
@@ -628,13 +586,10 @@ def peak_mf_age_compare(request):
     logger.info("Peak m/f age comparison table requested")
     start = timeit.default_timer()
 
-    peaks = Peak.objects.all()
-
     analysis = Analysis.objects.get(name="Age M/F Comparisons")
-    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
+    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
 
-    sorted_view_df = sort_df_and_headers(view_df, analysis)
-    column_headers = get_peak_mf_header(sorted_view_df, analysis)
+    column_headers = get_peak_mf_header(view_df, analysis)
 
     stop = timeit.default_timer()
 
@@ -831,10 +786,8 @@ def peak_mf_compare_data(request):
     """
 
     analysis = Analysis.objects.get(name="M/F Comparisons")
-    peaks = Peak.objects.all()
 
-
-    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
     view_df = view_df_sorted.fillna("-")
     #
@@ -872,10 +825,8 @@ def peak_mf_age_data(request):
         :return: The cached url of the ajax data for the peak data table.
         """
     analysis = Analysis.objects.get(name="Age M/F Comparisons")
-    peaks = Peak.objects.all()
 
-
-    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
+    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
     view_df = view_df_sorted.fillna("-")
     #
@@ -1260,13 +1211,17 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     case_s = analysis.get_case_samples()
     control_s = analysis.get_control_samples()
+
     samples = case_s | control_s
 
     # Should only be looking at a single compound
+
     single_cmpd_indexed = s_cmpds_df.index.values
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
+
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
+
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
     gp_intensities = cmpd_selector.get_gp_intensity(analysis, metabolite, tissue, single_cmpds_df)
 
@@ -1388,8 +1343,56 @@ def change_pals_col_names(pals_df):
 
     return pals_df
 
-def get_peak_compare_df(analysis, peaks):
 
+def get_peak_mf_compare_df(analysis):
+
+    peaks = Peak.objects.all()
+    required_data = peaks.values('id', 'm_z', 'rt')
+    peak_df = pd.DataFrame.from_records(required_data)
+
+    cache_name = "peak_mf_df_"+str(analysis.id)
+
+    if cache.get(cache_name) is None:
+        logger.debug("we dont have cache so running the function")
+        cache.set(cache_name, cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get(cache_name)
+    else:
+        logger.debug("we have cache so retrieving %s " % cache_name)
+        group_df = cache.get(cache_name)
+
+
+    # Add an index so that we can export the peak as one of the values.
+    group_df.reset_index(inplace=True)
+    group_df.rename(columns={'peak': 'id'}, inplace=True)
+
+    # Remove all larvae samples
+    filter_columns = [col_name for col_name in group_df.columns if not col_name.endswith('l')]
+
+    # male_female dataframe
+    mf_df = group_df[filter_columns].copy()
+
+    # divide by the whole fly amount for the sex/life-stage.
+    for c in filter_columns:
+        if c.endswith('f'):
+            tissue = c.replace("_f", "")
+            try:
+                mf_df[c] = mf_df[c].div(mf_df[tissue + '_m'])
+            except KeyError:
+                # There is no male equivalent for this tissue so drop this from the column names
+                mf_df = mf_df.drop(columns=c, axis=1)
+
+    female_columns = [col_name for col_name in mf_df.columns if not col_name.endswith('m')]
+
+    f_df = mf_df[female_columns].copy()
+    drop_list = ['id']
+    log_df, min_value, mean_value, max_value = get_log_df(f_df, drop_list)
+
+    peak_compare_mf = pd.merge(peak_df, log_df, on='id')
+
+    return peak_compare_mf, min_value, mean_value, max_value
+
+
+def get_peak_compare_df(analysis, peaks):
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
@@ -1464,6 +1467,10 @@ def get_drilldown_data_structure(groups, analysis):
             fw_list.append(f_sample)
 
         drilldown_data.append(fw_list)
+
+
+
+    # logger.debug("Returning drilldown_data structure as %s" % drilldown_data)
 
     return drilldown_data
 
@@ -1651,25 +1658,13 @@ def get_peak_mf_header(view_df, analysis):
     :return: A list of view headers for the DF
     """
 
-    # sorted_view_df = sort_df_and_headers(view_df, analysis)
-    column_heads = view_df.columns.tolist()
-
-    secondary_factor = get_factor_type_from_analysis(analysis, 'secondary_factor')
-    control_sec_factors = Factor.objects.filter(Q(group__control_group__analysis=analysis), Q(type=secondary_factor))
-    case_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
-
-    cont_sfs = set([sf.name for sf in control_sec_factors])
-    case_sfs = set([sf.name for sf in case_sec_factors])
-
-    assert len(cont_sfs)==len(case_sfs)==1, 'The number of control and case secondary factors should both be 1'
-
-    cont_sf = cont_sfs.pop()
-    case_sf = case_sfs.pop()
+    sorted_view_df = sort_df_and_headers(view_df, analysis)
+    column_heads = sorted_view_df.columns.tolist()
 
     column_headers = []
     for new_header in column_heads:
-        if new_header.endswith('('+case_sf+')'):
-            new_header = new_header.replace('('+case_sf+')', '('+case_sf+'/'+cont_sf+')')
+        if new_header.endswith('(F)'):
+            new_header = new_header.replace('(F)', "(F/M)")
         column_headers.append(new_header)
 
     return column_headers

@@ -32,8 +32,8 @@
 
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_tissue' %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+                <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=1 %}">Tissues</a>
+                <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=3 %}">Aged Flies</a>
             </div>
         </nav>
 
@@ -42,7 +42,7 @@
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'metabolite_search_tissue' %}">Metabolites</a>
+                        <a class="nav-link" href="{% url 'metabolite_search' analysis_id=1 %}">Metabolites</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
@@ -58,9 +58,8 @@
             <p class='mt-4 lead'>
                 Quick start: Search for metabolites identified in <i>Drosophila</i> tissues.
             </p>
-            <form action="metabolite_search" method="get" class="form-inline my-2 my-lg-0">
+            <form action="{% url 'metabolite_search' analysis_id=1 %}" method="get" class="form-inline my-2 my-lg-0">
                 {# TODO: replace with the analysis id from config #}
-                <input type="hidden" name="analysis_id" value="1"/>
                 <input id="metabolite_search" name='metabolite_search' class="form-control mr-sm-2" type="text"
                        placeholder="Metabolite Search">
                 <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>

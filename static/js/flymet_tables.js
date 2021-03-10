@@ -7,7 +7,7 @@ const d3 = require('d3');
 import {singleMet_intensity_chart} from './flymet_highcharts.js';
 
 
-function initialise_table(tableName, lowpoint, midpoint, highpoint, project, data_index){
+function initialise_table(tableName, lowpoint, midpoint, highpoint, data_index){
     const tName = '#'+tableName;
     console.log(tName)
     let table = $(tName).DataTable({
@@ -40,17 +40,13 @@ function initialise_table(tableName, lowpoint, midpoint, highpoint, project, dat
                 "targets": '_all',
                 "createdCell": function (td, cellData, rowData, row, col) {
                     let $td = $(td);
-                    //find the table headers with class=data
-                    let $th = $td.closest('table').find('th.data').eq($td.index());
-
-                    //console.log($th.text())
 
                     const colorScale = d3.scaleLinear()
                         .range(["#1184fc", "#D6DCE6", "#8e3b3d"])
                         .domain([lowpoint, midpoint, highpoint]);
 
-                    //If the column header doesn't include the string Tissue then colour the column.
-                    if (!($th.text().includes(project))) {
+                    // assume the first column is the row index, so don't colour it
+                    if ($td.index() != 0) {
                         if (!(isNaN(cellData))){ //if the value of the cell is a number then colour it.
                             const colour = colorScale(cellData);
                             $(td).css('background-color', colour);

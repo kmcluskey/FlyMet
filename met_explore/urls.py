@@ -27,7 +27,6 @@ urlpatterns = [
     # Tissue specific views
 
     path('met_ex_all/<str:cmpd_list>', views.met_ex_all, name='met_ex_all'),
-    path('metabolite_search_tissue', views.metabolite_search_tissue, name='metabolite_search_tissue'),
     path('met_ex_tissues', views.met_ex_tissues, name='met_ex_tissues'),
     path('peak_ex_compare/<str:peak_compare_list>', c(views.peak_ex_compare), name='peak_ex_compare'),
     path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
@@ -43,7 +42,6 @@ urlpatterns = [
     # Age specific views
 
     path('met_age_all/<str:cmpd_list>', views.met_age_all, name='met_age_all'),
-    path('metabolite_search_age', views.metabolite_search_age, name='metabolite_search_age'),
     path('met_age_id', views.met_age_id, name='met_age_id'),
     path('peak_age_compare/<str:peak_compare_list>', c(views.peak_age_compare), name='peak_age_compare'),
     path('peak_mf_age_compare', views.peak_mf_age_compare, name='peak_mf_age_compare'),
@@ -57,7 +55,7 @@ urlpatterns = [
     path('pathway_age_metabolites', views.pathway_age_metabolites, name='pathway_age_metabolites'),
 
     # Common views
-
+    path('metabolite_search/<int:analysis_id>', views.metabolite_search, name='metabolite_search'),
     path('met_search_highchart_data/<str:analysis_id>/<str:tissue>/<str:metabolite>', views.met_search_highchart_data, name='met_search_highchart_data'),
     path('metabolite_data/<str:cmpd_ids>', c(views.metabolite_data), name='metabolite_data'),
     path('metabolite_peak_data/<int:cmpd_id>', views.metabolite_peak_data, name='metabolite_peak_data'),
