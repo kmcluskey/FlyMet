@@ -7,449 +7,499 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
 
-  <!--Tabs to go to new pages-->
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
 
+            </div>
+        </div>
+
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: Experimental Protocols
+            </div>
+            <div class="p-4 text-justify">
+                <h6>The experimental protocols employed throughout this project can be found below:</h6>
+
+                <hr class="my-4">
+
+                <h6><i>Drosophila</i> Dissection Protocols:</h6>
+
+                <p class="p-3">
+                    The <a href="{% url 'exp_protocols' %}#gp"> basic protocol </a> used for all dissections is
+                    described below. In addtion, tissue specific methods are described for
+                    the following adult and larvae specfic tissues:
+                </p>
+
+                <!-- Four equal columns -->
+                <div class="row">
+                    <div class="col-4">
+                        <ul>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AAG">Adult Accessory Gland</a>
+                            </li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ABr">Adult Brain</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LBr">Larval Brain</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ACa">Adult Carcass</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LCa">Larval Carcass</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ACr">Adult Crop</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AEy">Adult Eye</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AFB">Adult Fat Body</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LFB">Larval Fat Body</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHead">Adult Head</a></li>
+
+                        </ul>
+                    </div>
+
+                    <div class="col-4">
+                        <ul>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHeart">Adult Heart</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHem">Adult Hemolymph</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LHem">Larval Hemolymph</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHin">Adult Hindgut</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LHin">Larval Hindgut</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AMid">Adult Midgut</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LMid">Larval Midgut</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AOv">Adult Ovary</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ARP">Adult Rectal Pad</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ASG">Adult Salivary Glands</a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <div class="col-4">
+                        <ul>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LSG">Larval Salivary Glands</a>
+                            </li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ASpe">Adult Spermatheca</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATes">Adult Testes</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATAG">Adult Thor-ab Ganglion</a>
+                            </li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LTra">Larvae Trachea</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATub">Adult Tubules</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LTub">Larval Tubules</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#WFS">Whole Fly Samples</a></li>
+                            <li class="nobull_list"><a href="{% url 'exp_protocols' %}#WLS">Whole Larvae Samples</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <h6 id="gp">General Dissection Protocol</h6>
+                <p class="p-4">
+                    Precool a 2.0 ml screw-cap tube in an ethanol-dry ice bath and carry out the dissections in cooled
+                    PBS.
+                    Flies/larvae were anesthetized by placing them on ice and the dissection dish was kept on ice
+                    throughout
+                    the procedure. Quickly dissect a small number of flies/larvae and transfer to the precooled tube in
+                    the
+                    ethanol-dry ice bath. At the end of the process store the dissected tissues were in the tube at -80
+                    C.
+                </p>
+                <hr class="my-4">
+
+
+                <h6 id="AAG">Adult Accessory Gland</h6>
+                <p class="p-4">
+                    To dissect the accessory glands, initially remove the thorax from the abdomen and gently cut open
+                    the
+                    abdomen with forceps. Subsequently, remove the testes and accessory glands from the abdomen and the
+                    testes from the accessory glands. Finally, collect the accessory glands and place them into the
+                    precooled 2.0 ml tube in an ethanol-dry ice bath.
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ABr">Adult Brain</h6>
+                <p class="p-4">
+                    To dissect the adult brain initially remove the abdomen from the body of the fly and with the dorsal
+                    side of
+                    the thorax against the dissecting dish, remove the proboscis from rest of the head. With the opening
+                    generated, place forceps on either side of the head (NOT on the eye) near the antenna and gently
+                    pull the
+                    head capsule from the body (hopefully exposing the brain). Separate the brain from the
+                    thoracic-abdominal
+                    ganglion. If the brain remains in the head capsule, carefully pull open the capsule to expose the
+                    brain.
+                    Finally, collect the brain and place it into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LBr">Larval Brain</h6>
+                <p class="p-4">
+                    To dissect the larval brain, hold the larva about two-thirds of the way down from the mouth with
+                    forceps.
+                    Grab and pull the mouthpieces with another set of forceps, the brain and imaginal discs will
+                    separate from
+                    the rest of the larva. Remove the imaginal discs and any other gross tissue as these are potential
+                    contaminants.
+                    Finally, collect the brain and place them into the pre-cooled 2.0 ml tube in an ethanol-dry ice
+                    bath.
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ACa">Adult Carcass</h6>
+                <p class="p-4">
+                    To dissect the adult carcass, remove the head, legs and wings from the body of the fly. Discard the
+                    head
+                    and collect the legs and wings. Next, remove the abdomen and with the dorsal side against the
+                    dissecting
+                    dish and gently cut open the abdomen towards the genital region to open it up. Remove the digestive
+                    system
+                    and reproductive system and as much of the trachea as possible. Scrape the cuticle with the forceps
+                    to remove
+                    the fat body, heart, nephrocytes and trachea. Collect the cuticle. Open the thorax and remove as
+                    much of the
+                    muscle and other tissue. Collect the thoractic cuticle. There will be contamination from the tissues
+                    closely associated with the cuticle.
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LCa">Larval Carcass</h6>
+                <p class="p-4">
+                    To dissect the larval carcass, gently tear an opening in the larva near the spiracles. Using this
+                    opening,
+                    cut down the cuticle with forceps towards the mouthpieces, gaining access to the larval organs.
+                    Remove the
+                    fat body and then the digestive system with the tubules attached. Scrape the cuticle to remove
+                    associated
+                    tissues. There will be contamination from the tissues closely associated with the cuticle
+                </p>
+                <hr class="my-4">
+
+
+                <h6 id="ACr">Adult Crop</h6>
+                <p class="p-4">
+                    To dissect the adult crop, initially remove the head from the fly and gently separate the abdomen
+                    from the thorax. Grab the fly’s genital region and pull gently to separate the digestive system from
+                    rest of the fly. With care, remove the fore/midgut with the crop still attached and cut away the
+                    crop
+                    from the gut (try to ensure the foregut is not included). Finally, collect the crop and place it on
+                    ice
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AEy">Adult Eye</h6>
+                <p class="p-4">
+
+                    To dissect the adult eyes, initially remove the abdomen from the rest of the body. With the dorsal
+                    side of
+                    the thorax placed against the dissecting dish, remove the proboscis. Next, place forceps on either
+                    side
+                    of the head (NOT on the eye) near the antenna and gently pull the head capsule off the body. Once
+                    the head
+                    capsule removed, carefully remove the eyes by gently cutting them out and place them into the
+                    pre-cooled 2.0 ml
+                    tube in an ethanol-dry ice bath. Potential contaminants are from cuticle, antenna, and fat.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AFB">Adult Fat Body</h6>
+                <p class="p-4">
+                    To dissect the adult fat body, initially remove abdomen from rest of body. Then, using forceps,
+                    grip the genital region and pull to remove the digestive and reproductive systems. With the
+                    dorsal side of the abdomen against the dissecting dish, gently cut open the abdomen towards
+                    the genital region to open the abdomen up. Remove any remaining parts of digestive and
+                    reproductive systems and as much of the trachea as possible. Collect the fat body and place them
+                    into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath. It can be helpful to break each segment
+                    from the main part of the abdomen to expose the fat body better. Try to avoid the heart, trachea,
+                    and
+                    nephrocytes as they are potential contaminants of fat body samples
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LFB">Larval Fat Body</h6>
+                <p class="p-4">
+                    To dissect the larval fat body initially grab the larva by the mouth hooks.
+                    Gently pull on the mouth hooks to generate a hole/opening and carefully cut the cuticle open with
+                    forceps.
+                    Take out the fat body and remove the gonads, collecting the remaining fat body and
+                    place it into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AHead">Adult Head</h6>
+                <p class="p-4">
+                    To dissect the adult head, gently pull the head away from the body with forceps in one hand
+                    while holding the body with another set of forceps. Collect the head and place it into the
+                    precooled 2.0 ml tube in an ethanol-dry ice bath. The head samples also contain the eyes and brain.
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AHeart">Adult Heart</h6>
+                <p class="p-4">
+                    To dissect the adult heart, initially remove abdomen from rest of body. Then, using forceps,
+                    grip the genital region and pull to remove the digestive and reproductive systems.
+                    With the dorsal side of the abdomen against the dissecting dish, gently cut open the abdomen towards
+                    the
+                    genital region to open the abdomen up. Remove any remaining parts of the digestive system,
+                    reproductive system,
+                    and as much of the trachea and fat body as possible. The heart is tube running down the dorsal side
+                    of the
+                    abdomen – the fat body extends from the heart so be gentle when
+                    removing the fat body. Collect the heart and place it into a
+                    precooled 2.0 ml tube in an ethanol-dry ice bath. There will be potential contamination from the fat
+                    body and nephrocytes.
+                </p>
+                <hr class="my-4">
+
+
+                <h6 id="AHem">Adult Hemolymph</h6>
+                <p class="p-4">
+                    To dissect adult hemolymph, use a 0.2 mm insect pin to poke a hole into the fly at the
+                    thorax/abdomen
+                    junction (under the scutellum). The fly is then put into a 0.5 ml tube with a small hole in the
+                    bottom,
+                    which is subsequently placed in a 1.5 ml tube to collect the hemolymph. The double-tube is then
+                    centrifuged at 5 rpm for 5 minutes at 4 C and the hemolymph collected and place it into the
+                    precooled 2.0 ml tube in an ethanol-dry ice bath
+                </p>
+                <hr class="my-4">
+
+
+                <h6 id="LHem">Larval Hemolymph</h6>
+                <p class="p-4">
+                    To dissect larval hemolymph, use a 0.2 mm insect pin to poke a hole into the larva before placing it
+                    into the
+                    lid of a 0.5ml tube (with a hole in the bottom). Place the lid into a 1.5 ml tube to collect the
+                    hemolymph.
+                    Centrifuge at 5 rpm for 5 minutes at 4 C and the hemolymph collected and place the sample into the
+                    precooled 2.0 ml tube in an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AHin">Adult Hindgut</h6>
+                <p class="p-4">
+                    To dissect the adult hindgut, initially remove the head of the fly from the body and gently separate
+                    the
+                    abdomen form the thorax. Grab the fly’s genital region and pull gently to remove the digestive
+                    system
+                    from rest of the fly. Cut away the tubules, midgut and rectal pad from the hindgut. Collect the
+                    hindgut and place them into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath. Bacteria and food
+                    are
+                    potential contaminants for hindgut samples.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LHin">Larval Hindgut</h6>
+                <p class="p-4">
+                    To dissect the larval hindgut, gently tear an opening in the larva near the spiracles.
+                    Using this opening, gently cut down the cuticle with forceps towards the mouthpieces,
+                    gaining access to the larval organs. Next, remove the fat body and cut away the gut from the
+                    mouthpieces at the top of the proventriculus. Finally, cut the tubules and midgut away from the
+                    hindgut before placing them into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
+                    Bacteria and food are potential contaminants for larval hindgut samples
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="AMid">Adult Midgut</h6>
+                <p class="p-4">
+                    To dissect the adult midgut, initially remove the head of the fly from the body and gently separate
+                    the abdomen form the thorax. Next, grab the fly’s genital region and pull gently to remove the
+                    digestive system from rest of the fly. Finally, cut away the tubules, hindgut, foregut and crop
+                    from the midgut and place the midguts into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
+                    Bacteria and food are potential contaminants of adult midgut samples
+
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LMid">Larval Midgut</h6>
+                <p class="p-4">
+                    To dissect the larval midgut, carefully tear an opening near the spiracles. Using this opening,
+                    gently cut down the cuticle with forceps towards the mouthpieces, gaining access to the larval
+                    organs.
+                    Next, remove the fat body and cut the gut away from the mouthpieces by the top of the
+                    proventriculus.
+                    Finally, cut the tubules and hindgut away from the midgut and place the midgut into the pre-cooled
+                    2.0 ml
+                    tube in an ethanol-dry ice bath. Bacteria and food are potential contaminants of larval midgut
+                    samples.
+                </p>
+                <hr class="my-4">
+
+
+                <h6 id="AOv">Adult Ovary</h6>
+                <p class="p-4">
+                    Adult Ovary
+                    To dissect an adult ovary, initially remove the head of the fly from the body and gently separate
+                    the abdomen form the thorax. Gently cut open the abdomen with forceps and remove the ovaries from
+                    the
+                    abdomen. Include the oviduct, but not the uterus and place the ovaries into the pre-cooled 2.0 ml
+                    tube in an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ARP">Adult Rectal Pad</h6>
+                <p class="p-4">
+
+                    To dissect adult rectal pads, initially remove the head of the fly from the body.
+                    Holding the fly at its thorax/abdomen boundary, grab the fly’s genital region and
+                    pull gently to expose the digestive system. Pull on the anus of the fly and the rectal pad
+                    with a portion of the hindgut can be removed. Cut away the hindgut from the base of the
+                    rectal pad. Finally, remove any cuticle that is attached to the rectal pad and place into the
+                    precooled 2.0 ml tube in an ethanol-dry ice bath. Bacteria and food are potential
+                    contaminants of adult rectal pad dissections
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ASG">Adult Salivary Glands</h6>
+                <p class="p-4">
+                    To dissect the adult salivary glands initially remove the legs and wings from the fly.
+                    Then, holding the thorax, gently remove the abdomen by pulling with forceps. With the
+                    dorsal side of the thorax held against the dissection dish, carefully cut open the thorax,
+                    removing muscle and digestive tissues. The salivary glands will appear near the
+                    foregut-midgut-crop junction tightly with the midgut. Carefully remove them and place them into
+                    the precooled 2.0 ml tube in an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LSG">Larval Salivary Glands</h6>
+                <p class="p-4">
+                    To dissect the larval salivary glands, hold the larva about two-thirds of the way down from the
+                    mouth with forceps. Grab and pull the mouthpieces with another set of forceps.
+                    The salivary glands will usually pull out with the brain and imaginal discs.
+                    Remove as much of the fat connected to them as possible and collect the salivary glands into a
+                    precooled tube in an ethanol-dry ice bath
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ASpe">Adult Spermatheca</h6>
+                <p class="p-4">
+
+                    To dissect adult spermatheca, initially remove the head from the abdomen. Next, holding onto the
+                    abdomen with forceps grab the genital region of the fly and pull to expose the uterus and
+                    spermatheca.
+                    Finally remove the fat surrounding the spermatheca before removing the spermatheca itself and
+                    placing
+                    into an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ATes">Adult Testes</h6>
+                <p class="p-4">
+                    To dissect adult testes, initially remove the head from the body of the fly and the abdomen from the
+                    thorax. Gently cut open the abdomen with forceps and remove the testes and accessory glands from
+                    the abdomen. Finally, remove the testes from the accessory glands and collect the testes into a
+                    tube in a ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ATAG">Adult Thoracicoabdominal Ganglion</h6>
+                <p class="p-4">
+                    To dissect adult thoracicoabdominal ganglion, initially remove the legs and wings from the fly.
+                    Then, holding the thorax, gently remove the abdomen with forceps. With the dorsal side of the
+                    thorax held against the dissection dish, carefully cut open the thorax, removing muscle and
+                    digestive tissues.
+                    Finally, separate the thoracicoabdominal ganglion from the brain and place it into the
+                    pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LTra">Larval Trachea</h6>
+                <p class="p-4">
+                    To dissect larval tracea, gently, but firmly, pull on the larval spiracle. This should yield most of
+                    the
+                    trachea, which should be collected. To collect any remaining trachea, open the larva up by cutting
+                    down the
+                    larval cuticle towards the mouth. Isolate any additional parts of the trachea and place into the
+                    precooled 2.0 ml tube in a ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="ATub">Adult Malpighian Tubules</h6>
+                <p class="p-4">
+                    To dissect adult Malpighian tubules, gently tug the head away from the rest of the fly.
+                    This breaks the connection of the midgut with the foregut. With forceps, grip the genital region and
+                    gently pull to remove the digestive system. This should bring the tubules out too.
+                    Finally, with forceps, disconnect the tubules from the gut. Collect the tubules into a
+                    precooled tube and place into an ethanol-dry ice bath
+                </p>
+                <hr class="my-4">
+
+                <h6 id="LTub">Larval Malpighian Tubules</h6>
+                <p class="p-4">
+                    To dissect larval Malpighian tubules, gently tear an opening near the spiracles. Using this opening,
+                    gently cut the cuticle with forceps towards the mouthpieces, gaining access to the larval organs.
+                    Remove the fat body and the digestive system with the tubules attached. With forceps,
+                    disconnect the tubules from the gut and collect the tubules into a pre-cooled tube and place
+                    into an ethanol-dry ice bath
+                </p>
+                <hr class="my-4">
+
+                <h6 id="WFS">Whole Fly Samples</h6>
+                <p class="p-4">
+                    To prepare whole fly samples a dissection dish is placed on ice and the flies anesthetized by
+                    placing them on
+                    the dish. Five flies of the same sex were then collected in a precooled tube and placed into an
+                    ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+                <h6 id="WLS">Whole Larvae Samples</h6>
+                <p class="p-4">
+                    To prepare whole larvae samples, crawling third instar larvae were removed from a fly vial and
+                    transferred into a small cooled small Petri
+                    dish, placed on ice and filled with 1x PBS. The whole larvae were then washed with the PBS and then
+                    transferred
+                    into another dish filled with PBS. Five larvae were then collected in a precooled tube and placed
+                    into an
+                    ethanol-dry ice bath.
+                </p>
+                <hr class="my-4">
+
+
+            </div>
+        </div>
     </div>
-  </div>
-
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: Experimental Protocols
     </div>
-    <div class = "p-4 text-justify">
-      <h6>The experimental protocols employed throughout this project can be found below:</h6>
-
-  <hr class="my-4">
-
-  <h6><i>Drosophila</i> Dissection Protocols:</h6>
-
-  <p class="p-3">
-    The <a href="{% url 'exp_protocols' %}#gp"> basic protocol </a> used for all dissections is described below. In addtion, tissue specific methods are described for
-    the following adult and larvae specfic tissues:
-  </p>
-
-  <!-- Four equal columns -->
-  <div class="row">
-    <div class="col-4">
-      <ul>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AAG">Adult Accessory Gland</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ABr">Adult Brain</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LBr">Larval Brain</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ACa">Adult Carcass</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LCa">Larval Carcass</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ACr">Adult Crop</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AEy">Adult Eye</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AFB">Adult Fat Body</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LFB">Larval Fat Body</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHead">Adult Head</a></li>
-
-        </ul>
-      </div>
-
-    <div class="col-4">
-      <ul>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHeart">Adult Heart</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHem">Adult Hemolymph</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LHem">Larval Hemolymph</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AHin">Adult Hindgut</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LHin">Larval Hindgut</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AMid">Adult Midgut</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LMid">Larval Midgut</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#AOv">Adult Ovary</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ARP">Adult Rectal Pad</a></li>
-          <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ASG">Adult Salivary Glands</a></li>
-
-  </ul></div>
-
-    <div class="col-4">
-      <ul>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LSG">Larval Salivary Glands</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ASpe">Adult Spermatheca</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATes">Adult Testes</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATAG">Adult Thor-ab Ganglion</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LTra">Larvae Trachea</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#ATub">Adult Tubules</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#LTub">Larval Tubules</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#WFS">Whole Fly Samples</a></li>
-        <li class="nobull_list"><a href="{% url 'exp_protocols' %}#WLS">Whole Larvae Samples</a></li>
-  </ul>
-</div>
-  </div>
-
-    <hr class="my-4">
-
-    <h6 id ="gp">General Dissection Protocol</h6>
-    <p class="p-4">
-      Precool a 2.0 ml screw-cap tube in an ethanol-dry ice bath and carry out the dissections in cooled PBS.
-      Flies/larvae were anesthetized by placing them on ice and the dissection dish was kept on ice throughout
-      the procedure. Quickly dissect a small number of flies/larvae and transfer to the precooled tube in the
-      ethanol-dry ice bath. At the end of the process store the dissected tissues were in the tube at -80 C.
-      </p>
-    <hr class="my-4">
-
-
-    <h6 id ="AAG">Adult Accessory Gland</h6>
-    <p class="p-4">
-      To dissect the accessory glands, initially remove the thorax from the abdomen and gently cut open the
-      abdomen with forceps. Subsequently, remove the testes and accessory glands from the abdomen and the
-      testes from the accessory glands. Finally, collect the accessory glands and place them into the
-      precooled 2.0 ml tube in an ethanol-dry ice bath.
-
-      </p>
-    <hr class="my-4">
-
-  <h6 id ="ABr">Adult Brain</h6>
-  <p  class="p-4">
-   To dissect the adult brain initially remove the abdomen from the body of the fly and with the dorsal side of
-   the thorax against the dissecting dish, remove the proboscis from rest of the head. With the opening
-   generated, place forceps on either side of the head (NOT on the eye) near the antenna and gently pull the
-   head capsule from the body (hopefully exposing the brain). Separate the brain from the thoracic-abdominal
-   ganglion. If the brain remains in the head capsule, carefully pull open the capsule to expose the brain.
-   Finally, collect the brain and place it into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-
-    </p>
-  <hr class="my-4">
-
-  <h6 id ="LBr">Larval Brain</h6>
-  <p class="p-4">
-  To dissect the larval brain, hold the larva about two-thirds of the way down from the mouth with forceps.
-  Grab and pull the mouthpieces with another set of forceps, the brain and imaginal discs will separate from
-  the rest of the larva. Remove the imaginal discs and any other gross tissue as these are potential contaminants.
-  Finally, collect the brain and place them into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-
-    </p>
-  <hr class="my-4">
-
-    <h6 id ="ACa">Adult Carcass</h6>
-    <p  class="p-4">
-      To dissect the adult carcass, remove the head, legs and wings from the body of the fly. Discard the head
-      and collect the legs and wings. Next, remove the abdomen and with the dorsal side against the dissecting
-      dish and gently cut open the abdomen towards the genital region to open it up. Remove the digestive system
-      and reproductive system and as much of the trachea as possible. Scrape the cuticle with the forceps to remove
-      the fat body, heart, nephrocytes and trachea. Collect the cuticle. Open the thorax and remove as much of the
-      muscle and other tissue. Collect the thoractic cuticle. There will be contamination from the tissues
-      closely associated with the cuticle.
-
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LCa">Larval Carcass</h6>
-    <p class="p-4">
-        To dissect the larval carcass, gently tear an opening in the larva near the spiracles. Using this opening,
-        cut down the cuticle with forceps towards the mouthpieces, gaining access to the larval organs. Remove the
-        fat body and then the digestive system with the tubules attached. Scrape the cuticle to remove associated
-        tissues. There will be contamination from the tissues closely associated with the cuticle
-      </p>
-    <hr class="my-4">
-
-
-    <h6 id ="ACr">Adult Crop</h6>
-    <p class="p-4">
-      To dissect the adult crop, initially remove the head from the fly and gently separate the abdomen
-      from the thorax. Grab the fly’s genital region and pull gently to separate the digestive system from
-      rest of the fly. With care, remove the fore/midgut with the crop still attached and cut away the crop
-      from the gut (try to ensure the foregut is not included). Finally, collect the crop and place it on ice
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="AEy">Adult Eye</h6>
-    <p class="p-4">
-
-    To dissect the adult eyes, initially remove the abdomen from the rest of the body. With the dorsal side of
-    the thorax placed against the dissecting dish, remove the proboscis. Next, place forceps on either side
-    of the head (NOT on the eye) near the antenna and gently pull the head capsule off the body. Once the head
-    capsule removed, carefully remove the eyes by gently cutting them out and place them into the pre-cooled 2.0 ml
-    tube in an ethanol-dry ice bath. Potential contaminants are from cuticle, antenna, and fat.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="AFB">Adult Fat Body</h6>
-    <p class="p-4">
-    To dissect the adult fat body, initially remove abdomen from rest of body. Then, using forceps,
-    grip the genital region and pull to remove the digestive and reproductive systems. With the
-    dorsal side of the abdomen against the dissecting dish, gently cut open the abdomen towards
-    the genital region to open the abdomen up. Remove any remaining parts of digestive and
-    reproductive systems and as much of the trachea as possible. Collect the fat body and place them
-    into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath. It can be helpful to break each segment
-    from the main part of the abdomen to expose the fat body better. Try to avoid the heart, trachea, and
-    nephrocytes as they are potential contaminants of fat body samples
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LFB">Larval Fat Body</h6>
-    <p class="p-4">
-    To dissect the larval fat body initially grab the larva by the mouth hooks.
-    Gently pull on the mouth hooks to generate a hole/opening and carefully cut the cuticle open with forceps.
-    Take out the fat body and remove the gonads, collecting the remaining fat body and
-    place it into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="AHead">Adult Head</h6>
-    <p class="p-4">
-    To dissect the adult head, gently pull the head away from the body with forceps in one hand
-    while holding the body with another set of forceps. Collect the head and place it into the
-    precooled 2.0 ml tube in an ethanol-dry ice bath. The head samples also contain the eyes and brain.
-
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="AHeart">Adult Heart</h6>
-    <p class="p-4">
-      To dissect the adult heart, initially remove abdomen from rest of body.  Then, using forceps,
-      grip the genital region and pull to remove the digestive and reproductive systems.
-      With the dorsal side of the abdomen against the dissecting dish, gently cut open the abdomen towards the
-      genital region to open the abdomen up.  Remove any remaining parts of the digestive system, reproductive system,
-      and as much of the trachea and fat body as possible. The heart is tube running down the dorsal side of the
-      abdomen – the fat body extends from the heart so be gentle when
-      removing the fat body. Collect the heart and place it into a
-      precooled 2.0 ml tube in an ethanol-dry ice bath. There will be potential contamination from the fat
-      body and nephrocytes.
-      </p>
-    <hr class="my-4">
-
-
-    <h6 id ="AHem">Adult Hemolymph</h6>
-    <p class="p-4">
-      To dissect adult hemolymph, use a 0.2 mm insect pin to poke a hole into the fly at the thorax/abdomen
-      junction (under the scutellum). The fly is then put into a 0.5 ml tube with a small hole in the bottom,
-      which is subsequently placed in a 1.5 ml tube to collect the hemolymph. The double-tube is then
-      centrifuged at 5 rpm for 5 minutes at 4 C and the hemolymph collected and place it into the
-      precooled 2.0 ml tube in an ethanol-dry ice bath
-    </p>
-    <hr class="my-4">
-
-
-    <h6 id ="LHem">Larval Hemolymph</h6>
-    <p class="p-4">
-    To dissect larval hemolymph, use a 0.2 mm insect pin to poke a hole into the larva before placing it into the
-    lid of a 0.5ml tube (with a hole in the bottom). Place the lid into a 1.5 ml tube to collect the hemolymph.
-    Centrifuge at 5 rpm for 5 minutes at 4 C and the hemolymph collected and place the sample into the
-    precooled 2.0 ml tube in an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="AHin">Adult Hindgut</h6>
-    <p class="p-4">
-    To dissect the adult hindgut, initially remove the head of the fly from the body and gently separate the
-    abdomen form the thorax. Grab the fly’s genital region and pull gently to remove the digestive system
-    from rest of the fly. Cut away the tubules, midgut and rectal pad from the hindgut. Collect the
-    hindgut and place them into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath. Bacteria and food are
-    potential contaminants for hindgut samples.
-    </p>
-    <hr class="my-4">
-
-    <h6 id ="LHin">Larval Hindgut</h6>
-    <p class="p-4">
-      To dissect the larval hindgut, gently tear an opening in the larva near the spiracles.
-      Using this opening, gently cut down the cuticle with forceps towards the mouthpieces,
-      gaining access to the larval organs. Next, remove the fat body and cut away the gut from the
-      mouthpieces at the top of the proventriculus. Finally, cut the tubules and midgut away from the
-      hindgut before placing them into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-      Bacteria and food are potential contaminants for larval hindgut samples
-
-    </p>
-    <hr class="my-4">
-
-    <h6 id ="AMid">Adult Midgut</h6>
-    <p class="p-4">
-      To dissect the adult midgut, initially remove the head of the fly from the body and gently separate
-      the abdomen form the thorax. Next, grab the fly’s genital region and pull gently to remove the
-      digestive system from rest of the fly. Finally, cut away the tubules, hindgut, foregut and crop
-      from the midgut and place the midguts into the pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-      Bacteria and food are potential contaminants of adult midgut samples
-
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LMid">Larval Midgut</h6>
-    <p class="p-4">
-     To dissect the larval midgut, carefully tear an opening near the spiracles. Using this opening,
-     gently cut down the cuticle with forceps towards the mouthpieces, gaining access to the larval organs.
-     Next, remove the fat body and cut the gut away from the mouthpieces by the top of the proventriculus.
-     Finally, cut the tubules and hindgut away from the midgut and place the midgut into the pre-cooled 2.0 ml
-     tube in an ethanol-dry ice bath. Bacteria and food are potential contaminants of larval midgut samples.
-      </p>
-    <hr class="my-4">
-
-
-    <h6 id ="AOv">Adult Ovary</h6>
-    <p class="p-4">
-      Adult Ovary
-      To dissect an adult ovary, initially remove the head of the fly from the body and gently separate
-      the abdomen form the thorax. Gently cut open the abdomen with forceps and remove the ovaries from the
-      abdomen. Include the oviduct, but not the uterus and place the ovaries into the pre-cooled 2.0 ml
-      tube in an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="ARP">Adult Rectal Pad</h6>
-    <p class="p-4">
-
-    To dissect adult rectal pads, initially remove the head of the fly from the body.
-    Holding the fly at its thorax/abdomen boundary, grab the fly’s genital region and
-    pull gently to expose the digestive system. Pull on the anus of the fly and the rectal pad
-    with a portion of the hindgut can be removed. Cut away the hindgut from the base of the
-    rectal pad. Finally, remove any cuticle that is attached to the rectal pad and place into the
-    precooled 2.0 ml tube in an ethanol-dry ice bath. Bacteria and food are potential
-    contaminants of adult rectal pad dissections
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="ASG">Adult Salivary Glands</h6>
-    <p class="p-4">
-    To dissect the adult salivary glands initially remove the legs and wings from the fly.
-    Then, holding the thorax, gently remove the abdomen by pulling with forceps. With the
-    dorsal side of the thorax held against the dissection dish, carefully cut open the thorax,
-    removing muscle and digestive tissues. The salivary glands will appear near the
-    foregut-midgut-crop junction tightly with the midgut. Carefully remove them and place them into
-    the precooled 2.0 ml tube in an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LSG">Larval Salivary Glands</h6>
-    <p class="p-4">
-    To dissect the larval salivary glands, hold the larva about two-thirds of the way down from the
-    mouth with forceps. Grab and pull the mouthpieces with another set of forceps.
-    The salivary glands will usually pull out with the brain and imaginal discs.
-    Remove as much of the fat connected to them as possible and collect the salivary glands into a
-    precooled tube in an ethanol-dry ice bath
-    </p>
-    <hr class="my-4">
-
-    <h6 id ="ASpe">Adult Spermatheca</h6>
-    <p class="p-4">
-
-    To dissect adult spermatheca, initially remove the head from the abdomen. Next, holding onto the
-    abdomen with forceps grab the genital region of the fly and pull to expose the uterus and spermatheca.
-    Finally remove the fat surrounding the spermatheca before removing the spermatheca itself and placing
-    into an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="ATes">Adult Testes</h6>
-    <p class="p-4">
-      To dissect adult testes, initially remove the head from the body of the fly and the abdomen from the
-      thorax. Gently cut open the abdomen with forceps and remove the testes and accessory glands from
-      the abdomen. Finally, remove the testes from the accessory glands and collect the testes into a
-      tube in a ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="ATAG" >Adult Thoracicoabdominal Ganglion</h6>
-    <p class="p-4">
-    To dissect adult thoracicoabdominal ganglion, initially remove the legs and wings from the fly.
-    Then, holding the thorax, gently remove the abdomen with forceps. With the dorsal side of the
-    thorax held against the dissection dish, carefully cut open the thorax, removing muscle and digestive tissues.
-    Finally, separate the thoracicoabdominal ganglion from the brain and place it into the
-    pre-cooled 2.0 ml tube in an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LTra">Larval Trachea</h6>
-    <p class="p-4">
-      To dissect larval tracea, gently, but firmly, pull on the larval spiracle. This should yield most of the
-      trachea, which should be collected. To collect any remaining trachea, open the larva up by cutting down the
-      larval cuticle towards the mouth. Isolate any additional parts of the trachea and place into the
-      precooled 2.0 ml tube in a ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="ATub">Adult Malpighian Tubules</h6>
-    <p class="p-4">
-    To dissect adult Malpighian tubules, gently tug the head away from the rest of the fly.
-    This breaks the connection of the midgut with the foregut. With forceps, grip the genital region and
-    gently pull to remove the digestive system. This should bring the tubules out too.
-    Finally, with forceps, disconnect the tubules from the gut. Collect the tubules into a
-    precooled tube and place into an ethanol-dry ice bath
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="LTub">Larval Malpighian Tubules</h6>
-    <p class="p-4">
-    To dissect larval Malpighian tubules, gently tear an opening near the spiracles. Using this opening,
-    gently cut the cuticle with forceps towards the mouthpieces, gaining access to the larval organs.
-    Remove the fat body and the digestive system with the tubules attached. With forceps,
-    disconnect the tubules from the gut and collect the tubules into a pre-cooled tube and place
-    into an ethanol-dry ice bath
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="WFS">Whole Fly Samples</h6>
-    <p class="p-4">
-      To prepare whole fly samples a dissection dish is placed on ice and the flies anesthetized by placing them on
-      the dish. Five flies of the same sex were then collected in a precooled tube and placed into an ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-    <h6 id ="WLS">Whole Larvae Samples</h6>
-    <p class="p-4">
-    To prepare whole larvae samples, crawling third instar larvae were removed from a fly vial and transferred into a small cooled small Petri
-    dish, placed on ice and filled with 1x PBS. The whole larvae were then washed with the PBS and then transferred
-    into another dish filled with PBS. Five larvae were then collected in a precooled tube and placed into an
-    ethanol-dry ice bath.
-      </p>
-    <hr class="my-4">
-
-
-
-
-
-
-
-
-
-
-
-
-
-</div>
-</div>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
-  </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
 
 
-  {% endblock %}
+{% endblock %}

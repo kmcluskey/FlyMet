@@ -7,95 +7,107 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
 
-  <!--Tabs to go to new pages-->
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: Credits
+            </div>
+            <div class="p-4 text-justify">
+                <h6>This <a
+                        href="https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1">project</a>
+                    is funded by the UK’s BBSRC.</h6>
+
+                <div class="p-4">
+                    <h6>Co-Investigators:</h6>
+                    <ul>
+                        <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/juliandow/">Julian Dow</a>
+                        </li>
+                        <li>
+                            <a href="https://www.research.ed.ac.uk/portal/en/persons/karl-burgess(f56b3bbe-d28c-4faf-bb40-a5b741e7bf6d).html">Karl
+                                Burgess</a></li>
+                        <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/shireendavies/">Shireen
+                            Davies</a></li>
+                        <li><a href="https://www.polyomics.gla.ac.uk/biog-head-dataanalysis.html">Rónán Daly</a></li>
+                    </ul>
+
+                    <hr class="my-4">
+                    <h6>PDRAs:</h6>
+                    <ul>
+                        <li><a href="https://www.gla.ac.uk/researchinstitutes/iii/staff/karenmcluskey/">Karen
+                            McLuskey</a></li>
+                        <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/suekrause/">Sue Ann
+                            Krause</a></li>
+                    </ul>
+
+                    <hr class="my-4">
+                    <h6>Scientific Advisory Board:</h6>
+                    <ul>
+                        <li><a href="https://www.sysbiol.cam.ac.uk/Investigators/steve-oliver">Steve Oliver</a>,
+                            University of Cambridge
+                        </li>
+                        <li>Fergus Earley, Syngenta</li>
+                        <li><a href="https://www.pdn.cam.ac.uk/directory/nick-brown">Nick Brown</a>, University of
+                            Cambridge
+                        </li>
+                    </ul>
+
+                    <hr class="my-4">
+
+                    <p class="lead">With thanks to the University of Glasgow's <a
+                            href="https://www.polyomics.gla.ac.uk/">Polyomics Facility</a></p>
+                </div>
+            </div>
+        </div>
+
 
     </div>
-  </div>
-
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: Credits
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
-    <div class = "p-4 text-justify">
-      <h6>This <a href="https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1">project</a> is funded by the UK’s BBSRC.</h6>
-
-  <div class="p-4">
-  <h6>Co-Investigators:</h6>
-  <ul>
-    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/juliandow/">Julian Dow</a></li>
-    <li><a href="https://www.research.ed.ac.uk/portal/en/persons/karl-burgess(f56b3bbe-d28c-4faf-bb40-a5b741e7bf6d).html">Karl Burgess</a></li>
-    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/shireendavies/">Shireen Davies</a></li>
-    <li><a href="https://www.polyomics.gla.ac.uk/biog-head-dataanalysis.html">Rónán Daly</a></li>
-  </ul>
-
-  <hr class="my-4">
-  <h6>PDRAs:</h6>
-  <ul>
-    <li><a href="https://www.gla.ac.uk/researchinstitutes/iii/staff/karenmcluskey/">Karen McLuskey</a></li>
-    <li><a href="https://www.gla.ac.uk/researchinstitutes/biology/staff/suekrause/">Sue Ann Krause</a></li>
-  </ul>
-
-  <hr class="my-4">
-  <h6>Scientific Advisory Board:</h6>
-  <ul>
-    <li><a href="https://www.sysbiol.cam.ac.uk/Investigators/steve-oliver">Steve Oliver</a>, University of Cambridge</li>
-    <li>Fergus Earley, Syngenta</li>
-    <li><a href="https://www.pdn.cam.ac.uk/directory/nick-brown">Nick Brown</a>, University of Cambridge</li>
-  </ul>
-
-  <hr class="my-4">
-
-  <p class = "lead">With thanks to the University of Glasgow's <a href="https://www.polyomics.gla.ac.uk/">Polyomics Facility</a></p>
-    </div>
-   </div>
-</div>
 
 
-
-  </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
-
-
-  {% endblock %}
+{% endblock %}

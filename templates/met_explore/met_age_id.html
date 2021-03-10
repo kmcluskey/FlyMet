@@ -8,107 +8,112 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
+    <!-- div for main body-->
 
-  <div class="container-fluid p-4">
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main mt-4">
-        <p class="lead">
-          Investigate the metabolites found in <i> Drosophila </i>.
-          </p>
-        </div>
-        <!-- <div class = "logo_side">
+    <div class="container-fluid p-4">
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main mt-4">
+                <p class="lead">
+                    Investigate the metabolites found in <i> Drosophila </i>.
+                </p>
+            </div>
+            <!-- <div class = "logo_side">
           <img src="{% static 'images/met_exp_logo.png'%}" class="explorer_logos" alt="Met_Ex_Logo">
         </div> -->
-      </div>
-
-      <!-- extra Tabs for Analysis type -->
-      <nav>
-        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link" href="{% url 'met_ex_tissues' %}">Tissues</a>
-          <a class="navdark nav-item nav-link active" href="{% url 'met_age_id' %}">Aged Flies</a>
         </div>
-      </nav>
 
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
+        <!-- extra Tabs for Analysis type -->
+        <nav>
+            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                <a class="navdark nav-item nav-link" href="{% url 'met_ex_tissues' %}">Tissues</a>
+                <a class="navdark nav-item nav-link active" href="{% url 'met_age_id' %}">Aged Flies</a>
+            </div>
+        </nav>
 
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_age_all' 'All' %}">All</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_age_id' %}">Identified</a>
-        </li>
-      </ul>
-      <div class="top-right" >
-        <p class ="title_text">Metabolite Explorer</p>
-      </div>
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'met_age_all' 'All' %}">All</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'met_age_id' %}">Identified</a>
+                    </li>
+                </ul>
+                <div class="top-right">
+                    <p class="title_text">Metabolite Explorer</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 mb-4">
+            <p>
+                The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
+                ages of Female (F) and Male (M) <i>Drosophila</i>.
+            </p>
+            <p class="small">
+                The metabolites in this list have a high confidence score having been
+                <a href="#" class="Identified">identified</a> by a standard compound libary or by <a href="#"
+                                                                                                     class="FragA">fragmentation
+                analysis</a>.
+                Expansion of these trems can be found in the <a href="{% url 'glossary' %}">Glossary</a>
+            </p>
+
+        </div>
+
+        <div>
+            <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+                <thead class="thead-light">
+                <tr id="columns">
+                    {% for column_name in columns %}
+                        <th id="col">{{ column_name }}</th>
+                    {% endfor %}
+                </tr>
+                </thead>
+                <tbody>
+                {% for met_exp_data in data %}
+                    <tr>
+                        {% for m in met_exp_data %}
+                            {% if forloop.first %}
+                                <td><a href="metabolite_search?metabolite_search={{ m }}" target="_blank">{{ m }}</a>
+                                </td>
+                            {% else %}
+                                {% if m > 0 %}
+                                    <td>{{ m|stringformat:".2e" }}</td>
+                                {% else %}
+                                    <td class="NotDetected">-</td>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
     </div>
-  </div>
-  <div class="mt-4 mb-4">
-    <p>
-    The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-    ages of Female (F) and Male (M) <i>Drosophila</i>.
-    </p>
-    <p class="small">
-    The metabolites in this list have a high confidence score having been
-    <a href="#" class ="Identified">identified</a> by a standard compound libary or by <a href ="#" class="FragA">fragmentation analysis</a>.
-    Expansion of these trems can be found in the <a href="{% url 'glossary'%}">Glossary</a>
-    </p>
 
-  </div>
-
-  <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-    <thead class="thead-light">
-      <tr id = "columns">
-        {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for met_exp_data in data %}
-      <tr>
-            {% for m in met_exp_data %}
-            {% if forloop.first %}
-              <td><a href="metabolite_search?metabolite_search={{m}}" target="_blank">{{m}}</a></td>
-            {% else %}
-              {% if m > 0 %}
-                <td>{{m|stringformat:".2e"}}</td>
-                {% else %}
-                <td class="NotDetected">-</td>
-              {% endif %}
-            {% endif %}
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </div>
-
-  </div>
-
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
+    </div>
 
 
-  {% endblock %}
+{% endblock %}
 
 
-  {% block js_block %}
-  <script type='text/javascript'>
-    var min_value = {{min_value}}
-    var max_value = {{max_value}}
-    var mean_value = {{mean_value}}
-    console.log(min_value, max_value, mean_value)
+{% block js_block %}
+    <script type='text/javascript'>
+        var min_value =
+        {{min_value}}
+        var max_value =
+        {{max_value}}
+        var mean_value = {{mean_value}}
+            console.log(min_value, max_value, mean_value)
 
     </script>
 
-  {% render_bundle 'met_age_id' 'js' %}
-  {% endblock %}
+    {% render_bundle 'met_age_id' 'js' %}
+{% endblock %}

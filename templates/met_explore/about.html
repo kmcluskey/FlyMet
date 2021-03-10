@@ -7,129 +7,142 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
 
-  <!--Tabs to go to new pages-->
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link active" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link active" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
 
+            </div>
+        </div>
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: A metabolomics atlas for <i> Drosophila </i>
+            </div>
+            <div class="p-4 text-justify">
+                <h6>This page gives a brief overview current FlyMet functionality.</h6>
+                <div class="p-4">
+                    <h6><a href="{% url 'met_explore_index' %}"> FlyMet home page </a></h6>
+                    <p class="p-4">
+                        The FlyMet home page can currently be used to search for an individual <a
+                            href="{% url 'about' %}#Met">metabolite</a>, or <a href="{% url 'about' %}#Pwy">pathway</a>,
+                        of interest by name.
+                        In addition, access to the comprehensive FlyMet data via the <a href="{% url 'about' %}#MetEx">Metabolite
+                        Explorer</a>, <a href="{% url 'about' %}#PkEx">Peak Explorer</a>
+                        and <a href="{% url 'about' %}#PwyEx">Pathway Explorer</a> can also be easily reached from the
+                        top navigation bar.</p>
+                    <hr class="my-4">
+
+                    <h6 id="Met"><a href="{% url 'metabolite_search_tissue' %}">Metabolite Search</a></h6>
+
+                    <p class="p-4">
+                        Use the Metabolite Search Page to look for a metabolite of interest by name and
+                        find out how it changes between tissue types for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
+                        These metabolites have been identified using a standard compound library and are directly
+                        associated with a
+                        mass spec peak. The fold-change between the peak intensity in the tissues and the whole
+                        fly has been calculated and the relative intensity of the peaks in the different life-stages
+                        displayed.
+                    </p>
+
+                    <hr class="my-4">
+
+                    <h6 id="Pwy"><a href="{% url 'pathway_search' %}">Pathway Search</a></h6>
+
+                    <p class="p-4">
+                        Use the Pathway Search Page to look for metabolic
+                        <a href="https://reactome.org/" target="_blank">Reactome</a> pathways of interest by name.
+                        This then reveals the pathway metabolites found in FlyMet by looking at the associated peaks
+                        found
+                        across Female (F), Male (M) and Larvae (L) <i>Drosophila</i> tissues and how they change.
+                        The coverage of the metabolites found in FlyMet and in the pathways, is also shown.
+                    </p>
+                    <hr class="my-4">
+
+                    <h6 id="MetEx"><a href="{% url 'met_ex_all' 'All' %}">Metabolite Explorer</a></h6>
+
+                    <p class="p-4">
+                        Use the Metabolite Explorer to examine all the metabolites that have been annotated in FlyMet.
+                        Metabolite formulas, synonyms, references to external databases and FlyMet peaks associated with
+                        the
+                        metabolites are shown.
+                        From here the average peak intensity levels for all <a href="{% url 'glossary' %}#MetId">identified</a>
+                        metabolites in different tissues for Female (F), Male (M) and Larvae (L) Drosophila.
+                        can be found.
+
+                    </p>
+
+                    <hr class="my-4">
+
+                    <h6 id="PkEx"><a href="{% url 'peak_explorer' 'All' %}">Peak Explorer</a></h6>
+                    <p class="p-4">
+                        Use the Peak Explorer to compare the average peak intensity levels for over 9,000 annotated mass
+                        spec peaks in different
+                        tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>. Clicking on a peak of
+                        interest reveals all the
+                        metabolite annotations associated with it.
+                    </p>
+
+                    <hr class="my-4">
+
+                    <h6 id="PwyEx"><a href="{% url 'pathway_explorer' %}">Pathway Explorer</a></h6>
+                    <p class="p-4">
+                        Use the Pathway Explorer to investigate changing metabolic pathways between <i> Drosophila </i>
+                        tissue types.
+                        Pathways with correlated changes in a group of pathway metabolites are ranked highest. This is
+                        acheived by incorporating
+                        the <a href="https://pals.glasgowcompbio.org/app/" target="_blank">PALS</a> system
+                        (<b>P</b>athway <b>A</b>ctivity <b>L</b>evel <b>S</b>coring) for pathway ranking.
+                    </p>
+
+                    <hr class="my-4">
+
+                    <p class="lead">Flymet is under rapid development. If you have any questions about the website or
+                        suggestions for data analysis please feel free to
+                        <a href="{% url 'feedback' %}">contact us</a>.</p>
+                </div>
+            </div>
+
+        </div>
     </div>
-  </div>
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: A metabolomics atlas for <i> Drosophila </i>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
-    <div class = "p-4 text-justify">
-        <h6>This page gives a brief overview current FlyMet functionality.</h6>
-    <div class="p-4">
-    <h6><a href="{% url 'met_explore_index' %}"> FlyMet home page </a></h6>
-    <p class="p-4">
-      The FlyMet home page can currently be used to search for an individual <a href="{% url 'about' %}#Met">metabolite</a>, or <a href="{% url 'about' %}#Pwy">pathway</a>,
-      of interest by name.
-      In addition, access to the comprehensive FlyMet data via the <a href="{% url 'about' %}#MetEx">Metabolite Explorer</a>, <a href="{% url 'about' %}#PkEx">Peak Explorer</a>
-      and <a href="{% url 'about'%}#PwyEx">Pathway Explorer</a> can also be easily reached from the top navigation bar.</p>
-      <hr class="my-4">
-
-      <h6 id ="Met"> <a href="{% url 'metabolite_search_tissue' %}">Metabolite Search</a></h6>
-
-      <p class="p-4">
-        Use the Metabolite Search Page to look for a metabolite of interest by name and
-        find out how it changes between tissue types for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
-        These metabolites have been identified using a standard compound library and are directly associated with a
-        mass spec peak. The fold-change between the peak intensity in the tissues and the whole
-        fly has been calculated and the relative intensity of the peaks in the different life-stages displayed.
-      </p>
-
-      <hr class="my-4">
-
-      <h6 id ="Pwy"> <a href="{% url 'pathway_search' %}">Pathway Search</a></h6>
-
-      <p class="p-4">
-      Use the Pathway Search Page to look for metabolic
-        <a href="https://reactome.org/" target="_blank">Reactome</a> pathways of interest by name.
-        This then reveals the pathway metabolites found in FlyMet by looking at the associated peaks found
-        across Female (F), Male (M) and Larvae (L) <i>Drosophila</i> tissues and how they change.
-        The coverage of the metabolites found in FlyMet and in the pathways, is also shown.
-      </p>
-      <hr class="my-4">
-
-    <h6 id ="MetEx"> <a href="{% url 'met_ex_all' 'All' %}">Metabolite Explorer</a></h6>
-
-    <p class="p-4">
-      Use the Metabolite Explorer to examine all the metabolites that have been annotated in FlyMet.
-      Metabolite formulas, synonyms, references to external databases and FlyMet peaks associated with the
-      metabolites are shown.
-      From here the average peak intensity levels for all <a href="{% url 'glossary' %}#MetId">identified</a> metabolites in different tissues for Female (F), Male (M) and Larvae (L) Drosophila.
-      can be found.
-
-    </p>
-
-    <hr class="my-4">
-
-    <h6 id ="PkEx"> <a href="{% url 'peak_explorer' 'All' %}">Peak Explorer</a></h6>
-    <p class="p-4">
-      Use the Peak Explorer to compare the average peak intensity levels for over 9,000 annotated mass spec peaks in different
-      tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>. Clicking on a peak of interest reveals all the
-      metabolite annotations associated with it.
-    </p>
-
-    <hr class="my-4">
-
-    <h6 id ="PwyEx"> <a href="{% url 'pathway_explorer' %}">Pathway Explorer</a></h6>
-    <p class="p-4">
-      Use the Pathway Explorer to investigate changing metabolic pathways between <i> Drosophila </i> tissue types.
-      Pathways with correlated changes in a group of pathway metabolites are ranked highest. This is acheived by incorporating
-      the  <a href="https://pals.glasgowcompbio.org/app/" target="_blank">PALS</a> system
-      (<b>P</b>athway <b>A</b>ctivity <b>L</b>evel <b>S</b>coring) for pathway ranking.
-    </p>
-
-    <hr class="my-4">
-
-    <p class = "lead">Flymet is under rapid development. If you have any questions about the website or suggestions for data analysis please feel free to
-      <a href="{% url 'feedback' %}">contact us</a>.</p>
-  </div>
-  </div>
-
-  </div>
-  </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
 
 
-  {% endblock %}
+{% endblock %}

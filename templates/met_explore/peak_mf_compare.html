@@ -9,124 +9,130 @@
 
 {% block body_block %}
 
-  <div class="container-fluid p-4">
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main mt-4">
-        <p class="lead">
-          Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
-          </p>
+    <div class="container-fluid p-4">
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main mt-4">
+                <p class="lead">
+                    Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
+                </p>
+            </div>
         </div>
-      </div>
 
-      <!-- extra Tabs for Analysis type -->
-      <nav>
-        <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'peak_mf_compare' %}">Tissues</a>
-          <a class="navdark nav-item nav-link" href="{% url 'peak_mf_age_compare' %}">Aged Flies</a>
+        <!-- extra Tabs for Analysis type -->
+        <nav>
+            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                <a class="navdark nav-item nav-link active" href="{% url 'peak_mf_compare' %}">Tissues</a>
+                <a class="navdark nav-item nav-link" href="{% url 'peak_mf_age_compare' %}">Aged Flies</a>
+            </div>
+        </nav>
+
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
+                    </li>
+                </ul>
+                <div class="top-right">
+                    <p class="title_text">Peak Explorer</p>
+                </div>
+            </div>
         </div>
-      </nav>
-
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
-        </li>
-        </ul>
-        <div class="top-right" >
-          <p class ="title_text">Peak Explorer</p>
+        <div>
+            <p class="mt-4 mb-4">
+                The log<sub>2</sub> fold-change (FC) in peak intesity levels between tissues in Male and Female <i>Drosophila</i>.
+            </p>
         </div>
+
+        <div class="card mt-4 p-2 pb-2 border border-table rounded">
+            <div class="container-fluid pb-0">
+                <div class="row pb-0">
+                    <div class="myspan80 p-2 mt-2">
+                        <p>Columns can be dragged to reorganise the data as required.</p>
+                        <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap"
+                               style="width:100%">
+                            <thead class="thead-light">
+                            <tr id="columns">
+                                {% for column_name in columns %}
+                                    <th class="col">{{ column_name }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+
+
+                    <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+                        <fieldset id="click_info" class="fieldset-details">
+                            <legend class="sidebar">Peak Annotations</legend>
+                            <div class="p-2">
+                                <p class="m-2">Click on a peak to see the metabolites associated with it.</p>
+                            </div>
+                        </fieldset>
+
+                        <fieldset class="peak_details fieldset-details">
+                            <legend class="sidebar">Peak Annotations</legend>
+                            <div class="p-2">
+                                <p id="peak_id"></p>
+
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="radio" name="radio_adducts" id="filtered" autocomplete="off"
+                                               checked=""> <small>M+H/M-H</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" name="radio_adducts" id="all_adducts"
+                                               autocomplete="off"><small>All adducts</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-3">
+
+
+                            <div id='dataDiv'>
+
+                            </div>
+                        </fieldset>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
     </div>
-  </div>
-  <div>
-    <p class="mt-4 mb-4" >
-    The log<sub>2</sub> fold-change (FC) in peak intesity levels between tissues in Male and Female <i>Drosophila</i>.
-    </p>
-  </div>
 
-  <div class="card mt-4 p-2 pb-2 border border-table rounded">
-    <div class="container-fluid pb-0" >
-      <div class="row pb-0">
-        <div class="myspan80 p-2 mt-2">
-          <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="peak_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-            <thead class="thead-light">
-              <tr id = "columns">
-                {% for column_name in columns %}
-                  <th class = "col" >{{column_name}}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-          </table>
-        </div>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
+    </div>
 
 
-        <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
-          <fieldset id="click_info" class="fieldset-details">
-            <legend class="sidebar">Peak Annotations</legend>
-            <div class="p-2">
-              <p class="m-2">Click on a peak to see the metabolites associated with it.</p>
-            </div>
-          </fieldset>
-
-          <fieldset class="peak_details fieldset-details">
-            <legend class="sidebar">Peak Annotations</legend>
-            <div class="p-2">
-              <p id ="peak_id"></p>
-
-              <div class="row">
-                <div class ="col-6">
-                <input type="radio" name="radio_adducts" id="filtered" autocomplete="off" checked=""> <small>M+H/M-H</small>
-                </div>
-                <div class ="col-6">
-                <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off"><small>All adducts</small>
-                </div>
-              </div>
-              </div>
-
-              <hr class="my-3">
+{% endblock %}
 
 
-              <div id='dataDiv'>
-
-              </div>
-            </fieldset>
-
-            </div>
-
-        </div>
-        </div>
-  </div>
-
-  </div>
-
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
-
-
-  {% endblock %}
-
-
-  {% block js_block %}
-  <script type='text/javascript'>
-    var min_value = {{min_value}}
-    var max_value = {{max_value}}
-    var mean_value = {{mean_value}}
-    var peak_mf_list = "{{peak_mf_list | safe}}"
-    console.log(min_value, mean_value, max_value)
+{% block js_block %}
+    <script type='text/javascript'>
+        var min_value =
+        {{min_value}}
+        var max_value =
+        {{max_value}}
+        var mean_value =
+        {{mean_value}}
+        var peak_mf_list = "{{peak_mf_list | safe}}"
+        console.log(min_value, mean_value, max_value)
 
     </script>
 
-  {% render_bundle 'peak_mf_compare' 'js' %}
-  {% endblock %}
+    {% render_bundle 'peak_mf_compare' 'js' %}
+{% endblock %}

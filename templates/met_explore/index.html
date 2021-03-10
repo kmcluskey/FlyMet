@@ -4,63 +4,68 @@
 {% block title %}: A metabolomics atlas for Drosophila {% endblock %}
 
 {% block head_block %}
-  {% render_bundle 'index' 'css' %}
+    {% render_bundle 'index' 'css' %}
 {% endblock %}
 
 {% block body_block %}
 
-  <!-- div for main body-->
-  <div class="container-fluid px-4">
+    <!-- div for main body-->
+    <div class="container-fluid px-4">
 
-    <div>
-      <p class="mt-2 strapline">
-        FlyMet is a metabolomic atlas and metabolic resource for <i>Drosophila </i>,
-        similar to our <a href="http://www.flyatlas.org">FlyAtlas</a> and <a href="http://www.flyatlas2.org">FlyAtlas2</a>
-        gene expression databases.
-        </p>
-        <p class="mt-2 strapline">
-        Here, you can search for individual metabolites and pathways found in <i>Drosophila</i> tissues or look at
-        the comprehensive metabolite, peak and pathway data using the Explorers found in the navagation bar above.
-        </p>
+        <div>
+            <p class="mt-2 strapline">
+                FlyMet is a metabolomic atlas and metabolic resource for <i>Drosophila </i>,
+                similar to our <a href="http://www.flyatlas.org">FlyAtlas</a> and <a href="http://www.flyatlas2.org">FlyAtlas2</a>
+                gene expression databases.
+            </p>
+            <p class="mt-2 strapline">
+                Here, you can search for individual metabolites and pathways found in <i>Drosophila</i> tissues or look
+                at
+                the comprehensive metabolite, peak and pathway data using the Explorers found in the navagation bar
+                above.
+            </p>
 
-      <p class="mt-2 lead">
-        Search for <i> individual Drosophila </i> metabolites or pathways in Tissues or Aged flies:
-      </p>
-    </div>
+            <p class="mt-2 lead">
+                Search for <i> individual Drosophila </i> metabolites or pathways in Tissues or Aged flies:
+            </p>
+        </div>
 
-    <nav>
-      <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_tissue' %}">Tissues</a>
-        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
-      </div>
-    </nav>
+        <nav>
+            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search_tissue' %}">Tissues</a>
+                <a class="navdark nav-item nav-link" href="{% url 'metabolite_search_age' %}">Aged Flies</a>
+            </div>
+        </nav>
 
-    <!--Tabs to go to new pages-->
-    <div class="card text-center">
-      <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'metabolite_search_tissue' %}">Metabolites</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'metabolite_search_tissue' %}">Metabolites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
 
-    <div>
-      <p class = 'mt-4 lead'>
-         Quick start: Search for metabolites identified in <i>Drosophila</i> tissues.
-        </p>
-        <form action="metabolite_search_tissue" method="get" class="form-inline my-2 my-lg-0">
-          <input id = "metabolite_search_tissue" name ='metabolite_search_tissue' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
-          <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
-        </form>
-    </div>
+        <div>
+            <p class='mt-4 lead'>
+                Quick start: Search for metabolites identified in <i>Drosophila</i> tissues.
+            </p>
+            <form action="metabolite_search" method="get" class="form-inline my-2 my-lg-0">
+                {# TODO: replace with the analysis id from config #}
+                <input type="hidden" name="analysis_id" value="1"/>
+                <input id="metabolite_search" name='metabolite_search' class="form-control mr-sm-2" type="text"
+                       placeholder="Metabolite Search">
+                <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
 
     </div>
     <!--Spacer so that content is not hidden-->
@@ -68,11 +73,11 @@
     </div>
     {% block js_block %}
 
-    <script type='text/javascript'>
-      var url = "{{json_url}}"
-    </script>
+        <script type='text/javascript'>
+            var url = "{{json_url}}"
+        </script>
 
-      {% render_bundle 'index' 'js' %}
+        {% render_bundle 'index' 'js' %}
     {% endblock %}
 
 {% endblock %}

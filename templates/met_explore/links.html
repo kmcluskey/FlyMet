@@ -7,91 +7,95 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
 
-  <!--Tabs to go to new pages-->
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
 
+            </div>
+        </div>
+
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: Links to useful resources
+            </div>
+            <div class="p-4 text-justify">
+                <h6>A list of useful <i>Drosophila</i> and metabolite resources can be found on the pages linked below:
+                </h6>
+
+                <div class="p-4">
+                    <h6><i>Drosophila</i> Resources:</h6>
+                    <ul>
+                        <li><a href="http://flyatlas.org" target="_blank">FlyAtlas</a></li>
+                        <li><a href="http://flyatlas.gla.ac.uk/FlyAtlas2/index.html" target="_blank">FlyAtlas 2</a></li>
+                        <li><a href="https://flybase.org" target="_blank">FlyBase</a></li>
+                        <li><a href="http://www.flymine.org" target="_blank">FlyMine</a></li>
+                    </ul>
+
+                    <hr class="my-4">
+                    <h6>Metabolomic Resources:</h6>
+                    <ul>
+                        <li><a href="https:pals.glasgowcompbio.org/app/" target="_blank">Pathway Activity Level Scoring
+                            (PALS)</a></li>
+                        <li><a href="http://www.hmdb.ca" target="_blank">Human Metabolome Database</a></li>
+                        <li><a href="https://www.genome.jp/kegg/" target="_blank">KEGG</a></li>
+                        <li><a href="https://www.lipidmaps.org/" target="_blank">Lipid Maps</a></li>
+                        <li><a href="https://www.ebi.ac.uk/chembl/" target="_blank">Chembl</a></li>
+                        <li><a href="https://www.ebi.ac.uk/chebi/" target="_blank">Chebi</a></li>
+                        <li><a href="https://reactome.org/" target="_blank">Reactome</a></li>
+                        <li><a href="https://metexplore.toulouse.inra.fr/index.html/" target="_blank">Metexplore</a>
+                        </li>
+                        <li><a href="https://www.polyomics.gla.ac.uk/" target="_blank">Glasgow Polyomics</a></li>
+
+                    </ul>
+
+                    <hr class="my-4">
+                    <p>This list is by no means exhaustive and if you would like to see other resources listed feel free
+                        to <a href="{% url 'feedback' %}">contact us</a></p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: Links to useful resources
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
-    <div class = "p-4 text-justify">
-      <h6>A list of useful <i>Drosophila</i> and metabolite resources can be found on the pages linked below:</h6>
-
-  <div class="p-4">
-  <h6><i>Drosophila</i> Resources:</h6>
-  <ul>
-    <li><a href="http://flyatlas.org" target="_blank">FlyAtlas</a></li>
-    <li><a href="http://flyatlas.gla.ac.uk/FlyAtlas2/index.html" target="_blank">FlyAtlas 2</a></li>
-    <li><a href="https://flybase.org" target="_blank">FlyBase</a></li>
-    <li><a href="http://www.flymine.org" target="_blank">FlyMine</a></li>
-  </ul>
-
-  <hr class="my-4">
-  <h6>Metabolomic Resources:</h6>
-  <ul>
-    <li><a href="https:pals.glasgowcompbio.org/app/" target="_blank">Pathway Activity Level Scoring (PALS)</a></li>
-    <li><a href="http://www.hmdb.ca" target="_blank">Human Metabolome Database</a></li>
-    <li><a href="https://www.genome.jp/kegg/" target="_blank">KEGG</a></li>
-    <li><a href="https://www.lipidmaps.org/" target="_blank">Lipid Maps</a></li>
-    <li><a href="https://www.ebi.ac.uk/chembl/" target="_blank">Chembl</a></li>
-    <li><a href="https://www.ebi.ac.uk/chebi/" target="_blank">Chebi</a></li>
-    <li><a href="https://reactome.org/" target="_blank">Reactome</a></li>
-    <li><a href="https://metexplore.toulouse.inra.fr/index.html/" target="_blank">Metexplore</a></li>
-    <li><a href="https://www.polyomics.gla.ac.uk/" target="_blank">Glasgow Polyomics</a></li>
-
-  </ul>
-
-  <hr class="my-4">
-  <p>This list is by no means exhaustive and if you would like to see other resources listed feel free to <a href="{% url 'feedback' %}">contact us</a></p>
-</div>
-</div>
-    </div>
-    </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
 
 
-  {% endblock %}
+{% endblock %}

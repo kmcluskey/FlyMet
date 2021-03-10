@@ -7,117 +7,147 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
 
-  <!--Tabs to go to new pages-->
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
 
+            </div>
+        </div>
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: Glossary
+            </div>
+            <div class="p-4 text-justify">
+                <h6>This page contains a collection of terms relevant to the project and found throughout the site.</h6>
+                <div class="p-4">
+                    <h6>Mass Spectroscopy</h6>
+                    <ul class="padded_list">
+                        <li><u>Liquid Chromatography Mass Spectroscopy (LC-MS):</u> An analytical technique where
+                            compounds are separated by liquid
+                            chromatography before detection using a mass spectrometer.
+                        </li>
+                        <li><u>Retention Time (RT):</u> The time taken for a metabolite/compound to elute from the
+                            chromatographic medium.
+                            RT is used to enhance a detected metabolite's annotation and identification by comparison to
+                            the RT of a known standard.
+                        </li>
+                        <li><u>m/z:</u> Mass spectrometers rely on ionisation of compounds to detect them. Due to the
+                            effect of the electric fields used
+                            in mass spectrometry, compounds with a charge of greater than one act like they have half
+                            the mass,
+                            and therefore the detection scale is related to mass to charge ratio (m/z) rather than mass.
+                            Mass-to-charge-ratio values measured by the mass spectrometer.
+                        </li>
+                        <li><u>MS Peak:</u> The mass-spectrum represented in two dimensions by the m/z vs the signal
+                            intensity of a compound.
+                        </li>
+                        <li><u>Signal Intensity (SI):</u> Arbitrary units describing the peak height of a compound. As
+                            different molecules have different susceptibilities to ionisation, the
+                            height of the mass-spec peak is not directly indicative of the abundance of
+                            a compound.
+                        </li>
+                    </ul>
+
+
+                    <hr class="my-4">
+                    <h6>Metabolomics</h6>
+                    <ul class="padded_list">
+                        <li class="pb-1"><u>Metabolism</u> The chemical reactions (or metabolic processes) that are
+                            involved in maintaining the stasis of the cell.
+                        </li>
+                        <li><u>Metabolite:</u> The small-molecule substrates, intermediates and products (compounds) of
+                            an organism’s metabolism.
+                        </li>
+                        <li><u>Metabolome:</u> The collection of metabolites found in an organism, biofluid or tissue.
+                        </li>
+                        <li><u>Metabolomics:</u> Comprehensive metabolite profiling of a system (cell, tissue,
+                            organism), which
+                            allows the unique chemical fingerprint (of small molecular compounds) that a
+                            metabolic process leaves behind, to be investigated.
+                        </li>
+                        <li id="MetId"><u>Metabolite Identification:</u> Where the chemical identity of an MS peak is
+                            obtained
+                            from appropriate local reference material such as authentic chemical
+                            standards using both RT and m/z.
+                        </li>
+                        <li><u>Metabolite Annotation:</u> Where the chemical identity of an MS peak is assigned based
+                            solely on matching m/z to
+                            compounds in a database (e.g. KEGG, HMDB, LipidMaps). As the annotation is based solely on
+                            mass,
+                            a single MS Peak can be annotated as numerous compounds and a single compound can be
+                            annotated as several different MS peaks.
+                        </li>
+                        <li><u>Fragmentation Analysis:</u> Where the intact compound (that gives rise to the parent m/z)
+                            is dissociated
+                            into sub structures. Here, two parent ions of similar/identical masses (e.g. isomers;
+                            same chemical formula, different arrangement of atoms) may fragment
+                            differently depending on their chemical structures. This MS/MS peak
+                            fragmentation pattern can be searched against mass spectral databases to give confidence to
+                            (or dismiss) a peak/compound annotation
+                        </li>
+                    </ul>
+
+                    <hr class="my-4">
+                    <h6><i>Drosophila</i></h6>
+                    <ul>
+                        <li><u><i>Drosophila:</i></u> The fruit fly, commonly used as a model organism for study of
+                            genetics and development.
+                        </li>
+                    </ul>
+
+
+                    <hr class="my-4">
+
+                    <p class="lead">This glossary is a work in progress and it is assumed that it will build up over the
+                        course
+                        of this project. If you have any questions about terms not listed here please
+                        <a href="mailto:webmaster@flymet.org?Subject=Glossary%20terms">contact us</a> or leave some
+                        <a href="{% url 'feedback' %}"> feedback</a> and we will add your query to the glossary.</p>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: Glossary
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
-    <div class = "p-4 text-justify">
-      <h6>This page contains a collection of terms relevant to the project and found throughout the site.</h6>
-  <div class="p-4">
-  <h6>Mass Spectroscopy</h6>
-  <ul class="padded_list">
-    <li><u>Liquid Chromatography Mass Spectroscopy (LC-MS):</u> An analytical technique where compounds are separated by liquid
-chromatography before detection using a mass spectrometer.</li>
-    <li><u>Retention Time (RT):</u> The time taken for a metabolite/compound to elute from the chromatographic medium.
-      RT is used to enhance a detected metabolite's annotation and identification by comparison to the RT of a known standard.</li>
-    <li><u>m/z:</u> Mass spectrometers rely on ionisation of compounds to detect them. Due to the effect of the electric fields used
-      in mass spectrometry, compounds with a charge of greater than one act like they have half the mass,
-      and therefore the detection scale is related to mass to charge ratio (m/z) rather than mass.
-      Mass-to-charge-ratio values measured by the mass spectrometer.</li>
-    <li><u>MS Peak:</u> The mass-spectrum represented in two dimensions by the m/z vs the signal intensity of a compound.</li>
-    <li><u>Signal Intensity (SI):</u> Arbitrary units describing the peak height of a compound. As different molecules have different susceptibilities to ionisation, the
-height of the mass-spec peak is not directly indicative of the abundance of
-a compound. </li>
-  </ul>
 
 
-  <hr class="my-4">
-  <h6>Metabolomics</h6>
-  <ul class="padded_list">
-        <li class="pb-1"><u>Metabolism</u> The chemical reactions (or metabolic processes) that are involved in maintaining the stasis of the cell.</li>
-        <li><u>Metabolite:</u> The small-molecule substrates, intermediates and products (compounds) of an organism’s metabolism.</li>
-        <li><u>Metabolome:</u> The collection of metabolites found in an organism, biofluid or tissue.</li>
-        <li><u>Metabolomics:</u> Comprehensive metabolite profiling of a system (cell, tissue, organism), which
-          allows the unique chemical fingerprint (of small molecular compounds) that a
-          metabolic process leaves behind, to be investigated.</li>
-        <li id="MetId"><u>Metabolite Identification:</u> Where the chemical identity of an MS peak is obtained
-        from appropriate local reference material such as authentic chemical
-        standards using both RT and m/z.</li>
-        <li><u>Metabolite Annotation:</u> Where the chemical identity of an MS peak is assigned based solely on matching m/z to
-          compounds in a database (e.g. KEGG, HMDB, LipidMaps). As the annotation is based solely on mass,
-          a single MS Peak can be annotated as numerous compounds and a single compound can be
-          annotated as several different MS peaks.</li>
-        <li><u>Fragmentation Analysis:</u> Where the intact compound (that gives rise to the parent m/z) is dissociated
-          into sub structures. Here, two parent ions of similar/identical masses (e.g. isomers;
-          same chemical formula, different arrangement of atoms) may fragment
-          differently depending on their chemical structures. This MS/MS peak
-         fragmentation pattern can be searched against mass spectral databases to give confidence to (or dismiss) a peak/compound annotation</li>
-    </ul>
-
-  <hr class="my-4">
-  <h6><i>Drosophila</i></h6>
-  <ul>
-    <li><u><i>Drosophila:</i></u> The fruit fly, commonly used as a model organism for study of genetics and development.</li>
-  </ul>
-
-
-  <hr class="my-4">
-
-  <p class = "lead">This glossary is a work in progress and it is assumed that it will build up over the course
-    of this project. If you have any questions about terms not listed here please
-    <a href="mailto:webmaster@flymet.org?Subject=Glossary%20terms">contact us</a> or leave some
-    <a href="{% url 'feedback' %}"> feedback</a> and we will add your query to the glossary.</p>
-</div>
-</div>
-    </div>
-  </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
-
-
-  {% endblock %}
+{% endblock %}

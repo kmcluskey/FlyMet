@@ -7,99 +7,102 @@
 {% endblock %}
 
 {% block body_block %}
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <!-- Splitting into two columns using flex to display the logo-->
-    <div class="logo_row">
-      <div class="logo_main">
-        <p class="mt-4 lead">
-            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
-          </p>
+        <!-- Splitting into two columns using flex to display the logo-->
+        <div class="logo_row">
+            <div class="logo_main">
+                <p class="mt-4 lead">
+                    FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+                </p>
+            </div>
         </div>
-      </div>
-  <!--Tabs to go to new pages-->
-  <div class="card text-center">
-    <div class="card-header">
-      <ul class="nav nav-tabs card-header-tabs">
-        <li class="nav-item ">
-          <a class="nav-link" href="{% url 'about' %}">About</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link active" href="{% url 'background' %}">Background</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'links' %}">Links</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'credits' %}">Credits</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
-        </li>
-      </ul>
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item ">
+                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'background' %}">Background</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'links' %}">Links</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'credits' %}">Credits</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'glossary' %}">Glossary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'exp_protocols' %}">Experimental Protocols</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                FlyMet: A metabolomics atlas for <i> Drosophila </i>
+            </div>
+            <div class="p-4 text-justify">
+                <h5>Background</h5>
+
+                <p>All living organisms have a metabolism - a set of countless chemical reactions (or metabolic
+                    processes)
+                    that allows them to survive. The small-molecule intermediates and products of an
+                    organism’s metabolism are known as the metabolites and subsequently all the
+                    metabolites found in a system are denoted, the metabolome.
+                    Current technologies allow us to take a snapshot of the 'metabolome', providing a
+                    sensitive indicator of what is going on inside the organism, including its health and nutritional
+                    status.</p>
+
+                <p>In our bodies, as in all multicellular organisms, the metabolomes of different tissues are
+                    likely to differ significantly, reflecting the different specialized
+                    jobs they perform. Studying the composition of tissues in humans is obviously hard to perform,
+                    however the tiny fruit fly <i>Drosophila</i> has proved itself to be an excellent ‘model’ for
+                    many human processes. Indeed, much of our understanding of how humans develop, or of how our
+                    body clocks work, is based on research first performed in <i>Drosophila</i>.</p>
+
+                <p>The primary aim of this project is to generate metabolomes for the major tissues of <i>Drosophila</i>
+                    and to place them online in the public domain. This dataset should prove invaluable for
+                    the rapidly growing population of scientists studying metabolism in <i>Drosophila</i> -
+                    for example to model the natural ageing process or obesity and diabetes. It is hoped
+                    that by providing modelling techniques and tools for the data will allow for a greater
+                    understanding of human biology. Additionally, 70% of human genetic diseases are mutations
+                    in metabolic enzymes. These mutations can either be directly harmful or damage organs, like
+                    the kidney, by uncontrolled accumulation of metabolites. Notably, 80% of human genes
+                    have a <i>Drosophila</i> homologue, making it possible to model many inborn errors of
+                    human metabolism in the fruit fly; assess the impact of these mutations by
+                    metabolomics approaches; and use the mutants in drug-screens to work towards
+                    alleviating these life-limiting conditions.</p>
+
+                <p>The benefits of this project are not likely to be specific to biomedicine:
+                    Over one million lives are still lost annually to insect-borne diseases
+                    such as malaria and dengue; and insects are also key vectors of animal disease,
+                    such as bluetongue virus. <i>Drosophila</i>, with its potent genetic tools,
+                    is an ideal model for such insect pests. Unravelling insect metabolism may help to
+                    clarify the mechanisms by which insects render insecticides harmless, and/or identify new
+                    targets for novel, greener, insecticides.</p>
+
+                <p>This <a
+                        href="https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1">
+                    three-year project </a> is funded by the UK’s BBSRC.</p>
+            </div>
+        </div>
 
     </div>
-  </div>
-
-  <div class="card mt-4 p-2 pb-0 border border-table rounded">
-    <div class="card-header pb-0 table-card-header">
-      FlyMet: A metabolomics atlas for <i> Drosophila </i>
-    </div>
-    <div class = "p-4 text-justify">
-      <h5>Background</h5>
-
-      <p>All living organisms have a metabolism - a set of countless chemical reactions (or metabolic processes)
-        that allows them to survive. The small-molecule intermediates and products of an
-        organism’s metabolism are known as the metabolites and subsequently all the
-        metabolites found in a system are denoted, the metabolome.
-        Current technologies allow us to take a snapshot of the 'metabolome', providing a
-        sensitive indicator of what is going on inside the organism, including its health and nutritional status.</p>
-
-        <p>In our bodies, as in all multicellular organisms, the metabolomes of different tissues are
-          likely to differ significantly, reflecting the different specialized
-          jobs they perform. Studying the composition of tissues in humans is obviously hard to perform,
-          however the tiny fruit fly <i>Drosophila</i> has proved itself to be an excellent ‘model’ for
-          many human processes. Indeed, much of our understanding of how humans develop, or of how our
-          body clocks work, is based on research first performed in <i>Drosophila</i>.</p>
-
-          <p>The primary aim of this project is to generate metabolomes for the major tissues of <i>Drosophila</i>
-            and to place them online in the public domain. This dataset should prove invaluable for
-            the rapidly growing population of scientists studying metabolism in <i>Drosophila</i> -
-            for example to model the natural ageing process or obesity and diabetes. It is hoped
-            that by providing modelling techniques and tools for the data will allow for a greater
-            understanding of human biology. Additionally, 70% of human genetic diseases are mutations
-            in metabolic enzymes. These mutations can either be directly harmful or damage organs, like
-            the kidney, by uncontrolled accumulation of metabolites. Notably, 80% of human genes
-            have a <i>Drosophila</i> homologue, making it possible to model many inborn errors of
-            human metabolism in the fruit fly; assess the impact of these mutations by
-            metabolomics approaches; and use the mutants in drug-screens to work towards
-            alleviating these life-limiting conditions.</p>
-
-            <p>The benefits of this project are not likely to be specific to biomedicine:
-              Over one million lives are still lost annually to insect-borne diseases
-              such as malaria and dengue; and insects are also key vectors of animal disease,
-              such as bluetongue virus. <i>Drosophila</i>, with its potent genetic tools,
-              is an ideal model for such insect pests. Unravelling insect metabolism may help to
-              clarify the mechanisms by which insects render insecticides harmless, and/or identify new
-              targets for novel, greener, insecticides.</p>
-
-              <p>This <a href="https://bbsrc.ukri.org/research/grants-search/AwardDetails/?FundingReference=BB%2fP024297%2f1">
-                three-year project </a> is funded by the UK’s BBSRC.</p>
-</div>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
     </div>
 
-  </div>
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
 
-
-  {% endblock %}
+{% endblock %}

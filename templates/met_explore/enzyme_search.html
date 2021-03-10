@@ -9,385 +9,410 @@
 
 {% block body_block %}
 
-  <!-- div for main body-->
-  <div class="container-fluid p-4">
+    <!-- div for main body-->
+    <div class="container-fluid p-4">
 
-    <div>
-      <p class="mt-2 lead">
-        Search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
-      </p>
-    </div>
-
-    <!--Tabs to go to new pages-->
-    <div class="card text-center">
-      <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'enzyme_search' %}">Enzymes</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'metabolite_search_tissue' %}">Metabolites</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-
-
-    <!--Search info and box-->
-
-    <div>
-      <p class="mt-4 mb-1" >
-        Search for an <b>enzyme</b> and find out the abundance of its genes in <i> Drosophila </i> tissues:
-      </p>
-    </div>
-    <form class="form-inline my-2 my-lg-0">
-      <input class="form-control mr-sm-2" type="text" placeholder="Enzyme Search">
-      <button class="btn btn-outline-primary my-2 my-sm-0"
-      type="submit">Search</button>
-    </form>
-
-
-    <!--Div for a single table-->
-    <div class="card mt-4 p-2 pb-0 border border-table rounded">
-      <div class="card-header pb-0 table-card-header">
-        Histidine decarboxylase (HDC) gene levels in <i> Drosophila </i> tissues <span class ="bg-danger text-white p-1">This is a temporary placeholder view</span>
-      </div>
-      <div class="container-fluid pb-0" >
-        <div class="row pb-0">
-          <div class="myspan75 p-2 mt-2">
-
-            <table id="gene_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
-              <thead class="thead-light">
-                <tr>
-                  <th id = "tissue_type">Gene: <a class="table_link" href ="http://flyatlas.gla.ac.uk/FlyAtlas2/index.html?search=gene&gene=FBgn0005619&idtype=fbgn#mobileTargetGHdc"> FBgn0005619</a></th>
-                  <th colspan="2">Adult Male</th>
-                  <th id = "AF_met_WT_ratio" colspan="2" >Adult Female</th>
-                  <th id = "L_met_WT_ratio" colspan="2">Larvae</th>
-                </tr>
-                <tr>
-                  <th class="data">Tissue-Type</th>
-                  <th class="data">FPKM</th>
-                  <th class="data">Enrichment</th>  <!--The data columns requred for colouring the values -->
-                  <th class="data">FPKM</th>
-                  <th class="data">Enrichment</th>
-                  <th class="data">FPKM</th>
-                  <th class="data">Enrichment</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Head</td>
-                  <td>8.06</td>
-                  <td>3.34</td>
-                  <td>7.32</td>
-                  <td>3.66</td>
-                  <td>NA</td>
-                  <td>NA</td>
-
-                </tr>
-                <tr>
-                  <td>Eye</td>
-                  <td>36.08</td>
-                  <td>14.97</td>
-                  <td>26.22</td>
-                  <td>13.11</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Brain / CNS </td>
-                  <td>0.75</td>
-                  <td>0.31</td>
-                  <td>0.69</td>
-                  <td>NA</td>
-                  <td>0.28</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Thoracicoabdominal ganglion</td>
-                  <td>1.01</td>
-                  <td>0.42</td>
-                  <td>1.27</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Crop</td>
-                  <td>0.16</td>
-                  <td>0.07</td>
-                  <td>0.14</td>
-                  <td>NA</td>
-                  <td>0.02</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Midgut</td>
-                  <td>0.01</td>
-                  <td>0.00</td>
-                  <td>0.04</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Hindgut</td>
-                  <td>0.01</td>
-                  <td>0.02</td>
-                  <td>0.03</td>
-                  <td>NA</td>
-                  <td>0.02</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Malpighian Tubules</td>
-                  <td>0.01</td>
-                  <td>0.00</td>
-                  <td>0.03</td>
-                  <td>NA</td>
-                  <td>0.01</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Fat Body</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>0.01</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Salivary gland</td>
-                  <td>0.33</td>
-                  <td>0.14</td>
-                  <td>0.1</td>
-                  <td>NA</td>
-                  <td>0.01</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Heart</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>1.84</td>
-                  <td>3.66</td>
-                </tr>
-                <tr>
-                  <td>Trachea</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>0.02</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Ovary</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>0.00</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Virgin Spermatheca</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>0.00</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Mated Spermatheca</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>0.04</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Testis</td>
-                  <td>0.05</td>
-                  <td>0.02</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Accessory glands</td>
-                  <td>0.02</td>
-                  <td>0.01</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-                <tr>
-                  <td>Carcus</td>
-                  <td>0.41</td>
-                  <td>0.17</td>
-                  <td>0.21</td>
-                  <td>NA</td>
-                  <td>0.03</td>
-                  <td>NA</td>
-                </tr>
-                <tr>
-                  <td>Rectal pad</td>
-                  <td>0.01</td>
-                  <td>0.00</td>
-                  <td>0.06</td>
-                  <td>NA</td>
-                  <td>-</td>
-                  <td>-</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <!--Bottom infopanel Div-->
-            <fieldset class="fieldset-details">
-              <legend>Pathways containing Histidine decarboxylase (HDC)</legend>
-              <div class="p-2">
-                <ul>
-                  <li><a href="#!">Histidine, lysine, phenylalanine, tyrosine, proline and tryptophan catabolism (superpathway)</a>
-                    <h6 class = "mt-2"><b><i>Drosophila</i> Pathways</b> </h6>
-                    <ul>
-                      <li> <a href="{% url 'pathway_search' %}"">Histidine catabolism</a> <span id="has_pathway" class="badge badge-pill badge-secondary"> &#10003;</span></li>
-                      <li> Lysine catabolism</li>
-                      <li> Phenylalanine and tyrosine catabolism catabolism</li>
-                      <li> Proline catabolism</li>
-                      <li> Tryptophan catabolism</li>
-                    </ul>
-                    <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in <i>Homo Sapians</i>.</p>
-                  </li>
-
-                  <li><a href="pathways_index.html">Histidine catabolism</a></li>
-                  <h6 class = "mt-2"><b><i>Drosophila</i> Reactions</b> </h6>
-                  <ul>
-                    <li> Histidine is decarboxylated to histamine (histamine biosythesis) <span id="has_enzyme" class="badge badge-pill badge-secondary"> &#10003;</span></li>
-                    <li> CARNMT1 methylates CARN to Anserine</li>
-                  </ul>
-                  <p class="m-2">This event has been computationally inferred from an event that has been demonstrated in <i>Homo Sapians</i>.</p>
-                </li>
-              </ul>
-            </div>
-          </fieldset>
+        <div>
+            <p class="mt-2 lead">
+                Search for <i> Drosophila </i> enzymes, metabolites, pathways or tissue-types:
+            </p>
         </div>
-        <!-- End of main div myspan75 -->
 
-        <div class="myspan25 pl-2 pr-2 pt-2" style="height:100vh; overflow:scroll">
-          <p class="m-2"> <i>Drosophila</i> reactions utilising HDC </p>
-          <fieldset class="fieldset-details">
-            <legend class="sidebar">
-              <a data-toggle="modal" href="#reaction_Modal">Histamine Biosynthesis</a></legend>
-              <div class="container-fluid">
-                <div class="row">
-                  <a><img class="reaction_image float-left" src="{% static 'images/histamine_bio_metacy.png'%}" alt="Logo"></a>
-                </div>
-              </div>
-            </fieldset>
-
-            <fieldset id="click_info" class="fieldset-details">
-              <div class="m-2 mb-0">
-                <p class="m-2">Click on a tissue-type to see the intensities of the metabolite peaks associated with the above reaction.</p>
-              </div>
-            </fieldset>
-
-            <!-- </divs> for the peak data and graphs-->
-            <fieldset class="reaction_details fieldset-details">
-              <legend class="tissue sidebar">R01167</legend>
-              <div class="p-2 pb-0 table-responsive">
-
-                <table id="reaction_metabolites" class="side_table table-sm table-bordered table-hover table-striped">
-                  <thead class="thead-light">
-                    <tr>
-                      <th>Name:</th>
-                      <th class = "AM_met_WT_ratio">AM (FC)</th>
-                      <th class = "AF_met_WT_ratio">AF (FC)</th>
-                      <th class = "L_met_WT_ratio">L (FC)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><a href="{% url 'metabolite_search_tissue' %}">L-Histidine</a></td>
-                      <td>12.2</td>
-                      <td>10.1</td>
-                      <td>3.4</td>
-                    </tr>
-                    <tr>
-                      <td>Histamine</td>
-                      <td>10.7</td>
-                      <td>8.5</td>
-                      <td>2.5</td>
-                    </tr>
-                  </table>
-                  <hr>
-                </div>
-                <div class="p-2">
-                  <p id="tissue_type1"></p>
-                </div>
-              </fieldset>
+        <!--Tabs to go to new pages-->
+        <div class="card text-center">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'enzyme_search' %}">Enzymes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'metabolite_search_tissue' %}">Metabolites</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+                    </li>
+                </ul>
             </div>
-            <!-- End of side bar divs -->
-          </div>
         </div>
-      </div>
+
+
+        <!--Search info and box-->
+
+        <div>
+            <p class="mt-4 mb-1">
+                Search for an <b>enzyme</b> and find out the abundance of its genes in <i> Drosophila </i> tissues:
+            </p>
+        </div>
+        <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="text" placeholder="Enzyme Search">
+            <button class="btn btn-outline-primary my-2 my-sm-0"
+                    type="submit">Search
+            </button>
+        </form>
+
+
+        <!--Div for a single table-->
+        <div class="card mt-4 p-2 pb-0 border border-table rounded">
+            <div class="card-header pb-0 table-card-header">
+                Histidine decarboxylase (HDC) gene levels in <i> Drosophila </i> tissues <span
+                    class="bg-danger text-white p-1">This is a temporary placeholder view</span>
+            </div>
+            <div class="container-fluid pb-0">
+                <div class="row pb-0">
+                    <div class="myspan75 p-2 mt-2">
+
+                        <table id="gene_table"
+                               class="table-sm table-bordered table-hover table-striped dt-responsive nowrap"
+                               style="width:100%">
+                            <thead class="thead-light">
+                            <tr>
+                                <th id="tissue_type">Gene: <a class="table_link"
+                                                              href="http://flyatlas.gla.ac.uk/FlyAtlas2/index.html?search=gene&gene=FBgn0005619&idtype=fbgn#mobileTargetGHdc">
+                                    FBgn0005619</a></th>
+                                <th colspan="2">Adult Male</th>
+                                <th id="AF_met_WT_ratio" colspan="2">Adult Female</th>
+                                <th id="L_met_WT_ratio" colspan="2">Larvae</th>
+                            </tr>
+                            <tr>
+                                <th class="data">Tissue-Type</th>
+                                <th class="data">FPKM</th>
+                                <th class="data">Enrichment</th>
+                                <!--The data columns requred for colouring the values -->
+                                <th class="data">FPKM</th>
+                                <th class="data">Enrichment</th>
+                                <th class="data">FPKM</th>
+                                <th class="data">Enrichment</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>Head</td>
+                                <td>8.06</td>
+                                <td>3.34</td>
+                                <td>7.32</td>
+                                <td>3.66</td>
+                                <td>NA</td>
+                                <td>NA</td>
+
+                            </tr>
+                            <tr>
+                                <td>Eye</td>
+                                <td>36.08</td>
+                                <td>14.97</td>
+                                <td>26.22</td>
+                                <td>13.11</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Brain / CNS</td>
+                                <td>0.75</td>
+                                <td>0.31</td>
+                                <td>0.69</td>
+                                <td>NA</td>
+                                <td>0.28</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Thoracicoabdominal ganglion</td>
+                                <td>1.01</td>
+                                <td>0.42</td>
+                                <td>1.27</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Crop</td>
+                                <td>0.16</td>
+                                <td>0.07</td>
+                                <td>0.14</td>
+                                <td>NA</td>
+                                <td>0.02</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Midgut</td>
+                                <td>0.01</td>
+                                <td>0.00</td>
+                                <td>0.04</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Hindgut</td>
+                                <td>0.01</td>
+                                <td>0.02</td>
+                                <td>0.03</td>
+                                <td>NA</td>
+                                <td>0.02</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Malpighian Tubules</td>
+                                <td>0.01</td>
+                                <td>0.00</td>
+                                <td>0.03</td>
+                                <td>NA</td>
+                                <td>0.01</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Fat Body</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>0.01</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Salivary gland</td>
+                                <td>0.33</td>
+                                <td>0.14</td>
+                                <td>0.1</td>
+                                <td>NA</td>
+                                <td>0.01</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Heart</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>1.84</td>
+                                <td>3.66</td>
+                            </tr>
+                            <tr>
+                                <td>Trachea</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>0.02</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Ovary</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>0.00</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Virgin Spermatheca</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>0.00</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Mated Spermatheca</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>0.04</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Testis</td>
+                                <td>0.05</td>
+                                <td>0.02</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Accessory glands</td>
+                                <td>0.02</td>
+                                <td>0.01</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            <tr>
+                                <td>Carcus</td>
+                                <td>0.41</td>
+                                <td>0.17</td>
+                                <td>0.21</td>
+                                <td>NA</td>
+                                <td>0.03</td>
+                                <td>NA</td>
+                            </tr>
+                            <tr>
+                                <td>Rectal pad</td>
+                                <td>0.01</td>
+                                <td>0.00</td>
+                                <td>0.06</td>
+                                <td>NA</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <!--Bottom infopanel Div-->
+                        <fieldset class="fieldset-details">
+                            <legend>Pathways containing Histidine decarboxylase (HDC)</legend>
+                            <div class="p-2">
+                                <ul>
+                                    <li><a href="#!">Histidine, lysine, phenylalanine, tyrosine, proline and tryptophan
+                                        catabolism (superpathway)</a>
+                                        <h6 class="mt-2"><b><i>Drosophila</i> Pathways</b></h6>
+                                        <ul>
+                                            <li><a href="{% url 'pathway_search' %}"">Histidine catabolism</a> <span
+                                                    id="has_pathway"
+                                                    class="badge badge-pill badge-secondary"> &#10003;</span></li>
+                                            <li> Lysine catabolism</li>
+                                            <li> Phenylalanine and tyrosine catabolism catabolism</li>
+                                            <li> Proline catabolism</li>
+                                            <li> Tryptophan catabolism</li>
+                                        </ul>
+                                        <p class="m-2">This event has been computationally inferred from an event that
+                                            has been demonstrated in <i>Homo Sapians</i>.</p>
+                                    </li>
+
+                                    <li><a href="pathways_index.html">Histidine catabolism</a></li>
+                                    <h6 class="mt-2"><b><i>Drosophila</i> Reactions</b></h6>
+                                    <ul>
+                                        <li> Histidine is decarboxylated to histamine (histamine biosythesis) <span
+                                                id="has_enzyme"
+                                                class="badge badge-pill badge-secondary"> &#10003;</span></li>
+                                        <li> CARNMT1 methylates CARN to Anserine</li>
+                                    </ul>
+                                    <p class="m-2">This event has been computationally inferred from an event that has
+                                        been demonstrated in <i>Homo Sapians</i>.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <!-- End of main div myspan75 -->
+
+                    <div class="myspan25 pl-2 pr-2 pt-2" style="height:100vh; overflow:scroll">
+                        <p class="m-2"><i>Drosophila</i> reactions utilising HDC </p>
+                        <fieldset class="fieldset-details">
+                            <legend class="sidebar">
+                                <a data-toggle="modal" href="#reaction_Modal">Histamine Biosynthesis</a></legend>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <a><img class="reaction_image float-left"
+                                            src="{% static 'images/histamine_bio_metacy.png' %}" alt="Logo"></a>
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <fieldset id="click_info" class="fieldset-details">
+                            <div class="m-2 mb-0">
+                                <p class="m-2">Click on a tissue-type to see the intensities of the metabolite peaks
+                                    associated with the above reaction.</p>
+                            </div>
+                        </fieldset>
+
+                        <!-- </divs> for the peak data and graphs-->
+                        <fieldset class="reaction_details fieldset-details">
+                            <legend class="tissue sidebar">R01167</legend>
+                            <div class="p-2 pb-0 table-responsive">
+
+                                <table id="reaction_metabolites"
+                                       class="side_table table-sm table-bordered table-hover table-striped">
+                                    <thead class="thead-light">
+                                    <tr>
+                                        <th>Name:</th>
+                                        <th class="AM_met_WT_ratio">AM (FC)</th>
+                                        <th class="AF_met_WT_ratio">AF (FC)</th>
+                                        <th class="L_met_WT_ratio">L (FC)</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td><a href="{% url 'metabolite_search_tissue' %}">L-Histidine</a></td>
+                                        <td>12.2</td>
+                                        <td>10.1</td>
+                                        <td>3.4</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Histamine</td>
+                                        <td>10.7</td>
+                                        <td>8.5</td>
+                                        <td>2.5</td>
+                                    </tr>
+                                </table>
+                                <hr>
+                            </div>
+                            <div class="p-2">
+                                <p id="tissue_type1"></p>
+                            </div>
+                        </fieldset>
+                    </div>
+                    <!-- End of side bar divs -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- The modal -->
     <div class="modal" id="reaction_Modal">
-      <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-dialog">
+            <div class="modal-content">
 
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <h5 class="modal-title">Reaction Summary: Histamine biosythesis</h5>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-
-          <!-- Reaction information Modal body -->
-          <div class="modal-body row">
-            <div class="col-sm-12">
-              <h5><a href = "http://www.reactome.org/content/detail/R-DME-977301">Histidine is decarboxlated to histamine</a></h5>
-              <ul>
-                <li><b>Summary:</b> Decarboxylation of L-Histidine happens analogously to other decarboxylations of amino acids.
-                  It uses the cofactor pyridoxal phosphate and is catalyzed by histidine decarboxylase (Mamune-Sato et al, 1992).</li>
-                  <li><b>Inferred:</b> Inferred from <i>Homo sapiens</i></li>
-                  <li><b>Catalyst activity: </b>Histidine decarboxylase activity of HDC dimer</li>
-                  <li><b>Cellular localization: </b>Cytosol</li>
-                  <li><b>Input: </b> <ul><li>L-Histidine</li></ul></li>
-                  <li><b>Output: </b>
-                    <ul>
-                      <li>CO<sub>2</sub></li>
-                      <li>Histamine</li>
-                    </ul>
-                  </li>
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title">Reaction Summary: Histamine biosythesis</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
-                <!-- </div> -->
-              </div>
 
-              <!-- Modal footer -->
-              <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
-              </div>
+                <!-- Reaction information Modal body -->
+                <div class="modal-body row">
+                    <div class="col-sm-12">
+                        <h5><a href="http://www.reactome.org/content/detail/R-DME-977301">Histidine is decarboxlated to
+                            histamine</a></h5>
+                        <ul>
+                            <li><b>Summary:</b> Decarboxylation of L-Histidine happens analogously to other
+                                decarboxylations of amino acids.
+                                It uses the cofactor pyridoxal phosphate and is catalyzed by histidine decarboxylase
+                                (Mamune-Sato et al, 1992).
+                            </li>
+                            <li><b>Inferred:</b> Inferred from <i>Homo sapiens</i></li>
+                            <li><b>Catalyst activity: </b>Histidine decarboxylase activity of HDC dimer</li>
+                            <li><b>Cellular localization: </b>Cytosol</li>
+                            <li><b>Input: </b>
+                                <ul>
+                                    <li>L-Histidine</li>
+                                </ul>
+                            </li>
+                            <li><b>Output: </b>
+                                <ul>
+                                    <li>CO<sub>2</sub></li>
+                                    <li>Histamine</li>
+                                </ul>
+                            </li>
+                    </div>
+                    <!-- </div> -->
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
 
             </div>
-          </div>
         </div>
-        {% endblock %}
+    </div>
+{% endblock %}
 
-        {% block js_block %}
+{% block js_block %}
 
-        {% render_bundle 'enzyme_search' 'js' %}
-        {% endblock %}
+    {% render_bundle 'enzyme_search' 'js' %}
+{% endblock %}
 
-        <!--end of main div-->
+<!--end of main div-->
