@@ -19,17 +19,19 @@
         </div>
 
         <nav>
-            {% if analysis_id == 1 %}
-                <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                    <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=1 %}">Tissues</a>
-                    <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=3 %}">Aged Flies</a>
-                </div>
-            {% elif analysis_id == 3 %}
-                <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                    <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=1 %}">Tissues</a>
-                    <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=3 %}">Aged Flies</a>
-                </div>
-            {% endif %}
+            <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+                {% for curr_category_desc, curr_analysis_id in display_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
         </nav>
 
         <!--Tabs to go to new pages-->
@@ -50,17 +52,9 @@
         </div>
 
         <!--Search info and box-->
-        <div>
-            {% if analysis_id == 1 %}
-                <p class="mt-4 mb-1">
-                    Search for a <b>metabolite</b> and find out the abundance in <i> Drosophila </i> tissues:
-                </p>
-            {% elif analysis_id == 3 %}
-                <p class="mt-4 mb-1">
-                    Search for a <b>metabolite</b> and find out the abundance in different ages of <i> Drosophila </i>.
-                </p>
-            {% endif %}
-        </div>
+        <p class="mt-4 mb-1">
+            {{ msg_search|safe }}
+        </p>
 
         <form action="{% url 'metabolite_search' analysis_id=analysis_id %}" method="get" class="form-inline my-2 my-lg-0">
             <input id="metabolite_search" name='metabolite_search' class="form-control mr-sm-2" type="text"
@@ -79,15 +73,9 @@
             {% endif %}
 
             {% if met_table_data|length > 0 %}
-                {% if analysis_id == 1 %}
-                    <div class="card-header pb-0 table-card-header">
-                        {{ metabolite }} levels in <i> Drosophila </i> tissues
-                    </div>
-                {%  elif analysis_id == 3 %}
-                    <div class="card-header pb-0 table-card-header">
-                        {{ metabolite }} levels in different aged <i> Drosophila </i>
-                    </div>
-                {% endif %}
+                <div class="card-header pb-0 table-card-header">
+                    {{ msg_table_title|safe }}
+                </div>
 
                 <div class="container-fluid pb-0">
                     <div class="row pb-0">

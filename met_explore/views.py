@@ -14,10 +14,11 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
+from met_explore.constants import UI_CONFIG, METABOLITE_EXPLORER
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
-    Group, Factor
+    Group, Factor, Category
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 from met_explore.peak_groups import PeakGroups
@@ -192,11 +193,29 @@ def metabolite_search(request, analysis_id):
         logger.debug("met_table_data %s" % met_table_data)
         logger.debug("columns %s" % columns)
 
+        met_explore_config = UI_CONFIG[METABOLITE_EXPLORER]
+        msg_search = None
+        msg_table_title = None
+        display_categories = []
+        for config in met_explore_config:
+            category_name = config['category']
+            analysis_name = config['analysis']
+            cat = Category.objects.get(name=category_name)
+            ann = Analysis.objects.get(name=analysis_name)
+            display_categories.append((cat.description, ann.id))
+
+            if ann.id == analysis_id:
+                msg_search = config['msg_search']
+                msg_table_title = config['msg_table_title'].format(metabolite=search_query)
+
         context = {
             'peak_id': peak_id,
             'columns': columns,
             'metabolite': search_query,
             'analysis_id': analysis.id,
+            'display_categories': display_categories,
+            'msg_search': msg_search,
+            'msg_table_title': msg_table_title,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
