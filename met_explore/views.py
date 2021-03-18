@@ -14,7 +14,7 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.constants import UI_CONFIG, METABOLITE_EXPLORER
+from met_explore.constants import UI_CONFIG, METABOLITE_EXPLORER, SPECIES, FACTOR_DISPLAY_NAME
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
@@ -189,6 +189,12 @@ def metabolite_search(request, analysis_id):
         logger.debug('Found analysis_name = %s' % analysis.name)
 
         columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
+        columns_display = []
+        for col in columns:
+            if col in FACTOR_DISPLAY_NAME:
+                columns_display.append(FACTOR_DISPLAY_NAME[col])
+            else:
+                columns_display.append(col)
 
         logger.debug("met_table_data %s" % met_table_data)
         logger.debug("columns %s" % columns)
@@ -196,6 +202,8 @@ def metabolite_search(request, analysis_id):
         met_explore_config = UI_CONFIG[METABOLITE_EXPLORER]
         msg_search = None
         msg_table_title = None
+        msg_category = None
+        msg_sidebar = None
         display_categories = []
         for config in met_explore_config:
             category_name = config['category']
@@ -205,17 +213,21 @@ def metabolite_search(request, analysis_id):
             display_categories.append((cat.description, ann.id))
 
             if ann.id == analysis_id:
-                msg_search = config['msg_search']
-                msg_table_title = config['msg_table_title'].format(metabolite=search_query)
+                msg_search = config['msg_search'].format(species=SPECIES)
+                msg_table_title = config['msg_table_title'].format(species=SPECIES, metabolite=search_query)
+                msg_category = category_name
+                msg_sidebar = config['msg_sidebar'].format(metabolite=search_query)
 
         context = {
             'peak_id': peak_id,
-            'columns': columns,
+            'columns': columns_display,
             'metabolite': search_query,
             'analysis_id': analysis.id,
             'display_categories': display_categories,
             'msg_search': msg_search,
             'msg_table_title': msg_table_title,
+            'msg_category': msg_category,
+            'msg_sidebar': msg_sidebar,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,

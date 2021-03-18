@@ -86,18 +86,17 @@
                                    style="width:100%">
                                 <thead class="thead-light">
                                 <tr>
-                                    {% if analysis_id == 1 %}
-                                        <th class="data">Tissue-Type</th>
-                                    {% elif analysis_id == 3 %}
-                                        <th class="data">Age</th>
-                                    {% endif %}
+                                    <th class="data">{{ msg_category }}</th>
+                                    <!-- special hardcoding for FlyMet tooltip -->
                                     {% for c in columns %}
-                                        {% if c == "F" %}
+                                        {% if c == "Adult Female FC" %}
                                             <th class="AM_met_WT_ratio data">Adult Female FC</th>
-                                        {% elif c == "M" %}
+                                        {% elif c == "Adult Male FC" %}
                                             <th class="AF_met_WT_ratio data">Adult Male FC</th>
-                                        {% elif c == "L" %}
+                                        {% elif c == "Larvae FC" %}
                                             <th class="L_met_WT_ratio data">Larvae FC</th>
+                                        {% else %}
+                                            <th class="data">{{ c }}</th>
                                         {% endif %}
                                     {% endfor %}
                                 </tr>
@@ -173,17 +172,9 @@
                             </fieldset>
 
                             <fieldset id="click_info" class="fieldset-details">
-                                {% if analysis_id == 1 %}
-                                    <div class="p-2">
-                                        <p class="m-2">Click on a tissue-type to see the intensities of the peaks associated
-                                            with {{ metabolite }}</p>
-                                    </div>
-                                {% elif analysis_id == 3 %}
-                                    <div class="p-2">
-                                        <p class="m-2">Click on an age to see the intensities of the peaks associated
-                                            with {{ metabolite }}</p>
-                                    </div>
-                                {% endif %}
+                                <div class="p-2">
+                                    <p class="m-2">{{ msg_sidebar}}</p>
+                                </div>
                             </fieldset>
 
                             <!-- </divs> for the peak data and graphs-->
