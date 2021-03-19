@@ -14,9 +14,9 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.constants import UI_CONFIG, METABOLITE_EXPLORER, SPECIES, FACTOR_DISPLAY_NAME
+from met_explore.constants import UI_CONFIG, SEARCH_SECTIONS, SPECIES, FACTOR_DISPLAY_NAME, INITIAL_ANALYSIS
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
-    get_factors_from_samples
+    get_factors_from_samples, get_categories_from_config, get_initial_analysis_from_config
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
     Group, Factor, Category
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
@@ -67,9 +67,12 @@ except Exception as e:
 
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
-
+    analysis = get_initial_analysis_from_config(UI_CONFIG)
+    all_categories, _ = get_categories_from_config(UI_CONFIG, analysis.id)
     context = {
-        'json_url': reverse('get_metabolite_names')
+        'json_url': reverse('get_metabolite_names'),
+        'analysis_id': analysis.id,
+        'all_categories': all_categories
     }
 
     return render(request, 'met_explore/index.html', context)
@@ -199,35 +202,16 @@ def metabolite_search(request, analysis_id):
         logger.debug("met_table_data %s" % met_table_data)
         logger.debug("columns %s" % columns)
 
-        met_explore_config = UI_CONFIG[METABOLITE_EXPLORER]
-        msg_search = None
-        msg_table_title = None
-        msg_category = None
-        msg_sidebar = None
-        display_categories = []
-        for config in met_explore_config:
-            category_name = config['category']
-            analysis_name = config['analysis']
-            cat = Category.objects.get(name=category_name)
-            ann = Analysis.objects.get(name=analysis_name)
-            display_categories.append((cat.description, ann.id))
-
-            if ann.id == analysis_id:
-                msg_search = config['msg_search'].format(species=SPECIES)
-                msg_table_title = config['msg_table_title'].format(species=SPECIES, metabolite=search_query)
-                msg_category = category_name
-                msg_sidebar = config['msg_sidebar'].format(metabolite=search_query)
+        all_categories, current_category = get_categories_from_config(UI_CONFIG, analysis_id)
 
         context = {
             'peak_id': peak_id,
             'columns': columns_display,
             'metabolite': search_query,
             'analysis_id': analysis.id,
-            'display_categories': display_categories,
-            'msg_search': msg_search,
-            'msg_table_title': msg_table_title,
-            'msg_category': msg_category,
-            'msg_sidebar': msg_sidebar,
+            'all_categories': all_categories,
+            'current_category': current_category,
+            'species': SPECIES,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
@@ -241,7 +225,7 @@ def metabolite_search(request, analysis_id):
         return render(request, 'met_explore/metabolite_search.html', context)
 
 
-def pathway_search(request):
+def pathway_search(request, analysis_id):
     """
     View to return the individual pathway search page
     :returns: Render met_explore/pathway_search
@@ -250,7 +234,7 @@ def pathway_search(request):
 
     if request.method == 'GET':  # If the URL is loaded
         search_query = request.GET.get('pathway_search', None)
-        analysis = Analysis.objects.get(name="Tissue Comparisons")
+        analysis = Analysis.objects.get(id=analysis_id)
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
         pathway_id, summ_values, pwy_table_data = "", [], []
@@ -263,7 +247,13 @@ def pathway_search(request):
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
+        all_categories, current_category = get_categories_from_config(UI_CONFIG, analysis_id)
+
         context = {
+            'analysis_id': analysis_id,
+            'all_categories': all_categories,
+            'current_category': current_category,
+            'species': SPECIES,
             'pwy_table_data': pwy_table_data,
             'pals_min': pals_min,
             'pals_max': pals_max,
@@ -276,42 +266,6 @@ def pathway_search(request):
         }
 
         return render(request, 'met_explore/pathway_search.html', context)
-
-def pathway_age_search(request):
-    """
-    View to return the pathway age search
-    :returns: Render met_explore/pathway_age_search
-
-    """
-    if request.method == 'GET':  # If the URL is loaded
-
-        search_query = request.GET.get('pathway_age_search', None)
-        analysis = Analysis.objects.get(name="Age Comparisons")
-
-        pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-        pathway_id, summ_values, pwy_table_data = "", [], []
-
-        # If we get a metabolite sent from the view
-        if search_query is not None:
-
-            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
-
-        reactome_token = get_highlight_token()
-        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
-
-        context = {
-            'pwy_table_data': pwy_table_data,
-            'pals_min': pals_min,
-            'pals_max': pals_max,
-            'pals_mean': pals_mean,
-            'reactome_token': reactome_token,
-            'pathway_name': search_query,
-            'pathway_id': pathway_id,
-            'summ_values': summ_values,
-            'json_url': reverse('get_pathway_names')
-        }
-
-        return render(request, 'met_explore/pathway_age_search.html', context)
 
 
 def get_pwy_search_table(pals_df, search_query, analysis):
@@ -365,7 +319,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
     return pathway_id, summ_values, pwy_table_data
 
 
-def pathway_metabolites(request):
+def pathway_metabolites(request, analysis_id):
     """
     View to return the metabolite serach page
     :returns: Render met_explore/metabolite_search
@@ -376,7 +330,7 @@ def pathway_metabolites(request):
         met_peak_list, metabolite_names, cmpd_id_list, column_headers, summ_values = [], [], [], [], []
         min, max, mean = MIN, MAX, MEAN
 
-        analysis = Analysis.objects.get(name="Tissue Comparisons")
+        analysis = Analysis.objects.get(id=analysis_id)
         pals_df, _, _, _ = get_pals_view_data(analysis)
 
         # If we get a metabolite sent from the view
@@ -387,9 +341,6 @@ def pathway_metabolites(request):
             try:
                 pathway_id = pathway_id_names_dict[search_query]
                 cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, analysis)
-
-                analysis = Analysis.objects.get(name='Tissue Comparisons')
-
                 view_df, min, mean, max = get_all_peaks_compare_df(analysis)
 
                 sorted_view_df = sort_df_and_headers(view_df, analysis)

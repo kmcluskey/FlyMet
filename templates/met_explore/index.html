@@ -32,8 +32,17 @@
 
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=1 %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=3 %}">Aged Flies</a>
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link" href="{% url 'metabolite_search' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </nav>
 
@@ -42,13 +51,13 @@
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'metabolite_search' analysis_id=1 %}">Metabolites</a>
+                        <a class="nav-link" href="{% url 'metabolite_search' analysis_id=analysis_id %}">Metabolites</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+                        <a class="nav-link" href="{% url 'pathway_search' analysis_id=analysis_id %}">Pathways</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+                        <a class="nav-link" href="{% url 'pathway_metabolites' analysis_id=analysis_id %}">Pathway Metabolites</a>
                     </li>
                 </ul>
             </div>

@@ -1,21 +1,22 @@
 import gzip
+import itertools
 import logging
 import os
 import pathlib
 import pickle
-import sys
 import re
-import itertools
+import sys
+from collections import Counter
 
 from loguru import logger
 
+from met_explore.constants import FACTOR_ORDER_DICT, INITIAL_ANALYSIS, SEARCH_SECTIONS
 from met_explore.models import Factor, Group, Analysis, AnalysisComparison, Sample
-from met_explore.constants import FACTOR_ORDER_DICT
-from collections import Counter
 
 
 def atoi(text):
     return int(text) if text.isdigit() else text
+
 
 def natural_keys(text):
     '''
@@ -23,7 +24,8 @@ def natural_keys(text):
     http://nedbatchelder.com/blog/200712/human_sorting.html
     (See Toothy's implementation in the comments)
     '''
-    return [ atoi(c) for c in re.split(r'(\d+)', text) ]
+    return [atoi(c) for c in re.split(r'(\d+)', text)]
+
 
 def get_filename_from_string(fname):
     """
@@ -95,7 +97,7 @@ def get_samples_by_factors(types, names):
     assert len(types) == len(names)
     sets = []
     for i in range(len(types)):
-        samples = set(get_samples_by_factor(types[i], names[i])) # convert the list of samples to a set
+        samples = set(get_samples_by_factor(types[i], names[i]))  # convert the list of samples to a set
         sets.append(samples)
 
     # https://stackoverflow.com/questions/2541752/best-way-to-find-the-intersection-of-multiple-sets
@@ -117,6 +119,7 @@ def get_control_from_case(case, analysis_comparisions):
 
     return control
 
+
 def get_group_names(analysis):
     """
     A method to get all of the names of the groups given an analysis
@@ -129,6 +132,7 @@ def get_group_names(analysis):
     group_names = [Group.objects.get(id=g).name for g in gp_ids]
 
     return group_names
+
 
 def get_factor_type_from_analysis(analysis, factor_rank):
     """
@@ -166,3 +170,22 @@ def get_factors_from_samples(samples, factor_type):
 
     return factor_list
 
+
+def get_initial_analysis_from_config(ui_config):
+    initial_analysis = ui_config[INITIAL_ANALYSIS]
+    ann = Analysis.objects.get(name=initial_analysis)
+    return ann
+
+
+def get_categories_from_config(ui_config, current_analysis_id):
+    search_config = ui_config[SEARCH_SECTIONS]
+    current_category = None
+    all_categories = []
+    for config in search_config:
+        analysis_name = config['analysis']
+        ann = Analysis.objects.get(name=analysis_name)
+        cat = ann.category
+        all_categories.append((cat.description, ann.id))
+        if ann.id == current_analysis_id:
+            current_category = cat.name
+    return all_categories, current_category

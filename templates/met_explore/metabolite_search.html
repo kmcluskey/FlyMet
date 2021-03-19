@@ -14,13 +14,13 @@
 
         <div>
             <p class="mt-2 lead">
-                Choose to search for <i> Drosophila </i> metabolites or pathways:
+                Choose to search for <i> {{ species }} </i> metabolites or pathways:
             </p>
         </div>
 
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                {% for curr_category_desc, curr_analysis_id in display_categories %}
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
                     {% if curr_analysis_id == analysis_id %}
                         <a class="navdark nav-item nav-link active" href="{% url 'metabolite_search' analysis_id=curr_analysis_id %}">
                             {{ curr_category_desc }}
@@ -42,10 +42,10 @@
                         <a class="nav-link active" href="{% url 'metabolite_search' analysis_id=analysis_id %}">Metabolites</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pathway_search' %}">Pathways</a>
+                        <a class="nav-link" href="{% url 'pathway_search' analysis_id=analysis_id %}">Pathways</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pathway_metabolites' %}">Pathway Metabolites</a>
+                        <a class="nav-link" href="{% url 'pathway_metabolites' analysis_id=analysis_id %}">Pathway Metabolites</a>
                     </li>
                 </ul>
             </div>
@@ -53,7 +53,7 @@
 
         <!--Search info and box-->
         <p class="mt-4 mb-1">
-            {{ msg_search|safe }}
+            Search for a <b>metabolite</b> and find out the abundance in <i> {{ species }} </i> {{ current_category|lower }}
         </p>
 
         <form action="{% url 'metabolite_search' analysis_id=analysis_id %}" method="get" class="form-inline my-2 my-lg-0">
@@ -74,7 +74,7 @@
 
             {% if met_table_data|length > 0 %}
                 <div class="card-header pb-0 table-card-header">
-                    {{ msg_table_title|safe }}
+                    {{ metabolite|title }} levels in <i> {{ species }} </i> {{ current_category|lower }}
                 </div>
 
                 <div class="container-fluid pb-0">
@@ -86,7 +86,7 @@
                                    style="width:100%">
                                 <thead class="thead-light">
                                 <tr>
-                                    <th class="data">{{ msg_category }}</th>
+                                    <th class="data">{{ current_category }}</th>
                                     <!-- special hardcoding for FlyMet tooltip -->
                                     {% for c in columns %}
                                         {% if c == "Adult Female FC" %}
@@ -129,7 +129,7 @@
                                     <ul>
                                         {% for id, name in pathways.items %}
                                             <li>
-                                                <a href="{% url 'pathway_search' %}?pathway_search={{ name }}">{{ name }}</a>
+                                                <a href="{% url 'pathway_search' analysis_id=analysis_id %}?pathway_search={{ name }}">{{ name }}</a>
                                                 <p class="m-2">This is currently a placeholder for details of {{ name }}.</p>
                                             </li>
                                         {% endfor %}
@@ -173,7 +173,10 @@
 
                             <fieldset id="click_info" class="fieldset-details">
                                 <div class="p-2">
-                                    <p class="m-2">{{ msg_sidebar}}</p>
+                                    <p class="m-2">
+                                        Click on a row in the table to see the intensities of the peaks
+                                        associated with {{ metabolite }}
+                                    </p>
                                 </div>
                             </fieldset>
 

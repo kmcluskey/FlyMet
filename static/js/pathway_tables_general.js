@@ -17,9 +17,9 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project)
 
         fixedheader: true,
         colReorder: true,
-        select: {
-            style: 'single'
-        },
+        // select: {
+        //     style: 'single'
+        // },
         //code to override bootstrap and keep buttons on one line.
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +

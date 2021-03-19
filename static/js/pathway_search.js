@@ -9,6 +9,10 @@ require ('./init_datatables')
 
   function add_table_tooltips(obj){
     $('.notMeasured').tooltip({title: "A sample has not been measured for this tissue/life stage combination", placement: "top"})
+
+    // age
+    // $('.notMeasured').tooltip({title: "A sample has not been measured for this age/life stage combination", placement: "top"})
+
   }
 
   function add_pwy_tooltips(obj, pathway_name){
@@ -16,6 +20,10 @@ require ('./init_datatables')
     $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female tissue & female whole Flies", placement: "top"});
     $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male tissues & male whole Flies", placement: "top"});
     $('#L-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name+ " between larvae tissue & whole larvae", placement: "top"});
+
+    // age
+    // $('#AF-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between female aged & female whole (7 day old) flies", placement: "top"});
+    // $('#AM-pvalue').tooltip({title: "P-value of changes in the metabolites of " + pathway_name + " between male aged & male whole (7 day old) flies", placement: "top"});
 
   }
 
@@ -57,7 +65,12 @@ $(document).ready(function() {
 
   let met_ex_url = `met_ex_all`;
   let project = `Tissue`;
+  let input = pathway_search;
 
+  // age
+  // let met_ex_url = `met_age_all`;
+  // let project = `Age`;
+  // let input = pathway_age_search;
 
   //Method to add an autocomplete search function to the DB
   loadData((url)).then(function(data) {
