@@ -45,8 +45,8 @@ bioservices = "*"
 appnope = "*"
 django-spaghetti-and-meatballs = "*"
 #django-spaghetti = "*"
-ncdu = "*"
-spaghetti-and-meatballs = "*"
+#ncdu = "*"
+#spaghetti-and-meatballs = "*"
 
 [dev-packages]
 
