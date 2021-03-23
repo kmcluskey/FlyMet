@@ -1,3 +1,4 @@
+import collections
 import gzip
 import itertools
 import logging
@@ -177,20 +178,36 @@ def get_initial_analysis_from_config(ui_config):
     return ann
 
 
+UIConfig = collections.namedtuple('UIConfig', 'analysis category colnames case_label control_label')
+
 def get_ui_config(ui_config, current_analysis_id):
     search_config = ui_config[SEARCH_SECTIONS]
-    current_category = None
+
+    # search for the right config given the analysis name
+    uic = None
+    for config in search_config:
+        analysis_name = config['analysis']
+        ann = Analysis.objects.get(name=analysis_name)
+        cat = ann.category
+        if ann.id == current_analysis_id:
+            current_category = cat.name
+            colnames = config['colnames']
+            case_label = config['case_label']
+            control_label = config['control_label']
+            uic = UIConfig(analysis=ann, category=current_category, colnames=colnames, case_label=case_label,
+                           control_label=control_label)
+    return uic
+
+
+def get_search_categories(ui_config):
+    search_config = ui_config[SEARCH_SECTIONS]
     all_categories = []
-    colnames = None
     for config in search_config:
         analysis_name = config['analysis']
         ann = Analysis.objects.get(name=analysis_name)
         cat = ann.category
         all_categories.append((cat.description, ann.id))
-        if ann.id == current_analysis_id:
-            current_category = cat.name
-            colnames = config['colnames']
-    return all_categories, current_category, colnames
+    return all_categories
 
 
 def get_display_colnames(columns, colnames):

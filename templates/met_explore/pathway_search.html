@@ -91,22 +91,15 @@
             {% if pathway_id|length > 0 %}
                 <div class="info card-header pb-0 table-card-header">
                     {{ pathway_name }} and metabolites found in <i> {{ species }} </i> {{ current_category|lower }}.
-                    {#                    <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway#}
-                    {#                        metabolites, between whole flies and individual tissues.</small></p>#}
-                    <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway
-                        metabolites, between the control and case groups.</small></p>
+                    <p><small>
+                        The smallest p-values reveal {{ current_category|lower }} with the most significant changes in
+                        the pathway
+                        metabolites, between the case and control groups in {{ species }}.<br/>
+                        Case: {{ case_label }}<br/>
+                        Control: {{ control_label }}
+                    </small></p>
                 </div>
             {% endif %}
-
-            {#            age #}
-            {#            {% if pathway_id|length > 0 %}#}
-            {#                <div class="info card-header pb-0 table-card-header">#}
-            {#                    {{ pathway_name }} and metabolites found in <i> aged Drosophila </i>.#}
-            {#                    <p><small>The smallest p-values reveal the ages with the most significant changes in the pathway#}
-            {#                        metabolites from whole flies (7 days old).</small></p>#}
-            {#                </div>#}
-            {#            {% endif %}#}
-
 
             {% if pathway_id|length > 0 %}
                 <div class="pathway_details card mt-4 p-2 pb-2 border border-table rounded">

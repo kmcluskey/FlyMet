@@ -75,6 +75,11 @@
             {% if met_table_data|length > 0 %}
                 <div class="card-header pb-0 table-card-header">
                     {{ metabolite|title }} levels in <i> {{ species }} </i> {{ current_category|lower }}
+                    <p><small>
+                        Log2 fold-change between the case and control groups in {{ species }}.<br/>
+                        Case: {{ case_label }}<br/>
+                        Control: {{ control_label }}
+                    </small></p>
                 </div>
 
                 <div class="container-fluid pb-0">
