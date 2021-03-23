@@ -177,10 +177,11 @@ def get_initial_analysis_from_config(ui_config):
     return ann
 
 
-def get_categories_from_config(ui_config, current_analysis_id):
+def get_ui_config(ui_config, current_analysis_id):
     search_config = ui_config[SEARCH_SECTIONS]
     current_category = None
     all_categories = []
+    colnames = None
     for config in search_config:
         analysis_name = config['analysis']
         ann = Analysis.objects.get(name=analysis_name)
@@ -188,4 +189,15 @@ def get_categories_from_config(ui_config, current_analysis_id):
         all_categories.append((cat.description, ann.id))
         if ann.id == current_analysis_id:
             current_category = cat.name
-    return all_categories, current_category
+            colnames = config['colnames']
+    return all_categories, current_category, colnames
+
+
+def get_display_colnames(columns, colnames):
+    display_colnames = []
+    for col in columns:
+        if col in colnames:
+            display_colnames.append(colnames[col])
+        else:
+            display_colnames.append(col)
+    return display_colnames

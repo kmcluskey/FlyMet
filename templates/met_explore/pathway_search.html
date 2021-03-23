@@ -24,7 +24,8 @@
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
             {% for curr_category_desc, curr_analysis_id in all_categories %}
                 {% if curr_analysis_id == analysis_id %}
-                    <a class="navdark nav-item nav-link active" href="{% url 'pathway_search' analysis_id=curr_analysis_id %}">
+                    <a class="navdark nav-item nav-link active"
+                       href="{% url 'pathway_search' analysis_id=curr_analysis_id %}">
                         {{ curr_category_desc }}
                     </a>
                 {% else %}
@@ -47,7 +48,8 @@
                     <a class="nav-link active" href="{% url 'pathway_search' analysis_id=analysis_id %}">Pathways</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'pathway_metabolites' analysis_id=analysis_id %}">Pathway Metabolites</a>
+                    <a class="nav-link" href="{% url 'pathway_metabolites' analysis_id=analysis_id %}">Pathway
+                        Metabolites</a>
                 </li>
             </ul>
         </div>
@@ -68,12 +70,12 @@
         <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
     </form>
 
-{#    <!-- age -->#}
-{#    <form action="pathway_age_search" method="get" class="form-inline my-2 my-lg-0">#}
-{#        <input id="pathway_age_search" name='pathway_age_search' class="form-control mr-sm-2" type="text"#}
-{#               placeholder="Pathway Search">#}
-{#        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>#}
-{#    </form>#}
+    {#    <!-- age -->#}
+    {#    <form action="pathway_age_search" method="get" class="form-inline my-2 my-lg-0">#}
+    {#        <input id="pathway_age_search" name='pathway_age_search' class="form-control mr-sm-2" type="text"#}
+    {#               placeholder="Pathway Search">#}
+    {#        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>#}
+    {#    </form>#}
 
     <!--Div for a single table-->
     {% if pathway_name|length > 0 %}
@@ -89,21 +91,21 @@
             {% if pathway_id|length > 0 %}
                 <div class="info card-header pb-0 table-card-header">
                     {{ pathway_name }} and metabolites found in <i> {{ species }} </i> {{ current_category|lower }}.
-{#                    <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway#}
-{#                        metabolites, between whole flies and individual tissues.</small></p>#}
+                    {#                    <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway#}
+                    {#                        metabolites, between whole flies and individual tissues.</small></p>#}
                     <p><small>The smallest p-values reveal tissues with the most significant changes in the pathway
                         metabolites, between the control and case groups.</small></p>
                 </div>
             {% endif %}
 
-{#            age #}
-{#            {% if pathway_id|length > 0 %}#}
-{#                <div class="info card-header pb-0 table-card-header">#}
-{#                    {{ pathway_name }} and metabolites found in <i> aged Drosophila </i>.#}
-{#                    <p><small>The smallest p-values reveal the ages with the most significant changes in the pathway#}
-{#                        metabolites from whole flies (7 days old).</small></p>#}
-{#                </div>#}
-{#            {% endif %}#}
+            {#            age #}
+            {#            {% if pathway_id|length > 0 %}#}
+            {#                <div class="info card-header pb-0 table-card-header">#}
+            {#                    {{ pathway_name }} and metabolites found in <i> aged Drosophila </i>.#}
+            {#                    <p><small>The smallest p-values reveal the ages with the most significant changes in the pathway#}
+            {#                        metabolites from whole flies (7 days old).</small></p>#}
+            {#                </div>#}
+            {#            {% endif %}#}
 
 
             {% if pathway_id|length > 0 %}
@@ -115,17 +117,20 @@
                                        style="width:100%">
                                     <thead class="thead-light">
                                     <tr>
-                                        <th class="col vw150">Tissue-Type</th>
-                                        <th id='AF-pvalue' class="col vw150">Adult F/W p-value</th>
-                                        <th id='AM-pvalue' class="col vw150">Adult M/W p-value</th>
-                                        <th id='L-pvalue' class="col vw150">Larvae/W p-value</th>
+                                        <th class="col vw150">{{ current_category }}</th>
+                                        <!-- special hardcoding for FlyMet tooltip -->
+                                        {% for c in columns %}
+                                            {% if c == "Adult F/W p-value" %}
+                                                <th id='AF-pvalue' class="col vw150">Adult F/W p-value</th>
+                                            {% elif c == "Adult Male FC" %}
+                                                <th id='AM-pvalue' class="col vw150">Adult M/W p-value</th>
+                                            {% elif c == "Larvae/W p-value" %}
+                                                <th id='L-pvalue' class="col vw150">Larvae/W p-value</th>
+                                            {% else %}
+                                                <th class="col vw150">{{ c }}</th>
+                                            {% endif %}
+                                        {% endfor %}
                                     </tr>
-{#                                    age #}
-{#                                    <tr>#}
-{#                                        <th class="col vw150">Age</th>#}
-{#                                        <th id='AF-pvalue' class="col vw150">Adult F/W p-value</th>#}
-{#                                        <th id='AM-pvalue' class="col vw150">Adult M/W p-value</th>#}
-{#                                    </tr>#}
                                     </thead>
                                     <tbody>
 

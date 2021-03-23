@@ -14,9 +14,9 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.constants import UI_CONFIG, SEARCH_SECTIONS, SPECIES, FACTOR_DISPLAY_NAME, INITIAL_ANALYSIS
+from met_explore.constants import UI_CONFIG, SEARCH_SECTIONS, SPECIES, INITIAL_ANALYSIS
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
-    get_factors_from_samples, get_categories_from_config, get_initial_analysis_from_config
+    get_factors_from_samples, get_ui_config, get_initial_analysis_from_config, get_display_colnames
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
     Group, Factor, Category
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
@@ -68,7 +68,7 @@ except Exception as e:
 def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
     analysis = get_initial_analysis_from_config(UI_CONFIG)
-    all_categories, _ = get_categories_from_config(UI_CONFIG, analysis.id)
+    all_categories, _, _ = get_ui_config(UI_CONFIG, analysis.id)
     context = {
         'json_url': reverse('get_metabolite_names'),
         'analysis_id': analysis.id,
@@ -192,21 +192,15 @@ def metabolite_search(request, analysis_id):
         logger.debug('Found analysis_name = %s' % analysis.name)
 
         columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
-        columns_display = []
-        for col in columns:
-            if col in FACTOR_DISPLAY_NAME:
-                columns_display.append(FACTOR_DISPLAY_NAME[col])
-            else:
-                columns_display.append(col)
+        all_categories, current_category, colnames = get_ui_config(UI_CONFIG, analysis_id)
+        display_colnames = get_display_colnames(columns, colnames)
 
         logger.debug("met_table_data %s" % met_table_data)
         logger.debug("columns %s" % columns)
 
-        all_categories, current_category = get_categories_from_config(UI_CONFIG, analysis_id)
-
         context = {
             'peak_id': peak_id,
-            'columns': columns_display,
+            'columns': display_colnames,
             'metabolite': search_query,
             'analysis_id': analysis.id,
             'all_categories': all_categories,
@@ -238,21 +232,24 @@ def pathway_search(request, analysis_id):
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
         pathway_id, summ_values, pwy_table_data = "", [], []
+        display_colnames = None
 
         # If we get a metabolite sent from the view
         if search_query is not None:
-
-            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+            pathway_id, summ_values, pwy_table_data, columns = get_pwy_search_table(pals_df, search_query, analysis)
+            all_categories, current_category, colnames = get_ui_config(UI_CONFIG, analysis_id)
+            display_colnames = get_display_colnames(columns, colnames)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-        all_categories, current_category = get_categories_from_config(UI_CONFIG, analysis_id)
+        all_categories, current_category, _ = get_ui_config(UI_CONFIG, analysis_id)
 
         context = {
             'analysis_id': analysis_id,
             'all_categories': all_categories,
             'current_category': current_category,
+            'columns': display_colnames,
             'species': SPECIES,
             'pwy_table_data': pwy_table_data,
             'pals_min': pals_min,
@@ -316,7 +313,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         logger.warning("A pathway name %s was not passed to the search" % search_query)
         raise
 
-    return pathway_id, summ_values, pwy_table_data
+    return pathway_id, summ_values, pwy_table_data, columns
 
 
 def pathway_metabolites(request, analysis_id):
