@@ -10,21 +10,21 @@ UI_CONFIG = {
         {
             'analysis': 'Tissue Comparisons',
             'colnames': {
-                'F': 'Adult Female FC',
-                'M': 'Adult Male FC',
-                'L': 'Larvae FC'
+                'F': 'Adult Female',
+                'M': 'Adult Male',
+                'L': 'Larvae'
             },
-            'case_label': 'different tissues in adult Male, adult Female or larvae',
+            'case_label': 'tissues in adult Male (M), adult Female (F) or larvae (L)',
             'control_label': 'Whole Fly'
         },
         {
             'analysis': 'Age Comparisons',
             'colnames': {
-                'F': 'Adult F/W p-value',
-                'M': 'Adult M/W p-value',
-                'L': 'Larvae/W p-value'
+                'F': 'Adult Female',
+                'M': 'Adult Male',
+                'L': 'Larvae'
             },
-            'case_label': 'different ages in adult Male, adult Female',
+            'case_label': 'ages in adult Male (M), adult Female (F) or larvae (L)',
             'control_label': 'Whole Fly (7 days old)'
         }
     ]

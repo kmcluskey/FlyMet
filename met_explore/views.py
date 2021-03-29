@@ -378,7 +378,19 @@ def pathway_metabolites(request, analysis_id):
         # Get the summary list for know/all metabolites in a pathway
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
+        all_categories = get_search_categories(UI_CONFIG)
+        uic = get_ui_config(UI_CONFIG, analysis_id)
+        current_category = uic.category
+        case_label = uic.case_label
+        control_label = uic.control_label
+
         context = {
+            'all_categories': all_categories,
+            'analysis_id': analysis.pk,
+            'current_category': current_category,
+            'case_label': case_label,
+            'control_label': control_label,
+            'species': SPECIES,
             'cmpd_id_list': cmpd_id_list,
             'name_data': name_data_list,
             'metabolite_names': metabolite_names,
@@ -391,71 +403,6 @@ def pathway_metabolites(request, analysis_id):
         }
 
         return render(request, 'met_explore/pathway_metabolites.html', context)
-
-def pathway_age_metabolites(request):
-    """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
-
-    """
-    if request.method == 'GET':  # If the URL is loaded
-        search_query = request.GET.get('pathway_age_metabolites', None)
-        met_peak_list, metabolite_names, cmpd_id_list, column_headers, summ_values  = [],[],[],[],[]
-        min, max, mean = MIN, MAX, MEAN
-
-        analysis = Analysis.objects.get(name="Age Comparisons")
-
-        pals_df, _, _, _ = get_pals_view_data(analysis)
-
-        # If we get a metabolite sent from the view
-        if search_query is not None:
-
-            pathway_id_names_dict = get_pathway_id_names_dict()
-
-            try:
-                pathway_id = pathway_id_names_dict[search_query]
-                cmpd_id_list, metabolite_names, met_peak_list = pathway_search_data(pathway_id, analysis)
-
-                view_df, min, mean, max = get_all_peaks_compare_df(analysis)
-
-                sorted_view_df = sort_df_and_headers(view_df, analysis)
-                column_headers = sorted_view_df.columns.tolist()
-
-                # Here and send back the list of reactome compounds too...
-                summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
-                summ_values_orig = summ_table.values.flatten().tolist()
-                summ_values = [int(i) for i in summ_values_orig[:-1]]
-
-                summ_values.append(summ_values_orig[-1])
-
-            except KeyError:
-
-                logger.warning("A pathway name %s was not passed to the search" % search_query)
-                pass
-
-
-        num_metabolites = len(metabolite_names)
-
-        name_data = zip(cmpd_id_list, metabolite_names, met_peak_list)
-        name_data_list = list(name_data)
-
-        # Get the summary list for know/all metabolites in a pathway
-
-        # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
-        context = {
-            'cmpd_id_list': cmpd_id_list,
-            'name_data': name_data_list,
-            'metabolite_names': metabolite_names,
-            'met_peak_list': met_peak_list,
-            'num_metabolites': num_metabolites,
-            'pathway_name': search_query,
-            'columns': column_headers, 'max_value': max, 'min_value': min, 'mean_value': mean,
-            'summ_values': summ_values,
-            'json_url': reverse('get_pathway_names')
-        }
-
-        return render(request, 'met_explore/pathway_age_metabolites.html', context)
-
 
 
 def met_ex_all(request, cmpd_list):

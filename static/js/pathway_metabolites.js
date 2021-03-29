@@ -35,6 +35,12 @@ function headerTips(settings) {
       ls = get_lifestage(head_split[ls_check])
       string = `${tissue} ${ls} and Whole ${ls}`
     }
+    // age
+    //   tissue =`Fold change between ${head_split[0]} day old`;
+    //   const header_words = head_split.length;
+    //   const ls_check = header_words-1;
+    //   ls = get_lifestage(head_split[ls_check])
+    //   string = `${tissue} ${ls} and Whole (7 day old) ${ls}`
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string}`});
     $td.attr('data-toggle', "tooltip");

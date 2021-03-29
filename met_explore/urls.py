@@ -49,7 +49,6 @@ urlpatterns = [
     path('peak_mf_age_data', c(views.peak_mf_age_data), name='peak_mf_age_data'),
     path('pals_age_data', c(views.pals_age_data), name='pals_age_data'),
     path('pathway_age_explorer', views.pathway_age_explorer, name='pathway_age_explorer'),
-    path('pathway_age_metabolites', views.pathway_age_metabolites, name='pathway_age_metabolites'),
 
     # Common views
     path('metabolite_search/<int:analysis_id>', views.metabolite_search, name='metabolite_search'),
