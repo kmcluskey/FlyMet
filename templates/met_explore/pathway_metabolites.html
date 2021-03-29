@@ -86,7 +86,7 @@
                                 {% for cmpd_id, metabolite, peak_table_data in name_data %}
                                     <div class='pt-3 pb-4'>
                                         <p class="text_box">Peaks associated with <a
-                                                href="met_ex_all/{{ cmpd_id }}">{{ metabolite }}</a></p>
+                                                href="met_ex_all/{{ analysis_id }}/{{ cmpd_id }}">{{ metabolite }}</a></p>
                                     </div>
                                     <table id="pwy_met_table_{{ forloop.counter0 }}"
                                            class="display table-sm table-bordered table-hover table-striped nowrap"

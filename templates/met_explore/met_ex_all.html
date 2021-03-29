@@ -15,15 +15,24 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate the metabolites found in <i> Drosophila </i>.
+                    Investigate the metabolites found in <i> {{ species }} </i>.
                 </p>
             </div>
         </div>
 
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' 'All' %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'met_age_all' 'All' %}">Aged Flies</a>
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link" href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </nav>
 
@@ -32,11 +41,22 @@
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'met_ex_all' 'All' %}">All</a>
+                        <a class="nav-link active" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
-                    </li>
+                    {# TODO handle the link correctly #}
+                    {% if analysis_id == 1 %}
+                        <li class="nav-item">
+                            <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
+                        </li>
+                    {% elif analysis_id == 3 %}
+                        <li class="nav-item">
+                            <a class="nav-link " href="{% url 'met_age_id' %}">Identified</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
+                        </li>
+                    {% endif %}
                 </ul>
                 <div class="top-right">
                     <p class="title_text">Metabolite Explorer</p>
@@ -120,6 +140,9 @@
     <script type='text/javascript'>
         var cmpd_list = "{{cmpd_list | safe}}"
         console.log("The cmpd list is " + cmpd_list)
+
+        var peak_url = "{{ peak_url | safe }}"
+        console.log("The peak url is " + peak_url)
 
     </script>
 

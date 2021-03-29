@@ -405,28 +405,35 @@ def pathway_metabolites(request, analysis_id):
         return render(request, 'met_explore/pathway_metabolites.html', context)
 
 
-def met_ex_all(request, cmpd_list):
+def met_ex_all(request, analysis_id, cmpd_list):
     """
     View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
 
+    # TODO: set to 'peak_age_explorer' for the age data
+    if analysis_id == 1:
+        peak_url = 'peak_explorer/'
+    elif analysis_id == 3:
+        peak_url = 'peak_age_explorer/'
+    else:
+        peak_url = 'peak_explorer/'
+
+    all_categories = get_search_categories(UI_CONFIG)
+    uic = get_ui_config(UI_CONFIG, analysis_id)
+    current_category = uic.category
+
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
-    response = {'cmpd_list': cmpd_list, 'columns': columns}
+    response = {
+        'cmpd_list': cmpd_list,
+        'columns': columns,
+        'analysis_id': analysis_id,
+        'peak_url': peak_url,
+        'all_categories': all_categories,
+        'current_category': current_category
+    }
 
     return render(request, 'met_explore/met_ex_all.html', response)
-
-
-def met_age_all(request, cmpd_list):
-    """
-    View to return the metabolite serach page
-    :returns: Render met_explore/metabolite_search
-    """
-
-    columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
-    response = {'cmpd_list': cmpd_list, 'columns': columns}
-
-    return render(request, 'met_explore/met_age_all.html', response)
 
 
 
