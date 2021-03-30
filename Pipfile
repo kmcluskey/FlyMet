@@ -13,7 +13,7 @@ django-extensions = "*"
 gunicorn = "*"
 whitenoise = "*"
 ipython = "*"
-numpy = "==1.19.2"
+numpy = "*"
 scipy = "*"
 pandas = "*"
 seaborn = "*"
@@ -44,9 +44,6 @@ bioservices = "*"
 "reactome2py" = "*"
 appnope = "*"
 django-spaghetti-and-meatballs = "*"
-#django-spaghetti = "*"
-ncdu = "*"
-spaghetti-and-meatballs = "*"
 
 [dev-packages]
 
