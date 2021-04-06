@@ -1,31 +1,20 @@
 CSV_GROUP_COLNAME = 'group'
-FACTOR_ORDER_DICT = {'primary_factor': ['tissue', 'age'], 'secondary_factor': ['life_stage']}
+FACTOR_ORDER_DICT = {'primary_factor': ['PyMT'], 'secondary_factor': None}
 SEARCH_SECTIONS = 'search_sections'
 INITIAL_ANALYSIS = 'entry_analysis'
-SPECIES = 'Drosophila'
+SPECIES = 'Mouse'
 UI_CONFIG = {
     SPECIES: SPECIES,
-    INITIAL_ANALYSIS: 'Tissue Comparisons',
+    INITIAL_ANALYSIS: 'Metastasis Comparisons',
     SEARCH_SECTIONS: [
         {
-            'analysis': 'Tissue Comparisons',
+            'analysis': 'Metastasis Comparisons',
             'colnames': {
-                'F': 'Adult Female',
-                'M': 'Adult Male',
-                'L': 'Larvae'
+                'HighMet': 'High Metastasis',
+                'LowMet': 'Low Metastatis',
             },
-            'case_label': 'tissues in adult Male (M), adult Female (F) or larvae (L)',
-            'control_label': 'Whole Fly'
+            'case_label': 'mice with high number of tumours',
+            'control_label': 'mice with low number of tumours'
         },
-        {
-            'analysis': 'Age Comparisons',
-            'colnames': {
-                'F': 'Adult Female',
-                'M': 'Adult Male',
-                'L': 'Larvae'
-            },
-            'case_label': 'ages in adult Male (M), adult Female (F) or larvae (L)',
-            'control_label': 'Whole Fly (7 days old)'
-        }
     ]
 }

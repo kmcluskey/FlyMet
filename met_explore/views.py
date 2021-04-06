@@ -984,7 +984,7 @@ def get_pathway_names(request):
        :return: A unique list of pathway names
     """
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
 
     pals_df = get_cache_df(MIN_HITS, analysis)
 
@@ -1176,11 +1176,20 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     i=0
     for gp, v in gp_intensities.items():
-            pfact = group_ls_tissue_dict[gp][0]
-            sfact = group_ls_tissue_dict[gp][1]
-            met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
+            factors = group_ls_tissue_dict[gp]
+            if len(factors) == 2:
+                pfact = factors[0]
+                sfact = factors[1]
+                met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
+                gp_name = pfact + " " + sfact
+            elif len(factors) == 1:
+                pfact = factors[0]
+                met_series_data.append({'name': pfact, 'y': v, 'drilldown': str(i+1)})
+                gp_name = pfact
+            else:
+                logger.warning('Unsupported number of factors')
+
             all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
-            gp_name = pfact + " " + sfact
             gp_names.append(gp_name)
             i += 1
 
@@ -1402,20 +1411,30 @@ def get_drilldown_data_structure(groups, analysis):
 
     for g in groups:
 
-        s = Factor.objects.get(type=secondary_factor_type, group__name=g).name
-        p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
+        if secondary_factor_type is not None: # both primary and secondary are present
+            s = Factor.objects.get(type=secondary_factor_type, group__name=g).name
+            p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
 
-        num_samples = len(Sample.objects.filter(group__name=g))
+            num_samples = len(Sample.objects.filter(group__name=g))
 
-        fw_list = []
-        for f in range(1, num_samples + 1):
-            f_num = p+s + str(f) #Male Brain would be shown as BM etc
-            f_sample = [f_num, None]
-            fw_list.append(f_sample)
+            fw_list = []
+            for f in range(1, num_samples + 1):
+                f_num = p+s + str(f) #Male Brain would be shown as BM etc
+                f_sample = [f_num, None]
+                fw_list.append(f_sample)
 
-        drilldown_data.append(fw_list)
+            drilldown_data.append(fw_list)
 
+        else: # no secondary factor, only primary
+            p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
+            num_samples = len(Sample.objects.filter(group__name=g))
+            fw_list = []
+            for f in range(1, num_samples + 1):
+                f_num = p + str(f)  # Male Brain would be shown as BM etc
+                f_sample = [f_num, None]
+                fw_list.append(f_sample)
 
+            drilldown_data.append(fw_list)
 
     # logger.debug("Returning drilldown_data structure as %s" % drilldown_data)
 
@@ -1503,6 +1522,10 @@ def get_metabolite_search_page(analysis, search_query):
 
             # Get the metabolite/tissue comparison DF
             columns = get_factors_from_samples(control_s, secondary_factor_type)
+            single_factor = False
+            if len(columns) == 0:
+                single_factor = True
+                columns = [None]
 
             df = pd.DataFrame(index=all_factors, columns=columns, dtype=float)
             nm_samples_df = pd.DataFrame(index=all_factors, columns=columns, data="NM")  # Not measured samples
@@ -1511,11 +1534,24 @@ def get_metabolite_search_page(analysis, search_query):
             # Fill in the DF with Tissue/Life stages and intensities.
             for factor in all_factors:
                 for ls in columns:
-                    for g in gp_tissue_ls_dict:
-                        if gp_tissue_ls_dict[g] == [factor, ls]:
-                            value = met_search_df.iloc[0][g]
-                            df.loc[factor, ls] = value
-                            nm_samples_df.loc[factor, ls] = value
+                    if ls is not None: # both primary and secondary factors are present
+                        for g in gp_tissue_ls_dict:
+                            if gp_tissue_ls_dict[g] == [factor, ls]:
+                                value = met_search_df.iloc[0][g]
+                                df.loc[factor, ls] = value
+                                nm_samples_df.loc[factor, ls] = value
+
+                    else: # single factor only
+                        for g in gp_tissue_ls_dict:
+                            if gp_tissue_ls_dict[g] == [factor]:
+                                value = met_search_df.iloc[0][g]
+                                df.loc[factor, ls] = value
+                                nm_samples_df.loc[factor, ls] = value
+
+            if single_factor: # get rid of None as the column header, replace with 'FC'
+                columns = ['FC']
+                df = df.rename(columns={None: columns[0]})
+                nm_samples_df = nm_samples_df.rename(columns={None: columns[0]})
 
             # Standardise the DF by dividing by the Whole cell/Lifestage
             whole_row = df.loc[control]

@@ -392,8 +392,11 @@ class CompoundSelector(object):
         for s in samples:
             fact_dict = s.get_factor_dict()
             pfact = fact_dict[primary_factor_type]
-            sfact = fact_dict[secondary_factor_type]
-            gp_factor_dict[s.group.name] = [pfact, sfact]
+            if secondary_factor_type is not None:
+                sfact = fact_dict[secondary_factor_type]
+                gp_factor_dict[s.group.name] = [pfact, sfact]
+            else:
+                gp_factor_dict[s.group.name] = [pfact]
 
         return gp_factor_dict
 

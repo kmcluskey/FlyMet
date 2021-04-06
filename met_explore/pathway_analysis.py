@@ -16,6 +16,7 @@ from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
+from met_explore.constants import UI_CONFIG, INITIAL_ANALYSIS
 from met_explore.helpers import load_object, save_object, get_control_from_case
 from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, \
     AnalysisComparison, Analysis
@@ -213,7 +214,7 @@ def get_pathway_id_names_dict():
     # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do
     #  A fix is for this is probably wise.
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
 
     pals_df = get_cache_df(MIN_HITS, analysis)
     pathway_id_names_dict = {}
@@ -341,7 +342,7 @@ def get_fly_pw_cmpd_formula(pw_id):
     # Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
     #  A fix is probably wise.
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
 
 
     fly_pw_cmpd_for_dict = {}
@@ -374,7 +375,7 @@ def get_reactome_pw_metabolites(pw_id):
     #Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
     # A fix is probably wise.
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
 
     pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
     pals_ds = get_cache_ds(analysis)  # possibly member variables
@@ -609,7 +610,7 @@ def get_cmpd_pwys(cmpd_id):
     #Fixme: I don't think it matters which analysis we use for this as the number of metabolites are for the
     # whole project. Might be worth a discussion/fix
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
 
     pals_ds = get_cache_ds(analysis)
     cmpd = Compound.objects.get(id=cmpd_id)

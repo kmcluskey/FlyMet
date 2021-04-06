@@ -145,10 +145,12 @@ def get_factor_type_from_analysis(analysis, factor_rank):
     analysis_case_factors = Factor.objects.filter(group__case_group__analysis=analysis)
     factor_types = [a.type for a in analysis_case_factors if a.name != 'nan']
 
-    ps_factors = [f for f in factor_types if f in FACTOR_ORDER_DICT[factor_rank]]
-    factor_count = Counter(ps_factors)
-    ps_factor = max(factor_count, key=factor_count.get)
-
+    try:
+        ps_factors = [f for f in factor_types if f in FACTOR_ORDER_DICT[factor_rank]]
+        factor_count = Counter(ps_factors)
+        ps_factor = max(factor_count, key=factor_count.get)
+    except TypeError:
+        ps_factor = None
     return ps_factor
 
 
