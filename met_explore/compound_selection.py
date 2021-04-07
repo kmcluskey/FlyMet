@@ -250,7 +250,11 @@ class CompoundSelector(object):
                 data_name_dict[g] = "Peak ID"
             else:
                 f_list = group_fact_dict[g]
-                group_name_dict[g] = f_list[0]+" " + "(" + f_list[1] + ")"
+                assert len(f_list) > 0
+                if len(f_list) == 1:
+                    group_name_dict[g] = f_list[0]
+                elif len(f_list) == 2:
+                    group_name_dict[g] = f_list[0]+" " + "(" + f_list[1] + ")"
 
         return group_name_dict, data_name_dict
 
