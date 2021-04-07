@@ -259,17 +259,18 @@ def pathway_search(request):
         analysis = Analysis.objects.get(name="Tissue Comparisons")
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-        pathway_id, summ_values, pwy_table_data = "", [], []
+        columns, pathway_id, summ_values, pwy_table_data = [], "", [], []
 
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+            columns, pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
         context = {
+            'columns': columns,
             'pwy_table_data': pwy_table_data,
             'pals_min': pals_min,
             'pals_max': pals_max,
@@ -295,17 +296,18 @@ def pathway_age_search(request):
         analysis = Analysis.objects.get(name="Age Comparisons")
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-        pathway_id, summ_values, pwy_table_data = "", [], []
+        columns, pathway_id, summ_values, pwy_table_data = [], "", [], []
 
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+            columns, pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
         context = {
+            'columns': columns,
             'pwy_table_data': pwy_table_data,
             'pals_min': pals_min,
             'pals_max': pals_max,
@@ -368,7 +370,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         logger.warning("A pathway name %s was not passed to the search" % search_query)
         raise
 
-    return pathway_id, summ_values, pwy_table_data
+    return columns, pathway_id, summ_values, pwy_table_data
 
 
 def pathway_metabolites(request):
