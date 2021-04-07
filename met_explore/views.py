@@ -246,7 +246,7 @@ def pathway_search(request, analysis_id):
         case_label = None
         control_label = None
         if search_query is not None:
-            pathway_id, summ_values, pwy_table_data, columns = get_pwy_search_table(pals_df, search_query, analysis)
+            pathway_id, summ_values, pwy_table_data, columns, single_factor = get_pwy_search_table(pals_df, search_query, analysis)
             uic = get_ui_config(UI_CONFIG, analysis_id)
             current_category = uic.category
             case_label = uic.case_label
@@ -266,6 +266,7 @@ def pathway_search(request, analysis_id):
             'control_label': control_label,
             'species': SPECIES,
             'pwy_table_data': pwy_table_data,
+            'single_factor': single_factor,
             'pals_min': pals_min,
             'pals_max': pals_max,
             'pals_mean': pals_mean,
@@ -303,6 +304,10 @@ def get_pwy_search_table(pals_df, search_query, analysis):
 
         analysis_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
+        single_factor = False
+        if len(columns) == 0: # if no secondary factor, then just use the primary factor as the names
+            columns = factor_names
+            single_factor = True
 
         nm_samples_df = pd.DataFrame(index=factor_names, columns=columns, data="NM")  # Not measured samples
 
@@ -327,7 +332,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         logger.warning("A pathway name %s was not passed to the search" % search_query)
         raise
 
-    return pathway_id, summ_values, pwy_table_data, columns
+    return pathway_id, summ_values, pwy_table_data, columns, single_factor
 
 
 def pathway_metabolites(request, analysis_id):
