@@ -245,6 +245,7 @@ def pathway_search(request, analysis_id):
         display_colnames = None
         case_label = None
         control_label = None
+        single_factor = False
         if search_query is not None:
             pathway_id, summ_values, pwy_table_data, columns, single_factor = get_pwy_search_table(pals_df, search_query, analysis)
             uic = get_ui_config(UI_CONFIG, analysis_id)
@@ -314,7 +315,10 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         for factor in factor_names:
             for ls in columns:
                 try:
-                    value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
+                    if single_factor:
+                        value = single_pwy_df.iloc[0][factor]
+                    else:
+                        value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
                     nm_samples_df.loc[factor, ls] = value
                 except KeyError as e:
                     pass
