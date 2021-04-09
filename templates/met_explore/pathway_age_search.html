@@ -80,14 +80,14 @@
             <div class="myspan75 p-2 mt-2">
                     <table id="pwy_table" class="table-sm table-bordered table-hover table-striped dt-responsive nowrap" style="width:100%">
                       <thead class="thead-light">
-                        <th class="data">Age</th>
+                        <th class="col vw150">Age</th>
                         {% for c in columns %}
                         {% if c == "F" %}
-                        <th class="AM_met_WT_ratio data">Adult Female FC </th>
+                        <th id = 'AF-pvalue' class="col vw150">Adult F/W p-value</th>
                         {% elif c == "M" %}
-                        <th class="AF_met_WT_ratio data">Adult Male FC </th>
+                        <th id = 'AM-pvalue' class="col vw150">Adult M/W p-value</th>
                         {% elif c == "L" %}
-                        <th class="L_met_WT_ratio data">Larvae FC </th>
+                        <th id = 'AL-pvalue' class="col vw150">Adult L/W p-value</th>
                         {% endif %}
                       {% endfor %}
                       </thead>
