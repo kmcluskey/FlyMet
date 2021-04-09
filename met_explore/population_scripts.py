@@ -73,11 +73,15 @@ def populate_analysis_comparisions(analysis_set):
         try:
             new_project, project_created =Project.objects.get_or_create(name=project["project_name"], description=project["project_description"])
             if project_created:
-                new_project.save()
-                logger.info("Saving the project for %s" % new_project)
-
                 metabolomics = project['metabolomics']
                 project_categories = metabolomics['categories']
+                ui_config = metabolomics['ui_config']
+
+                new_project.metadata = {
+                    'ui_config': ui_config
+                }
+                new_project.save()
+                logger.info("Saving the project for %s" % new_project)
 
                 for category in project_categories:
                     new_category, category_created = Category.objects.get_or_create(name=category['category_name'], description = category['description'], project = new_project)

@@ -11,7 +11,7 @@ from collections import Counter
 
 from loguru import logger
 
-from met_explore.constants import FACTOR_ORDER_DICT, INITIAL_ANALYSIS, SEARCH_SECTIONS
+from met_explore.constants import INITIAL_ANALYSIS, SEARCH_SECTIONS
 from met_explore.models import Factor, Group, Analysis, AnalysisComparison, Sample
 
 
@@ -146,12 +146,18 @@ def get_factor_type_from_analysis(analysis, factor_rank):
     factor_types = [a.type for a in analysis_case_factors if a.name != 'nan']
 
     try:
-        ps_factors = [f for f in factor_types if f in FACTOR_ORDER_DICT[factor_rank]]
+        factor_order_dict = get_factor_order_dict(analysis)
+        ps_factors = [f for f in factor_types if f in factor_order_dict[factor_rank]]
         factor_count = Counter(ps_factors)
         ps_factor = max(factor_count, key=factor_count.get)
     except TypeError:
         ps_factor = None
     return ps_factor
+
+
+def get_factor_order_dict(analysis):
+    FACTOR_ORDER_DICT = {'primary_factor': ['PyMT'], 'secondary_factor': None}
+    return FACTOR_ORDER_DICT
 
 
 def get_factors_from_samples(samples, factor_type):
@@ -181,6 +187,7 @@ def get_initial_analysis_from_config(ui_config):
 
 
 UIConfig = collections.namedtuple('UIConfig', 'analysis category colnames case_label control_label')
+
 
 def get_ui_config(ui_config, current_analysis_id):
     search_config = ui_config[SEARCH_SECTIONS]

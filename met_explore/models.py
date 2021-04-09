@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from jsonfield import JSONField
 
 
 class Project(models.Model):
@@ -8,6 +9,7 @@ class Project(models.Model):
     """
     name = models.CharField(max_length=250, unique=True)
     description = models.CharField(max_length=500)
+    metadata = JSONField()
 
     def __str__(self):
         return "Project" + self.name
