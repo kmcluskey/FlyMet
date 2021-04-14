@@ -14,12 +14,12 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.constants import UI_CONFIG, SEARCH_SECTIONS, SPECIES, INITIAL_ANALYSIS
+from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
-    get_factors_from_samples, get_ui_config, get_initial_analysis_from_config, get_display_colnames, \
-    get_search_categories
+    get_factors_from_samples, get_analysis_config, get_display_colnames, \
+    get_search_categories, get_project_config
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
-    Group, Factor, Category
+    Group, Factor, Project
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
 from met_explore.peak_groups import PeakGroups
@@ -67,9 +67,14 @@ except Exception as e:
 
 
 def index(request):
-    # return HttpResponse("Hello, world. You're at the met_explore index page.")
-    analysis = get_initial_analysis_from_config(UI_CONFIG)
-    all_categories = get_search_categories(UI_CONFIG)
+    project_id = 1  # assume only one project, TODO: might not be the case
+
+    project = Project.objects.get(pk=project_id)
+    config = project.metadata[LABEL_PROJECT_CONFIG]
+    initial_analysis = config[LABEL_INITIAL_ANALYSIS]
+    analysis = Analysis.objects.get(name=initial_analysis)
+
+    all_categories = get_search_categories(config)
     context = {
         'json_url': reverse('get_metabolite_names'),
         'analysis_id': analysis.id,
@@ -77,7 +82,6 @@ def index(request):
     }
 
     return render(request, 'met_explore/index.html', context)
-
 
 
 def about(request):
@@ -192,9 +196,12 @@ def metabolite_search(request, analysis_id):
         analysis = Analysis.objects.get(id=analysis_id)
         logger.debug('Found analysis_name = %s' % analysis.name)
 
-        columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis, search_query)
-        all_categories = get_search_categories(UI_CONFIG)
-        uic = get_ui_config(UI_CONFIG, analysis_id)
+        columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis,
+                                                                                                            search_query)
+        config = get_project_config(analysis)
+        species = config[LABEL_SPECIES]
+        all_categories = get_search_categories(config)
+        uic = get_analysis_config(config, analysis_id)
         current_category = uic.category
         case_label = uic.case_label
         control_label = uic.control_label
@@ -212,12 +219,12 @@ def metabolite_search(request, analysis_id):
             'current_category': current_category,
             'case_label': case_label,
             'control_label': control_label,
-            'species': SPECIES,
+            'species': species,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
             'mean': mean,
-            'pathways':pathways,
+            'pathways': pathways,
             'references': references,
             'json_url': reverse('get_metabolite_names')
         }
@@ -246,9 +253,12 @@ def pathway_search(request, analysis_id):
         case_label = None
         control_label = None
         single_factor = False
+        config = get_project_config(analysis)
         if search_query is not None:
-            pathway_id, summ_values, pwy_table_data, columns, single_factor = get_pwy_search_table(pals_df, search_query, analysis)
-            uic = get_ui_config(UI_CONFIG, analysis_id)
+            pathway_id, summ_values, pwy_table_data, columns, single_factor = get_pwy_search_table(pals_df,
+                                                                                                   search_query,
+                                                                                                   analysis)
+            uic = get_analysis_config(config, analysis_id)
             current_category = uic.category
             case_label = uic.case_label
             control_label = uic.control_label
@@ -257,7 +267,8 @@ def pathway_search(request, analysis_id):
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-        all_categories = get_search_categories(UI_CONFIG)
+        species = config[LABEL_SPECIES]
+        all_categories = get_search_categories(config)
         context = {
             'analysis_id': analysis_id,
             'all_categories': all_categories,
@@ -265,7 +276,7 @@ def pathway_search(request, analysis_id):
             'columns': display_colnames,
             'case_label': case_label,
             'control_label': control_label,
-            'species': SPECIES,
+            'species': species,
             'pwy_table_data': pwy_table_data,
             'single_factor': single_factor,
             'pals_min': pals_min,
@@ -275,18 +286,17 @@ def pathway_search(request, analysis_id):
             'pathway_name': search_query,
             'pathway_id': pathway_id,
             'summ_values': summ_values,
-            'json_url': reverse('get_pathway_names')
+            'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
 
         return render(request, 'met_explore/pathway_search.html', context)
 
 
 def get_pwy_search_table(pals_df, search_query, analysis):
-
-    logger.info("getting %s table data" %search_query)
+    logger.info("getting %s table data" % search_query)
 
     pathway_id, summ_values, pwy_table_data = "", [], []
-    pathway_id_names_dict = get_pathway_id_names_dict()
+    pathway_id_names_dict = get_pathway_id_names_dict(analysis)
 
     try:
         pathway_id = pathway_id_names_dict[search_query]
@@ -306,7 +316,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         analysis_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
         single_factor = False
-        if len(columns) == 0: # if no secondary factor, then just use the primary factor as the names
+        if len(columns) == 0:  # if no secondary factor, then just use the primary factor as the names
             columns = factor_names
             single_factor = True
 
@@ -356,7 +366,7 @@ def pathway_metabolites(request, analysis_id):
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            pathway_id_names_dict = get_pathway_id_names_dict()
+            pathway_id_names_dict = get_pathway_id_names_dict(analysis)
 
             try:
                 pathway_id = pathway_id_names_dict[search_query]
@@ -378,7 +388,6 @@ def pathway_metabolites(request, analysis_id):
                 logger.warning("A pathway name %s was not passed to the search" % search_query)
                 pass
 
-
         num_metabolites = len(metabolite_names)
 
         name_data = zip(cmpd_id_list, metabolite_names, met_peak_list)
@@ -387,8 +396,10 @@ def pathway_metabolites(request, analysis_id):
         # Get the summary list for know/all metabolites in a pathway
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
-        all_categories = get_search_categories(UI_CONFIG)
-        uic = get_ui_config(UI_CONFIG, analysis_id)
+        config = get_project_config(analysis)
+        species = config[LABEL_SPECIES]
+        all_categories = get_search_categories(config)
+        uic = get_analysis_config(config, analysis_id)
         current_category = uic.category
         case_label = uic.case_label
         control_label = uic.control_label
@@ -399,7 +410,7 @@ def pathway_metabolites(request, analysis_id):
             'current_category': current_category,
             'case_label': case_label,
             'control_label': control_label,
-            'species': SPECIES,
+            'species': species,
             'cmpd_id_list': cmpd_id_list,
             'name_data': name_data_list,
             'metabolite_names': metabolite_names,
@@ -408,7 +419,7 @@ def pathway_metabolites(request, analysis_id):
             'pathway_name': search_query,
             'columns': column_headers, 'max_value': max, 'min_value': min, 'mean_value': mean,
             'summ_values': summ_values,
-            'json_url': reverse('get_pathway_names')
+            'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
 
         return render(request, 'met_explore/pathway_metabolites.html', context)
@@ -428,8 +439,10 @@ def met_ex_all(request, analysis_id, cmpd_list):
     else:
         peak_url = 'peak_explorer/'
 
-    all_categories = get_search_categories(UI_CONFIG)
-    uic = get_ui_config(UI_CONFIG, analysis_id)
+    analysis = Analysis.objects.get(pk=analysis_id)
+    config = get_project_config(analysis)
+    all_categories = get_search_categories(config)
+    uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
 
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
@@ -443,7 +456,6 @@ def met_ex_all(request, analysis_id, cmpd_list):
     }
 
     return render(request, 'met_explore/met_ex_all.html', response)
-
 
 
 def peak_ex_compare(request, peak_compare_list):
@@ -461,7 +473,6 @@ def peak_ex_compare(request, peak_compare_list):
         peak_list_split = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_list_split))
 
-
     logger.info("Peak comparison table requested")
     start = timeit.default_timer()
     view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
@@ -470,7 +481,6 @@ def peak_ex_compare(request, peak_compare_list):
     column_headers = sorted_view_df.columns.tolist()
 
     stop = timeit.default_timer()
-
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
@@ -523,7 +533,6 @@ def peak_mf_compare(request):
     view_df, min, mean, max = get_peak_mf_compare_df(analysis)
     column_headers = get_peak_mf_header(view_df, analysis)
 
-
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
@@ -554,7 +563,6 @@ def peak_mf_age_compare(request):
                 'mean_value': mean}
 
     return render(request, 'met_explore/peak_mf_age_compare.html', response)
-
 
 
 def peak_explorer(request, peak_list):
@@ -610,6 +618,7 @@ def peak_explorer(request, peak_list):
                 'mean_value': mean_value}
 
     return render(request, 'met_explore/peak_explorer.html', response)
+
 
 def peak_age_explorer(request, peak_list):
     """
@@ -667,7 +676,7 @@ def get_all_peaks_compare_df(analysis):
 
     peaks = Peak.objects.all()
 
-    df_name = 'all_compare_df_'+str(analysis.id)
+    df_name = 'all_compare_df_' + str(analysis.id)
 
     if cache.get(df_name) is None:
         logger.debug("we dont have cache for %s so running the function" % df_name)
@@ -709,6 +718,7 @@ def pals_age_data(request):
     logger.info("returning the pals data ")
     return JsonResponse({'data': pals_data})
 
+
 def peak_compare_data(request, peak_compare_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
@@ -722,7 +732,6 @@ def peak_compare_data(request, peak_compare_list):
     else:
         peak_compare_list = peak_compare_list.split(',')
         peaks = Peak.objects.filter(id__in=list(peak_compare_list))
-
 
     view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
@@ -754,7 +763,6 @@ def peak_mf_compare_data(request):
 
 
 def peak_age_compare_data(request, peak_compare_list):
-
     analysis = Analysis.objects.get(name='Age Comparisons')
 
     if peak_compare_list == "All":
@@ -816,7 +824,7 @@ def peak_age_data(request, peak_list):
 
     view_df1 = pd.merge(peak_df, group_df, on='id')
 
-    #Sort df to match headers
+    # Sort df to match headers
     view_df = sort_df_and_headers(view_df1, analysis)
     view_df = view_df.fillna("-")
 
@@ -824,6 +832,7 @@ def peak_age_data(request, peak_list):
 
     logger.info("returning the peak data", peak_data)
     return JsonResponse({'data': peak_data})
+
 
 def peak_data(request, peak_list):
     """
@@ -907,8 +916,6 @@ def pathway_age_explorer(request):
     return render(request, 'met_explore/pathway_age_explorer.html', response)
 
 
-
-
 def met_ex_tissues(request):
     """
     This view is equivalent to the met_age_id table.
@@ -920,7 +927,6 @@ def met_ex_tissues(request):
     analysis = Analysis.objects.get(name="Tissue Comparisons")
     group_names = get_group_names(analysis)
     group_names.insert(0, "Metabolite")
-
 
     view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
     select_df = view_df[group_names]
@@ -941,6 +947,7 @@ def met_ex_tissues(request):
                 'mean_value': mean_value}
 
     return render(request, 'met_explore/met_ex_tissues.html', response)
+
 
 def met_age_id(request):
     """
@@ -987,13 +994,13 @@ def get_metabolite_names(request):
         return JsonResponse({'metaboliteNames': ['Not', 'ajax']})
 
 
-def get_pathway_names(request):
+def get_pathway_names(request, analysis_id):
     """
        A method to return a list of all the Pathway names present in Reactome for the daea
        :return: A unique list of pathway names
     """
 
-    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     pals_df = get_cache_df(MIN_HITS, analysis)
 
@@ -1011,8 +1018,8 @@ def pathway_search_data(pwy_id, analysis):
     :param pwy_id: Reactome pathway ID
     :return: List of metabolite names followed by associated peaks in the pathway.
     """
-
-    cmpd_form_dict = get_fly_pw_cmpd_formula(pwy_id)
+    analysis_id = analysis.pk
+    cmpd_form_dict = get_fly_pw_cmpd_formula(analysis_id, pwy_id)
     # peaks = Peak.objects.all()
 
     # analysis = Analysis.objects.get(name='Tissue Comparisons')
@@ -1102,15 +1109,14 @@ def metabolite_peak_data(request, cmpd_id):
     return JsonResponse({'peak_groups': gp_df_list, 'columns': columns})
 
 
-def metabolite_pathway_data(request, pw_id):
+def metabolite_pathway_data(request, analysis_id, pw_id):
     """
 
     :param request:
     :param pw_id: The pathway ID that for which the compounds and formulas are required for
     :return: cmpd_id: formula dictionary
     """
-
-    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(pw_id)
+    pw_cmpd_for_dict = get_fly_pw_cmpd_formula(analysis_id, pw_id)
     cmpd_details = {}
     for cmpd, formula in pw_cmpd_for_dict.items():
 
@@ -1175,32 +1181,31 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     single_cmpd_indexed = s_cmpds_df.index.values
     hc_int_df = hc_int_df_duplicates.loc[single_cmpd_indexed]
 
-
     # group_ls_tissue_dict relates the group name to the tissue and the Life stage{'Mid_m': ['Midgut', 'M']}
 
     group_ls_tissue_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
     gp_intensities = cmpd_selector.get_gp_intensity(analysis, metabolite, tissue, single_cmpds_df)
 
-    all_intensities,  met_series_data, gp_names  =[], [], []
+    all_intensities, met_series_data, gp_names = [], [], []
 
-    i=0
+    i = 0
     for gp, v in gp_intensities.items():
-            factors = group_ls_tissue_dict[gp]
-            if len(factors) == 2:
-                pfact = factors[0]
-                sfact = factors[1]
-                met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
-                gp_name = pfact + " " + sfact
-            elif len(factors) == 1:
-                pfact = factors[0]
-                met_series_data.append({'name': pfact, 'y': v, 'drilldown': str(i+1)})
-                gp_name = pfact
-            else:
-                logger.warning('Unsupported number of factors')
+        factors = group_ls_tissue_dict[gp]
+        if len(factors) == 2:
+            pfact = factors[0]
+            sfact = factors[1]
+            met_series_data.append({'name': pfact + " " + sfact, 'y': v, 'drilldown': str(i + 1)})
+            gp_name = pfact + " " + sfact
+        elif len(factors) == 1:
+            pfact = factors[0]
+            met_series_data.append({'name': pfact, 'y': v, 'drilldown': str(i + 1)})
+            gp_name = pfact
+        else:
+            logger.warning('Unsupported number of factors')
 
-            all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
-            gp_names.append(gp_name)
-            i += 1
+        all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
+        gp_names.append(gp_name)
+        i += 1
 
     groups = list(gp_intensities.keys())
     drilldown_data = get_drilldown_data_structure(groups, analysis)
@@ -1247,7 +1252,8 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     if frank_annots is not None:
         probability = round(float(frank_annots['probability']), 1)
 
-    return JsonResponse({'group_names': gp_names, 'probability': probability, 'series_data': met_series_data, 'error_bar_data': error_bar_data,
+    return JsonResponse({'group_names': gp_names, 'probability': probability, 'series_data': met_series_data,
+                         'error_bar_data': error_bar_data,
                          'drilldown_data': drilldown_data})
 
 
@@ -1310,12 +1316,11 @@ def change_pals_col_names(pals_df):
 
 
 def get_peak_mf_compare_df(analysis):
-
     peaks = Peak.objects.all()
     required_data = peaks.values('id', 'm_z', 'rt')
     peak_df = pd.DataFrame.from_records(required_data)
 
-    cache_name = "peak_mf_df_"+str(analysis.id)
+    cache_name = "peak_mf_df_" + str(analysis.id)
 
     if cache.get(cache_name) is None:
         logger.debug("we dont have cache so running the function")
@@ -1324,7 +1329,6 @@ def get_peak_mf_compare_df(analysis):
     else:
         logger.debug("we have cache so retrieving %s " % cache_name)
         group_df = cache.get(cache_name)
-
 
     # Add an index so that we can export the peak as one of the values.
     group_df.reset_index(inplace=True)
@@ -1391,17 +1395,16 @@ def get_peak_compare_df(analysis, peaks):
                 control = get_control_from_case(c, analysis_comparison)
                 group_df[c] = group_df[c].div(group_df[control])
             except ObjectDoesNotExist:
-                logger.warning('%s is not a case so skipping this column' % c )
+                logger.warning('%s is not a case so skipping this column' % c)
                 pass
 
-    drop_list = ['id']+controls
+    drop_list = ['id'] + controls
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
     peak_compare_df = peak_compare_df.drop(controls, axis=1)
-
 
     return peak_compare_df, min_value, mean_value, max_value
 
@@ -1420,7 +1423,7 @@ def get_drilldown_data_structure(groups, analysis):
 
     for g in groups:
 
-        if secondary_factor_type is not None: # both primary and secondary are present
+        if secondary_factor_type is not None:  # both primary and secondary are present
             s = Factor.objects.get(type=secondary_factor_type, group__name=g).name
             p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
 
@@ -1428,13 +1431,13 @@ def get_drilldown_data_structure(groups, analysis):
 
             fw_list = []
             for f in range(1, num_samples + 1):
-                f_num = p+s + str(f) #Male Brain would be shown as BM etc
+                f_num = p + s + str(f)  # Male Brain would be shown as BM etc
                 f_sample = [f_num, None]
                 fw_list.append(f_sample)
 
             drilldown_data.append(fw_list)
 
-        else: # no secondary factor, only primary
+        else:  # no secondary factor, only primary
             p = Factor.objects.get(type=primary_factor_type, group__name=g).name[0]
             num_samples = len(Sample.objects.filter(group__name=g))
             fw_list = []
@@ -1472,8 +1475,8 @@ def get_log_df(df, drop_list):
 
     return log_df, min_value, mean_value, max_value
 
-def get_column_headers(data_group_names, analysis):
 
+def get_column_headers(data_group_names, analysis):
     """
     A method to return the column headers for a datatable given a list of group and data names.
     :param g_names: Group names
@@ -1481,7 +1484,7 @@ def get_column_headers(data_group_names, analysis):
     :return: data headers and column headers in format used in web browser
     """
     group_headers = []
-    data_headers= []
+    data_headers = []
 
     group_names, data_names = cmpd_selector.get_list_view_column_names(data_group_names, analysis)
 
@@ -1493,8 +1496,8 @@ def get_column_headers(data_group_names, analysis):
 
     return data_headers, group_headers
 
-def get_metabolite_search_page(analysis, search_query):
 
+def get_metabolite_search_page(analysis, search_query):
     case_s = analysis.get_case_samples()
     control_s = analysis.get_control_samples()
     samples = case_s | control_s
@@ -1543,21 +1546,21 @@ def get_metabolite_search_page(analysis, search_query):
             # Fill in the DF with Tissue/Life stages and intensities.
             for factor in all_factors:
                 for ls in columns:
-                    if ls is not None: # both primary and secondary factors are present
+                    if ls is not None:  # both primary and secondary factors are present
                         for g in gp_tissue_ls_dict:
                             if gp_tissue_ls_dict[g] == [factor, ls]:
                                 value = met_search_df.iloc[0][g]
                                 df.loc[factor, ls] = value
                                 nm_samples_df.loc[factor, ls] = value
 
-                    else: # single factor only
+                    else:  # single factor only
                         for g in gp_tissue_ls_dict:
                             if gp_tissue_ls_dict[g] == [factor]:
                                 value = met_search_df.iloc[0][g]
                                 df.loc[factor, ls] = value
                                 nm_samples_df.loc[factor, ls] = value
 
-            if single_factor: # get rid of None as the column header, replace with 'FC'
+            if single_factor:  # get rid of None as the column header, replace with 'FC'
                 columns = ['FC']
                 df = df.rename(columns={None: columns[0]})
                 nm_samples_df = nm_samples_df.rename(columns={None: columns[0]})
@@ -1601,7 +1604,7 @@ def get_metabolite_search_page(analysis, search_query):
             # Here this no longer works a treat
             references = cmpd_selector.get_compound_details(peak_id, cmpd_id)
             # Get the pathways associated with this compound ID
-            pathway_ids = get_cmpd_pwys(cmpd_id)
+            pathway_ids = get_cmpd_pwys(analysis, cmpd_id)
 
             # Get pathway names based on their IDS.
             pwy_name_id_dict = get_name_id_dict(analysis)
@@ -1643,6 +1646,7 @@ def sort_df_and_headers(view_df, analysis):
 
     return view_df
 
+
 def get_peak_mf_header(view_df, analysis):
     """
 
@@ -1661,6 +1665,6 @@ def get_peak_mf_header(view_df, analysis):
 
     return column_headers
 
-def enzyme_search(request):
 
+def enzyme_search(request):
     return render(request, 'met_explore/enzyme_search.html')

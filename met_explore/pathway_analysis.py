@@ -7,23 +7,24 @@ import numpy as np
 import pandas as pd
 import requests
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 from loguru import logger
 from pals.PLAGE import PLAGE
 from pals.common import DATABASE_REACTOME_CHEBI, REACTOME_SPECIES_DROSOPHILA_MELANOGASTER
 from pals.feature_extraction import DataSource
 from scipy.sparse import coo_matrix
-from django.core.exceptions import ObjectDoesNotExist
 
 from met_explore.compound_selection import CompoundSelector
-from met_explore.constants import UI_CONFIG, INITIAL_ANALYSIS
 from met_explore.helpers import load_object, save_object, get_control_from_case
-from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, Group, \
-    AnalysisComparison, Analysis
+from met_explore.models import SamplePeak, Sample, Annotation, DBNames, Compound, UniqueToken, AnalysisComparison, \
+    Analysis
 
-CHEBI_BFS_RELATION_DICT ="chebi_bfs_relation_dict"
+CHEBI_BFS_RELATION_DICT = "chebi_bfs_relation_dict"
 MIN_HITS = 2
-PALS_FILENAME ='pals_df'
+PALS_FILENAME = 'pals_df'
+
+
 # """
 # FixMe: For FlyMet the Analyses IDs for PALS are 1 and 3 this will be different for other projects
 # this should be refactored.
@@ -32,8 +33,6 @@ PALS_FILENAME ='pals_df'
 # ANALYSIS_IDS = [1,3]
 
 def get_pals_ds(analysis):
-
-
     fly_int_df = get_pals_int_df(analysis)
     fly_exp_design = get_pals_experimental_design(analysis)
     chebi_df = get_single_db_entity_df('chebi_id')
@@ -46,7 +45,7 @@ def get_pals_ds(analysis):
 def get_cache_ds(analysis):
     # cache.delete('pals_ds')
     a_id = str(analysis.id)
-    cache_name = 'pals_ds'+a_id
+    cache_name = 'pals_ds' + a_id
 
     if cache.get(cache_name) is None:
         logger.info("we dont have cache so running the pals_ds function")
@@ -67,9 +66,9 @@ def get_pals_df(min_hits, analysis):
 
     return pathway_df_return
 
-def get_cache_df(min_hits, analysis):
 
-    fname = PALS_FILENAME+'_'+str(analysis.id)+".pkl"
+def get_cache_df(min_hits, analysis):
+    fname = PALS_FILENAME + '_' + str(analysis.id) + ".pkl"
     try:
         pals_df = pd.read_pickle("./data/" + fname)
         logger.info("The file %s has been found" % fname)
@@ -101,7 +100,6 @@ def get_cache_annot_df():
         pals_annot_df = cache.get('pals_annot_df')
 
     return pals_annot_df
-
 
 
 def get_chebi_relation_dict():
@@ -149,7 +147,7 @@ def get_chebi_relation_dict():
         chebi_bfs_relation_dict = {}
         for k, v in graph.items():
             r_chebis = bfs_get_related(graph, k)
-            r_chebis.remove(k) #remove original key from list
+            r_chebis.remove(k)  # remove original key from list
 
             chebi_bfs_relation_dict[k] = r_chebis
         try:
@@ -161,7 +159,6 @@ def get_chebi_relation_dict():
             logger.error("Pickle didn't work because of %s " % e)
             traceback.print_exc()
             pass
-
 
     return chebi_bfs_relation_dict
 
@@ -187,8 +184,8 @@ def bfs_get_related(graph_dict, node):
     :param node: the key for which all related values should be returned
     :return: All related keys as a list
     """
-    visited = [] # List to keep track of visited nodes.
-    queue = []     #Initialize a queue
+    visited = []  # List to keep track of visited nodes.
+    queue = []  # Initialize a queue
     related_keys = []
 
     visited.append(node)
@@ -199,23 +196,20 @@ def bfs_get_related(graph_dict, node):
         related_keys.append(k)
 
         for neighbour in graph_dict[k]:
-          if neighbour not in visited:
-            visited.append(neighbour)
-            queue.append(neighbour)
+            if neighbour not in visited:
+                visited.append(neighbour)
+                queue.append(neighbour)
 
     return related_keys
 
 
-def get_pathway_id_names_dict():
+def get_pathway_id_names_dict(analysis):
     """
        Given a pathway ID get its name
        :return: pathway_id_names_dict
        """
     # Fixme: This is not analysis specfic (I think, KmcL) I believe any analysis should do
     #  A fix is for this is probably wise.
-
-    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
-
     pals_df = get_cache_df(MIN_HITS, analysis)
     pathway_id_names_dict = {}
     for ix, row in pals_df.iterrows():
@@ -286,7 +280,7 @@ def get_pals_annot_df():
     cmpd_ids = list(compounds)
 
     chebi_col = 'chebi_id'
-    r_chebi_col ="related_chebi"
+    r_chebi_col = "related_chebi"
     db_names = DBNames.objects.all()
     columns = [d.db_name for d in db_names if d.db_name != 'stds_db']
 
@@ -318,7 +312,6 @@ def get_pals_annot_df():
 
 
 def get_all_chebi_ids():
-
     fly_chebi_ids = set(Compound.objects.filter(chebi_id__isnull=False).values_list('chebi_id', flat=True))
     related_chebis = set(Compound.objects.filter(related_chebi__isnull=False).values_list('related_chebi', flat=True))
 
@@ -332,8 +325,7 @@ def get_all_chebi_ids():
     return all_chebi_ids
 
 
-
-def get_fly_pw_cmpd_formula(pw_id):
+def get_fly_pw_cmpd_formula(analysis_id, pw_id):
     """
     Method to return a cmpd_id: cmpd formula dictionary for a given pathway
     :param pw_id: The ID of the pathway for which the compound/formula dict is required
@@ -342,8 +334,7 @@ def get_fly_pw_cmpd_formula(pw_id):
     # Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
     #  A fix is probably wise.
 
-    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
-
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     fly_pw_cmpd_for_dict = {}
     pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
@@ -366,30 +357,30 @@ def get_fly_pw_cmpd_formula(pw_id):
     return fly_pw_cmpd_for_dict
 
 
-def get_reactome_pw_metabolites(pw_id):
-    """
-
-    :param pw_id: The ID of the pathway
-    :return: A list of metabolites associated with this Reactome pathway.
-    """
-    #Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
-    # A fix is probably wise.
-
-    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
-
-    pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
-    pals_ds = get_cache_ds(analysis)  # possibly member variables
-    pathway_ids = pals_df.index.values
-
-    # Pass the summary table for the pathway from another function.
-    # pwy_summ_table = pals_df.index
-
-    reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)  # Possibly an member variable
-    reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
-
-    logger.debug("CMPDS %s" % reactome_pw_cmpds)
-
-    return reactome_pw_cmpds
+# def get_reactome_pw_metabolites(pw_id):
+#     """
+#
+#     :param pw_id: The ID of the pathway
+#     :return: A list of metabolites associated with this Reactome pathway.
+#     """
+#     #Fixme: This is not analysis specfic. KmcL: I believe any analysis should do.
+#     # A fix is probably wise.
+#
+#     analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
+#
+#     pals_df = get_cache_df(MIN_HITS, analysis)  # possibly member variables
+#     pals_ds = get_cache_ds(analysis)  # possibly member variables
+#     pathway_ids = pals_df.index.values
+#
+#     # Pass the summary table for the pathway from another function.
+#     # pwy_summ_table = pals_df.index
+#
+#     reactome_pw_unique_cmpd_ids = pals_ds.get_pathway_unique_cmpd_ids(pathway_ids)  # Possibly an member variable
+#     reactome_pw_cmpds = reactome_pw_unique_cmpd_ids[pw_id]
+#
+#     logger.debug("CMPDS %s" % reactome_pw_cmpds)
+#
+#     return reactome_pw_cmpds
 
 
 def get_formula_set(cmpd_list):
@@ -404,7 +395,7 @@ def get_formula_set(cmpd_list):
         try:
             cmpd_formula = all_cmpds.get(chebi_id=cmpd_id).cmpd_formula
         except ObjectDoesNotExist:
-            cmpd_formula = all_cmpds.get(related_chebi__contains = cmpd_id).cmpd_formula
+            cmpd_formula = all_cmpds.get(related_chebi__contains=cmpd_id).cmpd_formula
         except Exception as e:
             raise e
         formula_list.add(cmpd_formula)
@@ -471,9 +462,8 @@ def get_single_db_entity_df(id_type):
                 chebi_list = row.related_chebi.split(', ')
                 for c in chebi_list:
                     new_row = annot_cmpd_df.loc[ix].copy()  # copy of the current row
-                    new_row.entity_id = c #Add the related chebi to the entity list
+                    new_row.entity_id = c  # Add the related chebi to the entity list
                     annot_cmpd_df = annot_cmpd_df.append(new_row, ignore_index=True)
-
 
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]
     annotation_df.set_index('peak_ids', inplace=True)
@@ -485,7 +475,6 @@ def get_single_db_entity_df(id_type):
 
 
 def get_pals_experimental_design(analysis):
-
     cmpd_selector = CompoundSelector()
 
     analysis_comparisions = AnalysisComparison.objects.filter(analysis=analysis)
@@ -493,7 +482,7 @@ def get_pals_experimental_design(analysis):
     controls = list(set([a.control_group.name for a in analysis_comparisions]))
     cases = list(set([a.case_group.name for a in analysis_comparisions]))
 
-    groups =controls+cases
+    groups = controls + cases
 
     # This gives a dictionary of orginal names: user readable names.
     group_dict, _ = cmpd_selector.get_list_view_column_names(groups, analysis)
@@ -600,18 +589,15 @@ def get_reactome_highlight_token():
     return token
 
 
-def get_cmpd_pwys(cmpd_id):
+def get_cmpd_pwys(analysis, cmpd_id):
     """
     Given a compound ID, return all of the pathways that compound is found in
 
     :param cmpd_id: The cmpd_id
     :return: List of pathways containing the compound.
     """
-    #Fixme: I don't think it matters which analysis we use for this as the number of metabolites are for the
+    # Fixme: I don't think it matters which analysis we use for this as the number of metabolites are for the
     # whole project. Might be worth a discussion/fix
-
-    analysis = Analysis.objects.get(name=UI_CONFIG[INITIAL_ANALYSIS])
-
     pals_ds = get_cache_ds(analysis)
     cmpd = Compound.objects.get(id=cmpd_id)
     cmpd_pw_dict = pals_ds.mapping_dict
@@ -626,8 +612,8 @@ def get_cmpd_pwys(cmpd_id):
             for alt_c in alt_list:
                 try:
                     pwy_list = cmpd_pw_dict[alt_c]
-                    if pwy_list: #If we get a match return what we find a
+                    if pwy_list:  # If we get a match return what we find a
                         break
                 except KeyError:
-                    logger.info ("No pathways returned for cmpd %s " % cmpd)
+                    logger.info("No pathways returned for cmpd %s " % cmpd)
     return pwy_list

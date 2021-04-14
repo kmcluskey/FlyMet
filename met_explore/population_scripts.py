@@ -5,7 +5,7 @@ from django.db import IntegrityError
 from loguru import logger
 from tqdm import tqdm
 
-from met_explore.constants import CSV_GROUP_COLNAME
+from met_explore.constants import CSV_GROUP_COLNAME, LABEL_PROJECT_CONFIG, LABEL_METABOLOMICS, LABEL_CATEGORIES
 from met_explore.models import Peak, Compound, DBNames, CompoundDBDetails, Annotation, Sample, Factor, SamplePeak,\
 Group, Analysis, AnalysisComparison, Project, Category
 
@@ -73,12 +73,11 @@ def populate_analysis_comparisions(analysis_set):
         try:
             new_project, project_created =Project.objects.get_or_create(name=project["project_name"], description=project["project_description"])
             if project_created:
-                metabolomics = project['metabolomics']
-                project_categories = metabolomics['categories']
-                ui_config = metabolomics['ui_config']
-
+                metabolomics = project[LABEL_METABOLOMICS]
+                project_categories = metabolomics[LABEL_CATEGORIES]
+                project_config = project[LABEL_PROJECT_CONFIG]
                 new_project.metadata = {
-                    'ui_config': ui_config
+                    LABEL_PROJECT_CONFIG: project_config
                 }
                 new_project.save()
                 logger.info("Saving the project for %s" % new_project)

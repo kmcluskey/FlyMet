@@ -37,7 +37,7 @@ function updatePathwayDetails(obj, met_ex_url) {
 };
   //Update the bottom panel with a diagram using the Reactome ID.
   console.log("Pathway ID ", pathway_id)
-  const url = `/met_explore/metabolite_pathway_data/${pathway_id}`
+  const url = `/met_explore/metabolite_pathway_data/${analysis_id}/${pathway_id}`
   fetch(url)
   .then(res => res.json())//response type
   .then(handleUpdate);

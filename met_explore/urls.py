@@ -56,8 +56,8 @@ urlpatterns = [
     path('metabolite_peak_data/<int:cmpd_id>', views.metabolite_peak_data, name='metabolite_peak_data'),
     path('get_metabolite_names', views.get_metabolite_names, name='get_metabolite_names'),
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
-    path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
-    path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
+    path('get_pathway_names/<int:analysis_id>', views.get_pathway_names, name='get_pathway_names'),
+    path('metabolite_pathway_data/<str:analysis_id>/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
     path('pathway_search/<int:analysis_id>', views.pathway_search, name='pathway_search'),
     path('pathway_metabolites/<int:analysis_id>', views.pathway_metabolites, name='pathway_metabolites'),
 

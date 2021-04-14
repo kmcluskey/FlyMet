@@ -279,7 +279,7 @@ function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url) {
     };
     //Update the bottom panel with a diagram using the Reactome ID.
 
-    const url = `/met_explore/metabolite_pathway_data/${reactome_id}`
+    const url = `/met_explore/metabolite_pathway_data/${analysis_id}/${reactome_id}`
     fetch(url)
         .then(res => res.json())//response type
         .then(handleUpdate);

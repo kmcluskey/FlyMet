@@ -11,7 +11,7 @@ from collections import Counter
 
 from loguru import logger
 
-from met_explore.constants import INITIAL_ANALYSIS, SEARCH_SECTIONS
+from met_explore.constants import LABEL_SEARCH_SECTIONS, LABEL_FACTOR_ORDER_DICT, LABEL_PROJECT_CONFIG, LABEL_ANALYSIS
 from met_explore.models import Factor, Group, Analysis, AnalysisComparison, Sample
 
 
@@ -146,18 +146,16 @@ def get_factor_type_from_analysis(analysis, factor_rank):
     factor_types = [a.type for a in analysis_case_factors if a.name != 'nan']
 
     try:
-        factor_order_dict = get_factor_order_dict(analysis)
+        config = get_project_config(analysis)
+        factor_order_dict = config[LABEL_FACTOR_ORDER_DICT]
         ps_factors = [f for f in factor_types if f in factor_order_dict[factor_rank]]
         factor_count = Counter(ps_factors)
         ps_factor = max(factor_count, key=factor_count.get)
     except TypeError:
         ps_factor = None
+    except ValueError:
+        ps_factor = None
     return ps_factor
-
-
-def get_factor_order_dict(analysis):
-    FACTOR_ORDER_DICT = {'primary_factor': ['PyMT'], 'secondary_factor': None}
-    return FACTOR_ORDER_DICT
 
 
 def get_factors_from_samples(samples, factor_type):
@@ -180,17 +178,16 @@ def get_factors_from_samples(samples, factor_type):
     return factor_list
 
 
-def get_initial_analysis_from_config(ui_config):
-    initial_analysis = ui_config[INITIAL_ANALYSIS]
-    ann = Analysis.objects.get(name=initial_analysis)
-    return ann
+def get_project_config(analysis):
+    config = analysis.category.project.metadata[LABEL_PROJECT_CONFIG]
+    return config
 
 
 UIConfig = collections.namedtuple('UIConfig', 'analysis category colnames case_label control_label')
 
 
-def get_ui_config(ui_config, current_analysis_id):
-    search_config = ui_config[SEARCH_SECTIONS]
+def get_analysis_config(project_config, current_analysis_id):
+    search_config = project_config[LABEL_SEARCH_SECTIONS]
 
     # search for the right config given the analysis name
     uic = None
@@ -208,11 +205,11 @@ def get_ui_config(ui_config, current_analysis_id):
     return uic
 
 
-def get_search_categories(ui_config):
-    search_config = ui_config[SEARCH_SECTIONS]
+def get_search_categories(project_config):
+    search_config = project_config[LABEL_SEARCH_SECTIONS]
     all_categories = []
     for config in search_config:
-        analysis_name = config['analysis']
+        analysis_name = config[LABEL_ANALYSIS]
         ann = Analysis.objects.get(name=analysis_name)
         cat = ann.category
         all_categories.append((cat.description, ann.id))
