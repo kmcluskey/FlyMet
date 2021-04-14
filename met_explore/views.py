@@ -452,6 +452,7 @@ def met_ex_all(request, analysis_id, cmpd_list):
 
     analysis = Analysis.objects.get(pk=analysis_id)
     config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
@@ -463,7 +464,8 @@ def met_ex_all(request, analysis_id, cmpd_list):
         'analysis_id': analysis_id,
         'peak_url': peak_url,
         'all_categories': all_categories,
-        'current_category': current_category
+        'current_category': current_category,
+        'species': species
     }
 
     return render(request, 'met_explore/met_ex_all.html', response)
@@ -927,7 +929,7 @@ def pathway_age_explorer(request):
     return render(request, 'met_explore/pathway_age_explorer.html', response)
 
 
-def met_ex_tissues(request):
+def met_ex_tissues(request, analysis_id):
     """
     This view is equivalent to the met_age_id table.
         View to return the metabolite search page
@@ -935,7 +937,7 @@ def met_ex_tissues(request):
 
     """
 
-    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    analysis = Analysis.objects.get(pk=analysis_id)
     group_names = get_group_names(analysis)
     group_names.insert(0, "Metabolite")
 
@@ -954,41 +956,26 @@ def met_ex_tissues(request):
     min_value = np.nanmin(df2)
     mean_value = np.nanmean(df2)
 
-    response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
+    analysis = Analysis.objects.get(pk=analysis_id)
+    config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
+    all_categories = get_search_categories(config)
+    uic = get_analysis_config(config, analysis_id)
+    current_category = uic.category
+
+    response = {
+        'columns': column_headers,
+        'data': met_ex_list,
+        'max_value': max_value,
+        'min_value': min_value,
+        'mean_value': mean_value,
+        'analysis_id': analysis_id,
+        'all_categories': all_categories,
+        'current_category': current_category,
+        'species': species
+    }
 
     return render(request, 'met_explore/met_ex_tissues.html', response)
-
-
-def met_age_id(request):
-    """
-        View to return the metabolite search page
-        :returns: Render met_explore/met_age_id and datatable
-    """
-
-    analysis = Analysis.objects.get(name="Age Comparisons")
-    group_names = get_group_names(analysis)
-    group_names.insert(0, "Metabolite")
-
-    view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
-    select_df = view_df[group_names]
-
-    sorted_select_df = sort_df_and_headers(select_df, analysis)
-
-    met_ex_list = sorted_select_df.values.tolist()
-    column_headers = sorted_select_df.columns.tolist()
-
-    # Get the max and mean values for the intensities to pass to the 'heat map'
-    df2 = view_df.drop(['Metabolite'], axis=1, inplace=False)
-
-    max_value = np.nanmax(df2)
-    min_value = np.nanmin(df2)
-    mean_value = np.nanmean(df2)
-
-    response = {'columns': column_headers, 'data': met_ex_list, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
-
-    return render(request, 'met_explore/met_age_id.html', response)
 
 
 def get_metabolite_names(request):

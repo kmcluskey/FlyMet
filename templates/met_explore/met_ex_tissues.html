@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Tissue Lists {% endblock %}
+{% block title %} Metabolite Explorer Identified Metabolites {% endblock %}
 
 {% block head_block %}
     {% render_bundle 'metabolite_list' 'css' %}
@@ -15,7 +15,7 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate the metabolites found in <i> Drosophila </i>.
+                    Investigate the metabolites found in <i> {{ species }} </i>.
                 </p>
             </div>
             <!-- <div class = "logo_side">
@@ -25,8 +25,19 @@
         <!-- extra Tabs for Analysis type -->
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'met_ex_tissues' %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'met_age_id' %}">Aged Flies</a>
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active"
+                           href="{% url 'met_ex_tissues' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link"
+                           href="{% url 'met_ex_tissues' analysis_id=curr_analysis_id %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </nav>
 
@@ -36,10 +47,10 @@
 
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_all' analysis_id=1 cmpd_list='All' %}">All</a>
+                        <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'met_ex_tissues' %}">Identified</a>
+                        <a class="nav-link active" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
                     </li>
                 </ul>
                 <div class="top-right">
@@ -50,14 +61,15 @@
         <div class="mt-4 mb-4">
             <p>
                 The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-                tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
+                {{ current_category|lower }} of <i>{{ species }}</i>.
+
             </p>
             <p class="small">
                 The metabolites in this list have a high confidence score having been
                 <a href="#" class="Identified">identified</a> by a standard compound libary or by <a href="#"
                                                                                                      class="FragA">fragmentation
                 analysis</a>.
-                Expansion of these trems can be found in the <a href="{% url 'glossary' %}">Glossary</a>
+                Expansion of these terms can be found in the <a href="{% url 'glossary' %}">Glossary</a>
             </p>
 
         </div>
@@ -76,7 +88,7 @@
                     <tr>
                         {% for m in met_exp_data %}
                             {% if forloop.first %}
-                                <td><a href="metabolite_search?metabolite_search={{ m }}" target="_blank">{{ m }}</a>
+                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search={{ m }}" target="_blank">{{ m }}</a>
                                 </td>
                             {% else %}
                                 {% if m > 0 %}

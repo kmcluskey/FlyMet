@@ -43,20 +43,9 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
-                    {# TODO handle the link correctly #}
-                    {% if analysis_id == 1 %}
-                        <li class="nav-item">
-                            <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
-                        </li>
-                    {% elif analysis_id == 3 %}
-                        <li class="nav-item">
-                            <a class="nav-link " href="{% url 'met_age_id' %}">Identified</a>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link " href="{% url 'met_ex_tissues' %}">Identified</a>
-                        </li>
-                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link " href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
+                    </li>
                 </ul>
                 <div class="top-right">
                     <p class="title_text">Metabolite Explorer</p>
