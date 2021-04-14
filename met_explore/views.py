@@ -85,7 +85,18 @@ def index(request):
 
 
 def about(request):
-    return render(request, 'met_explore/about.html')
+    project_id = 1  # assume only one project, TODO: might not be the case
+
+    project = Project.objects.get(pk=project_id)
+    config = project.metadata[LABEL_PROJECT_CONFIG]
+    initial_analysis = config[LABEL_INITIAL_ANALYSIS]
+    analysis = Analysis.objects.get(name=initial_analysis)
+
+    context = {
+        'analysis_id': analysis.id,
+    }
+
+    return render(request, 'met_explore/about.html', context)
 
 
 def background(request):
