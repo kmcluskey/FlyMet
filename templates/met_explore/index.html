@@ -65,10 +65,9 @@
 
         <div>
             <p class='mt-4 lead'>
-                Quick start: Search for metabolites identified in <i>Drosophila</i> tissues.
+                Quick start: Search for metabolites identified in <i>{{ species }}</i> {{ current_category }}.
             </p>
-            <form action="{% url 'metabolite_search' analysis_id=1 %}" method="get" class="form-inline my-2 my-lg-0">
-                {# TODO: replace with the analysis id from config #}
+            <form action="{% url 'metabolite_search' analysis_id=analysis_id %}" method="get" class="form-inline my-2 my-lg-0">
                 <input id="metabolite_search" name='metabolite_search' class="form-control mr-sm-2" type="text"
                        placeholder="Metabolite Search">
                 <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>

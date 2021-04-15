@@ -4,14 +4,15 @@ $(document).ready(function() {
     $("fieldset[class^='pathway_details']").hide();
     $("#diagram_info").hide();
 
-    let data_url = "pals_data";
-    let met_ex_url = "met_ex_all/";
-    let pwy_met_url = "pathway_metabolites";
+    const data_url = `pals_data/${analysis_id}`;
+    const met_ex_url = `met_ex_all/${analysis_id}`;
+    const pwy_met_url = `pathway_metabolites/${analysis_id}`;
+    const table_name = "pals_data";
 
-    let pals_table = initialise_pals_table("pals_data", min_value, mean_value, max_value, data_url);
+    let pals_table = initialise_pals_table(table_name, min_value, mean_value, max_value, data_url);
 
       pals_table.on( 'click', 'tr', function () {
-        updatePathwaySidePanel(this, data_url, met_ex_url, pwy_met_url);
+        updatePathwaySidePanel(this, table_name, met_ex_url, pwy_met_url);
       } );
 
 });

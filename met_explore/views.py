@@ -73,12 +73,19 @@ def index(request):
     config = project.metadata[LABEL_PROJECT_CONFIG]
     initial_analysis = config[LABEL_INITIAL_ANALYSIS]
     analysis = Analysis.objects.get(name=initial_analysis)
+    analysis_id = analysis.id
+
+    species = config[LABEL_SPECIES]
+    uic = get_analysis_config(config, analysis_id)
+    current_category = uic.category
 
     all_categories = get_search_categories(config)
     context = {
         'json_url': reverse('get_metabolite_names'),
-        'analysis_id': analysis.id,
-        'all_categories': all_categories
+        'analysis_id': analysis_id,
+        'all_categories': all_categories,
+        'species': species,
+        'current_category': current_category
     }
 
     return render(request, 'met_explore/index.html', context)
@@ -702,27 +709,12 @@ def get_all_peaks_compare_df(analysis):
     return all_peak_compare_df, min_value, mean_value, max_value
 
 
-def pals_data(request):
+def pals_data(request, analysis_id):
     """
     :param request: Request for the peak data for the Pathway explorer
     :return: The cached url of the ajax data for the pals data table.
     """
-    analysis = Analysis.objects.get(name="Tissue Comparisons")
-    view_df1, _, _, _ = get_pals_view_data(analysis)
-    view_df = view_df1.fillna("-")
-    #
-    pals_data = view_df.values.tolist()
-
-    logger.info("returning the pals data ")
-    return JsonResponse({'data': pals_data})
-
-
-def pals_age_data(request):
-    """
-    :param request: Request for the peak data for the Pathway explorer
-    :return: The cached url of the ajax data for the pals data table.
-    """
-    analysis = Analysis.objects.get(name="Age Comparisons")
+    analysis = Analysis.objects.get(pk=analysis_id)
     view_df1, _, _, _ = get_pals_view_data(analysis)
     view_df = view_df1.fillna("-")
     #
@@ -882,12 +874,12 @@ def peak_data(request, peak_list):
     return JsonResponse({'data': peak_data})
 
 
-def pathway_explorer(request):
+def pathway_explorer(request, analysis_id):
     """
        :param request: The pathway Explorer page for the tissue data
        :return: The template and required parameters for the pathway explorer page.
        """
-    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    analysis = Analysis.objects.get(pk=analysis_id)
     logger.info("Pathway ranking table requested for analysis %s " % analysis)
     start = timeit.default_timer()
     view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
@@ -898,35 +890,29 @@ def pathway_explorer(request):
     logger.info("Returning the pals data took: %s S" % str(stop - start))
 
     reactome_token = get_highlight_token()
+    config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
+    all_categories = get_search_categories(config)
+    uic = get_analysis_config(config, analysis_id)
+    current_category = uic.category
+    case_label = uic.case_label
+    control_label = uic.control_label
 
-    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
-                'mean_value': pals_mean, 'reactome_token': reactome_token}
+    response = {
+        'analysis_id': analysis_id,
+        'species': species,
+        'all_categories': all_categories,
+        'current_category': current_category,
+        'case_label': case_label,
+        'control_label': control_label,
+        'columns': column_headers,
+        'max_value': pals_max,
+        'min_value': pals_min,
+        'mean_value': pals_mean,
+        'reactome_token': reactome_token
+    }
 
     return render(request, 'met_explore/pathway_explorer.html', response)
-
-
-def pathway_age_explorer(request):
-    """
-       :param request: The pathway Explorer page for the tissue data
-       :return: The template and required parameters for the pathway explorer page.
-       """
-
-    analysis = Analysis.objects.get(name="Age Comparisons")
-    logger.info("Pathway ranking table requested for analysis %s " % analysis)
-    start = timeit.default_timer()
-    view_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-    column_headers = view_df.columns.tolist()
-
-    stop = timeit.default_timer()
-
-    logger.info("Returning the pals data took: %s S" % str(stop - start))
-
-    reactome_token = get_highlight_token()
-
-    response = {'columns': column_headers, 'max_value': pals_max, 'min_value': pals_min,
-                'mean_value': pals_mean, 'reactome_token': reactome_token}
-
-    return render(request, 'met_explore/pathway_age_explorer.html', response)
 
 
 def met_ex_tissues(request, analysis_id):

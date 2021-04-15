@@ -17,21 +17,29 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate which <i> Drosophila </i> metabolic pathways are changing between the whole fly and the
-                    different
-                    tissue types.</p>
+                    Investigate which <i> {{ species }} </i> metabolic pathways are changing between {{ control_label}} and
+                    {{ case_label}}.</p>
             </div>
         </div>
         <!--Tabs to go to new pages-->
         <div class="card text-center">
             <div class="card-header">
                 <ul id="menu" class="nav nav-tabs card-header-tabs float_title">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'pathway_explorer' %}">Tissues</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pathway_age_explorer' %}">Aged Flies</a>
-                    </li>
+                    {% for curr_category_desc, curr_analysis_id in all_categories %}
+                        {% if curr_analysis_id == analysis_id %}
+                            <li class="nav-item">
+                                <a class="nav-link active" href="{% url 'pathway_explorer' analysis_id=curr_analysis_id %}">
+                                    {{ curr_category_desc }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'pathway_explorer' analysis_id=curr_analysis_id %}">
+                                    {{ curr_category_desc }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
                 </ul>
                 <div class="top-right">
                     <p class="title_text">Pathway Explorer</p>
@@ -40,8 +48,8 @@
         </div>
         <div>
             <p class="mt-4 mb-4">
-                Pathway activity level scores (PALS) rank changes in pathways between the samples from <i>Drosophila</i>
-                tissues and the whole flies.
+                Pathway activity level scores (PALS) rank changes in pathways between the samples from <i>{{ species }}</i>
+                {{ case_label }} and {{ control_label }}.
                 The smaller the score the more significant the changes in the pathways between the samples.
             </p>
         </div>
@@ -70,7 +78,7 @@
                             <hr class="my-3">
                             <p> In this diagram the overrepresentation shown as <img
                                     src="{% static 'images/reactome_highlight.png' %}" class="tiny_img" alt="ReactomeH">
-                                highlights compounds (with associated peaks) that are found in FlyMet</p>
+                                highlights compounds (with associated peaks) that are found</p>
                         </div>
                     </div>
 
@@ -120,15 +128,13 @@
 
 {% block js_block %}
     <script type='text/javascript'>
-        var min_value =
-        {{min_value}}
-        var max_value =
-        {{max_value}}
-        var mean_value =
-        {{mean_value}}
+        var analysis_id = {{analysis_id}}
+        var min_value = {{min_value}}
+        var max_value = {{max_value}}
+        var mean_value = {{mean_value}}
         var reactome_token = "{{reactome_token | safe}}"
 
-        console.log(min_value, max_value, mean_value, reactome_token)
+        console.log(analysis_id, min_value, max_value, mean_value, reactome_token)
 
     </script>
 

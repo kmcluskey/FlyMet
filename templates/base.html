@@ -58,13 +58,13 @@
           <a class="nav-link" href="{% url 'about' %}">About FlyMet</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_all' analysis_id=1 cmpd_list='All' %}">Metabolite Explorer</a>
+          <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">Metabolite Explorer</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Peak Explorer</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'pathway_explorer' %}">Pathway Explorer</a>
+          <a class="nav-link" href="{% url 'pathway_explorer' analysis_id=analysis_id %}">Pathway Explorer</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>

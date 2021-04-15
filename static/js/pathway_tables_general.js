@@ -94,12 +94,11 @@ function initialise_pwy_table(tableName, lowpoint, midpoint, highpoint, project)
 }
 
 
-function initialise_pals_table(tableName, lowpoint, midpoint, highpoint, data_url, met_ex_url) {
+function initialise_pals_table(tableName, lowpoint, midpoint, highpoint, data_url) {
     let t0 = performance.now();
     const tName = '#' + tableName;
     console.log("tablename", tName)
     const MIN_VAL = 3000;
-    const pals_age_data = document.getElementById(`${data_url}`).getAttribute('url');
 
     let table = $(tName).DataTable({
 
@@ -109,7 +108,7 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint, data_ur
         fixedheader: true,
         colReorder: true,
         ajax: {
-            url: `/met_explore/${data_url}`,
+            url: data_url,
             cache: true,  //This is so we can use the cached data otherwise DT doesn't allow it.
         },
 
@@ -262,11 +261,11 @@ function get_lifestage(ls_string) {
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
-function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url) {
+function updatePathwaySidePanel(obj, table_name, met_ex_url, pwy_url) {
 
     let currentRow = $(obj).closest("tr");
-    let reactome_id = $(`#${data_url}`).DataTable().row(currentRow).data()[0];
-    let pathway_name = $(`#${data_url}`).DataTable().row(currentRow).data()[1];
+    let reactome_id = $(`#${table_name}`).DataTable().row(currentRow).data()[0];
+    let pathway_name = $(`#${table_name}`).DataTable().row(currentRow).data()[1];
 
     console.log("updating for pathway", reactome_id, pathway_name)
     console.log("pathway met url", pwy_url)
@@ -287,8 +286,8 @@ function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url) {
     // find all the paragraphs with id peak in the side panel
     $("fieldset[id='click_info']").hide();
     $("fieldset[class^='pathway_details']").show();
-    $("p[id^='pwy_id']").html(`<a href="${pwy_url}?${pwy_url}=${pathway_name}" data-toggle="tooltip"
-  title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
+    $("p[id^='pwy_id']").html(`<a href="${pwy_url}?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
+  title="Metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name}</a>`);
 
     enableTooltips();
 }
@@ -314,11 +313,11 @@ function updatePathwayInfo(returned_data, pathway_name, met_ex_url) {
     let cmpd_list = cmpds.toString()
 
     //Set the header with a link to all metabolites in the cmpd_list
-    let url_pwm = `${met_ex_url}${cmpd_list}`; //pathway metabolites
+    let url_pwm = `${met_ex_url}/${cmpd_list}`; //pathway metabolites
 
-    let met_tooltip = `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
+    let met_tooltip = `data-toggle="tooltip" title="${pathway_name} metabolites found"`
 
-    let metabolite_header = `<a href="${url_pwm}"${met_tooltip} target=_"blank">Metabolites in FlyMet`;
+    let metabolite_header = `<a href="${url_pwm}"${met_tooltip} target=_"blank">Metabolites`;
     headerDiv.innerHTML = metabolite_header;
     sideDiv.appendChild(headerDiv);
 
@@ -330,7 +329,7 @@ function updatePathwayInfo(returned_data, pathway_name, met_ex_url) {
         let cmpdDiv = document.createElement('div');
         cmpdDiv.setAttribute('class', 'p-2 small');
 
-        let url_cmpd = `${met_ex_url}${cmpds[i]}`;
+        let url_cmpd = `${met_ex_url}/${cmpds[i]}`;
         let name = cmpd_details[cmpds[i]].name
         let formula = cmpd_details[cmpds[i]].formula
         let chebi_id = cmpd_details[cmpds[i]].chebi_id

@@ -32,8 +32,6 @@ urlpatterns = [
     path('peak_data/<str:peak_list>', c(views.peak_data), name='peak_data'),
     path('peak_compare_data/<str:peak_compare_list>', c(views.peak_compare_data), name='peak_compare_data'),
     path('peak_mf_compare_data', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
-    path('pals_data', c(views.pals_data), name='pals_data'),
-    path('pathway_explorer', views.pathway_explorer, name='pathway_explorer'),
 
     # Age specific views
 
@@ -43,8 +41,6 @@ urlpatterns = [
     path('peak_age_data/<str:peak_list>', c(views.peak_age_data), name='peak_age_data'),
     path('peak_age_compare_data/<str:peak_compare_list>', c(views.peak_age_compare_data), name='peak_age_compare_data'),
     path('peak_mf_age_data', c(views.peak_mf_age_data), name='peak_mf_age_data'),
-    path('pals_age_data', c(views.pals_age_data), name='pals_age_data'),
-    path('pathway_age_explorer', views.pathway_age_explorer, name='pathway_age_explorer'),
 
     # Common views
     path('met_ex_all/<int:analysis_id>/<str:cmpd_list>', views.met_ex_all, name='met_ex_all'),
@@ -59,6 +55,8 @@ urlpatterns = [
     path('metabolite_pathway_data/<str:analysis_id>/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
     path('pathway_search/<int:analysis_id>', views.pathway_search, name='pathway_search'),
     path('pathway_metabolites/<int:analysis_id>', views.pathway_metabolites, name='pathway_metabolites'),
+    path('pathway_explorer/<int:analysis_id>', views.pathway_explorer, name='pathway_explorer'),
+    path('pals_data/<int:analysis_id>', c(views.pals_data), name='pals_data'),
 
     # Enzyme specific views
 
