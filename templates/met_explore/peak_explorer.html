@@ -14,41 +14,51 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
+                    Investigate the metabolite peaks found in <i> {{ species }} </i>.
                 </p>
             </div>
         </div>
         <!-- extra Tabs for Analysis type -->
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'peak_explorer' 'All' %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'peak_age_explorer' 'All' %}">Aged Flies</a>
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active" href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link" href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </nav>
 
         <!--Tabs to go to new pages-->
-        <div class="card text-center">
-            <div class="card-header">
+{#        <div class="card text-center">#}
+{#            <div class="card-header">#}
+{##}
+{#                <ul class="nav nav-tabs card-header-tabs">#}
+{#                    <li class="nav-item">#}
+{#                        <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>#}
+{#                    </li>#}
+{#                    <li class="nav-item">#}
+{#                        <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a>#}
+{#                    </li>#}
+{#                    <li class="nav-item">#}
+{#                        <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>#}
+{#                    </li>#}
+{#                </ul>#}
+{#                <div class="top-right">#}
+{#                    <p class="title_text">Peak Explorer</p>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
 
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
-                    </li>
-                </ul>
-                <div class="top-right">
-                    <p class="title_text">Peak Explorer</p>
-                </div>
-            </div>
-        </div>
         <div>
             <p class="mt-4 mb-4">
-                The average peak intensity levels found in different <i>Drosophila</i> tissues
+                The average peak intensity levels found in different <i>{{ species }}</i> tissues
             </p>
         </div>
 
@@ -122,14 +132,12 @@
 
 {% block js_block %}
     <script type='text/javascript'>
-        var min_value =
-        {{min_value}}
-        var max_value =
-        {{max_value}}
-        var mean_value =
-        {{mean_value}}
-        var peak_list = "{{peak_list | safe}}"
-        console.log(min_value, max_value, mean_value, peak_list)
+        const analysis_id = {{analysis_id}};
+        const min_value = {{min_value}};
+        const max_value = {{max_value}};
+        const mean_value = {{mean_value}};
+        const peak_list = "{{peak_list | safe}}";
+        console.log(analysis_id, min_value, max_value, mean_value, peak_list)
 
     </script>
 

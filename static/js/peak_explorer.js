@@ -41,10 +41,10 @@ $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();
 
   let nd_title = "A MS peak was not detected for this tissue/life stage combination";
-  let ajax_url = `peak_data/${peak_list}`;
+  let ajax_url = `peak_data/${analysis_id}/${peak_list}`;
   let peak_side_url = `peak_ex_compare/`;
   let peak_side_text =`Compare tissues for peak `;
-  let met_url = `met_ex_all/`;
+  let met_url = `met_ex_all/${analysis_id}/`;
   let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 
 

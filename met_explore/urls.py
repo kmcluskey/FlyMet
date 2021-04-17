@@ -28,8 +28,6 @@ urlpatterns = [
 
     path('peak_ex_compare/<str:peak_compare_list>', c(views.peak_ex_compare), name='peak_ex_compare'),
     path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
-    path('peak_explorer/<str:peak_list>', c(views.peak_explorer), name='peak_explorer'),
-    path('peak_data/<str:peak_list>', c(views.peak_data), name='peak_data'),
     path('peak_compare_data/<str:peak_compare_list>', c(views.peak_compare_data), name='peak_compare_data'),
     path('peak_mf_compare_data', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
 
@@ -37,7 +35,6 @@ urlpatterns = [
 
     path('peak_age_compare/<str:peak_compare_list>', c(views.peak_age_compare), name='peak_age_compare'),
     path('peak_mf_age_compare', views.peak_mf_age_compare, name='peak_mf_age_compare'),
-    path('peak_age_explorer/<str:peak_list>', c(views.peak_age_explorer), name='peak_age_explorer'),
     path('peak_age_data/<str:peak_list>', c(views.peak_age_data), name='peak_age_data'),
     path('peak_age_compare_data/<str:peak_compare_list>', c(views.peak_age_compare_data), name='peak_age_compare_data'),
     path('peak_mf_age_data', c(views.peak_mf_age_data), name='peak_mf_age_data'),
@@ -57,6 +54,8 @@ urlpatterns = [
     path('pathway_metabolites/<int:analysis_id>', views.pathway_metabolites, name='pathway_metabolites'),
     path('pathway_explorer/<int:analysis_id>', views.pathway_explorer, name='pathway_explorer'),
     path('pals_data/<int:analysis_id>', c(views.pals_data), name='pals_data'),
+    path('peak_explorer/<int:analysis_id>/<str:peak_list>', c(views.peak_explorer), name='peak_explorer'),
+    path('peak_data/<int:analysis_id>/<str:peak_list>', c(views.peak_data), name='peak_data'),
 
     # Enzyme specific views
 

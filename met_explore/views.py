@@ -585,7 +585,7 @@ def peak_mf_age_compare(request):
     return render(request, 'met_explore/peak_mf_age_compare.html', response)
 
 
-def peak_explorer(request, peak_list):
+def peak_explorer(request, analysis_id, peak_list):
     """
     :param request: The peak Explorer page
     :return: The template and required parameters for the peak explorer page.
@@ -596,7 +596,7 @@ def peak_explorer(request, peak_list):
     logger.info("Peak table requested")
     start = timeit.default_timer()
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(pk=analysis_id)
     peaks = Peak.objects.all()
 
     required_data = peaks.values('id', 'm_z', 'rt')
@@ -611,13 +611,14 @@ def peak_explorer(request, peak_list):
 
     ###KMCL Put this elsewhere to use for ALL_PEAKS GROUP DF.
     # cache.delete('my_group_df')
-    if cache.get('my_group_df') is None:
+    key = 'my_group_df_%d' % analysis.pk
+    if cache.get(key) is None:
         logger.debug("we dont have cache so running the function")
-        cache.set('my_group_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
-        group_df = cache.get('my_group_df')
+        cache.set(key, cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
+        group_df = cache.get(key)
     else:
         logger.debug("we have cache so retrieving it")
-        group_df = cache.get('my_group_df')
+        group_df = cache.get(key)
 
     max_value = np.nanmax(group_df)
     min_value = np.nanmin(group_df)
@@ -633,59 +634,30 @@ def peak_explorer(request, peak_list):
 
     stop = timeit.default_timer()
 
+    config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
+    all_categories = get_search_categories(config)
+    uic = get_analysis_config(config, analysis_id)
+    current_category = uic.category
+    case_label = uic.case_label
+    control_label = uic.control_label
+
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'peak_list': peak_list, 'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
+    response = {
+        'peak_list': peak_list,
+        'columns': column_headers,
+        'max_value': max_value,
+        'min_value': min_value,
+        'mean_value': mean_value,
+        'analysis_id': analysis.id,
+        'all_categories': all_categories,
+        'current_category': current_category,
+        'case_label': case_label,
+        'control_label': control_label,
+        'species': species,
+    }
 
     return render(request, 'met_explore/peak_explorer.html', response)
-
-
-def peak_age_explorer(request, peak_list):
-    """
-    :param request: The peak Explorer page
-    :return: The template and required parameters for the peak explorer page.
-    """
-    analysis = Analysis.objects.get(name='Age Comparisons')
-
-    logger.debug("PEAK EXPLORER REQUEST for peaks %s" % peak_list)
-
-    logger.info("Peak table requested")
-    start = timeit.default_timer()
-    peaks = Peak.objects.all()
-
-    required_data = peaks.values('id', 'm_z', 'rt')
-
-    peak_df = pd.DataFrame.from_records(list(required_data))
-    peak_df[['m_z', 'rt']].round(3).astype(str)
-
-    # Get all of the peaks and all of he intensities of the sample files
-
-    if cache.get('my_group_age_df') is None:
-        logger.debug("we dont have cache so running the function")
-        cache.set('my_group_age_df', cmpd_selector.get_group_df(analysis, peaks), 60 * 18000)
-        group_df = cache.get('my_group_age_df')
-    else:
-        logger.debug("we have cache so retrieving it")
-        group_df = cache.get('my_group_age_df')
-
-    max_value = np.nanmax(group_df)
-    min_value = np.nanmin(group_df)
-    mean_value = np.nanmean(group_df)
-    group_df.reset_index(inplace=True)
-
-    group_df.rename(columns={'peak': 'id'}, inplace=True)
-    view_df = pd.merge(peak_df, group_df, on='id')
-
-    sorted_df = sort_df_and_headers(view_df, analysis)
-    column_headers = sorted_df.columns.tolist()
-
-    stop = timeit.default_timer()
-
-    logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'peak_list': peak_list, 'columns': column_headers, 'max_value': max_value, 'min_value': min_value,
-                'mean_value': mean_value}
-
-    return render(request, 'met_explore/peak_age_explorer.html', response)
 
 
 def get_all_peaks_compare_df(analysis):
@@ -839,12 +811,12 @@ def peak_age_data(request, peak_list):
     return JsonResponse({'data': peak_data})
 
 
-def peak_data(request, peak_list):
+def peak_data(request, analysis_id, peak_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     if peak_list == "All":
         peaks = Peak.objects.all()
