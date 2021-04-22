@@ -14,7 +14,7 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate the the metabolite peaks found in <i> Drosophila </i> tissues and Aged Flies.
+                    Investigate the metabolite peaks found in <i> {{ species }} </i>.
                 </p>
             </div>
         </div>
@@ -22,35 +22,70 @@
         <!-- extra Tabs for Analysis type -->
         <nav>
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-                <a class="navdark nav-item nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissues</a>
-                <a class="navdark nav-item nav-link" href="{% url 'peak_age_compare' 'All' %}">Aged Flies</a>
+                {% for curr_category_desc, curr_analysis_id in all_categories %}
+                    {% if curr_analysis_id == analysis_id %}
+                        <a class="navdark nav-item nav-link active"
+                           href="{% url 'peak_ex_compare' analysis_id=curr_analysis_id peak_compare_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% else %}
+                        <a class="navdark nav-item nav-link"
+                           href="{% url 'peak_ex_compare' analysis_id=curr_analysis_id peak_compare_list='All' %}">
+                            {{ curr_category_desc }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         </nav>
 
         <!--Tabs to go to new pages-->
-        <div class="card text-center">
-            <div class="card-header">
-
-                <ul class="nav nav-tabs card-header-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
-                    </li>
-                </ul>
-                <div class="top-right">
-                    <p class="title_text">Peak Explorer</p>
+        {% if is_fly_tissue_data %}
+            <div class="card text-center">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Intensities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'peak_ex_compare' analysis_id=analysis_id peak_compare_list='All' %}"> Tissue/Whole
+                                Comparisons</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=2 %}">M/F Comparisons</a>
+                        </li>
+                    </ul>
+                    <div class="top-right">
+                        <p class="title_text">Peak Explorer</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% elif is_fly_age_data %}
+            <div class="card text-center">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Intensities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'peak_ex_compare' analysis_id=analysis_id peak_compare_list='All' %}">Age/Whole Comparisons</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=4 %}">M/F Age Comparisons</a>
+                        </li>
+                    </ul>
+                    <div class="top-right">
+                        <p class="title_text">Peak Explorer</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         <div>
             <p class="mt-4 mb-4">
-                The log<sub>2</sub> fold-change (FC) in peak intesity levels between <i>Drosophila</i> tissues and the
-                whole flies
+                The log<sub>2</sub> fold-change (FC) in peak intensity levels between <i>{{ species }}</i> {{ case_label }} and
+                {{ control_label }}
             </p>
         </div>
 
@@ -124,14 +159,12 @@
 
 {% block js_block %}
     <script type='text/javascript'>
-        var min_value =
-        {{min_value}}
-        var max_value =
-        {{max_value}}
-        var mean_value =
-        {{mean_value}}
-        var peak_compare_list = "{{peak_compare_list | safe}}"
-        console.log(min_value, mean_value, max_value, peak_compare_list)
+        const min_value = {{min_value}};
+        const max_value = {{max_value}};
+        const mean_value = {{mean_value}};
+        const peak_compare_list = "{{peak_compare_list | safe}}";
+        const analysis_id = {{ analysis_id }};
+        console.log(min_value, mean_value, max_value, peak_compare_list, analysis_id);
 
     </script>
 

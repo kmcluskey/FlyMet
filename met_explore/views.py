@@ -448,21 +448,13 @@ def met_ex_all(request, analysis_id, cmpd_list):
     View to return the metabolite search page
     :returns: Render met_explore/metabolite_search
     """
-
-    # TODO: set to 'peak_age_explorer' for the age data
-    if analysis_id == 1:
-        peak_url = 'peak_explorer/'
-    elif analysis_id == 3:
-        peak_url = 'peak_age_explorer/'
-    else:
-        peak_url = 'peak_explorer/'
-
     analysis = Analysis.objects.get(pk=analysis_id)
     config = get_project_config(analysis)
     species = config[LABEL_SPECIES]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
+    peak_url = 'peak_explorer/'
 
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
     response = {
@@ -478,14 +470,14 @@ def met_ex_all(request, analysis_id, cmpd_list):
     return render(request, 'met_explore/met_ex_all.html', response)
 
 
-def peak_ex_compare(request, peak_compare_list):
+def peak_ex_compare(request, analysis_id, peak_compare_list):
     """
        :param request: The peak Explorer page
        :param peak_list: The list of peaks required for the page
        :return: The template and required parameters for the peak explorer page.
        """
 
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     if peak_compare_list == "All":
         peaks = Peak.objects.all()
@@ -502,45 +494,39 @@ def peak_ex_compare(request, peak_compare_list):
 
     stop = timeit.default_timer()
 
+    config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
+    all_categories = get_search_categories(config)
+    uic = get_analysis_config(config, analysis_id)
+    current_category = uic.category
+    case_label = uic.case_label
+    control_label = uic.control_label
+
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
+    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
-                'mean_value': mean}
+    response = {
+        'peak_compare_list': peak_compare_list,
+        'columns': column_headers,
+        'max_value': max,
+        'min_value': min,
+        'mean_value': mean,
+        'analysis_id': analysis.id,
+        'all_categories': all_categories,
+        'current_category': current_category,
+        'case_label': case_label,
+        'control_label': control_label,
+        'species': species,
+        'is_fly_tissue_data': is_fly_tissue_data,
+        'is_fly_age_data': is_fly_age_data
+    }
 
     return render(request, 'met_explore/peak_ex_compare.html', response)
 
 
-def peak_age_compare(request, peak_compare_list):
-    """
-       :param request: The peak Explorer page
-       :param peak_list: The list of peaks required for the page
-       :return: The template and required parameters for the peak explorer page.
-       """
-
-    analysis = Analysis.objects.get(name='Age Comparisons')
-
-    if peak_compare_list == "All":
-        peaks = Peak.objects.all()
-    else:
-        peak_list_split = peak_compare_list.split(',')
-        peaks = Peak.objects.filter(id__in=list(peak_list_split))
-
-    logger.info("Peak comparison table requested")
-    start = timeit.default_timer()
-    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
-
-    sorted_view_df = sort_df_and_headers(view_df, analysis)
-    column_headers = sorted_view_df.columns.tolist()
-
-    stop = timeit.default_timer()
-
-    logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'peak_compare_list': peak_compare_list, 'columns': column_headers, 'max_value': max, 'min_value': min,
-                'mean_value': mean}
-
-    return render(request, 'met_explore/peak_age_compare.html', response)
-
-
-def peak_mf_compare(request):
+def peak_mf_compare(request, analysis_id):
     """
        :param request: The peak Explorer page
        :return: The template and required parameters for the peak explorer page.
@@ -549,15 +535,38 @@ def peak_mf_compare(request):
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
 
-    analysis = Analysis.objects.get(name="M/F Comparisons")
+    analysis = Analysis.objects.get(pk=analysis_id)
     view_df, min, mean, max = get_peak_mf_compare_df(analysis)
     column_headers = get_peak_mf_header(view_df, analysis)
 
     stop = timeit.default_timer()
 
+    config = get_project_config(analysis)
+    species = config[LABEL_SPECIES]
+
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data = False
+    if analysis.name == 'M/F Comparisons':
+        is_fly_tissue_data = True
+        linked_analysis_id = 1
+
+    is_fly_age_data = False
+    if analysis.name == 'Age M/F Comparisons':
+        is_fly_age_data = True
+        linked_analysis_id = 3
+
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
-                'mean_value': mean}
+    response = {
+        'columns': column_headers,
+        'max_value': max,
+        'min_value': min,
+        'mean_value': mean,
+        'analysis_id': analysis_id,
+        'linked_analysis_id': linked_analysis_id,
+        'species': species,
+        'is_fly_tissue_data': is_fly_tissue_data,
+        'is_fly_age_data': is_fly_age_data
+    }
 
     return render(request, 'met_explore/peak_mf_compare.html', response)
 
@@ -642,6 +651,10 @@ def peak_explorer(request, analysis_id, peak_list):
     case_label = uic.case_label
     control_label = uic.control_label
 
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
+    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     response = {
         'peak_list': peak_list,
@@ -655,6 +668,8 @@ def peak_explorer(request, analysis_id, peak_list):
         'case_label': case_label,
         'control_label': control_label,
         'species': species,
+        'is_fly_tissue_data': is_fly_tissue_data,
+        'is_fly_age_data': is_fly_age_data
     }
 
     return render(request, 'met_explore/peak_explorer.html', response)
@@ -696,12 +711,12 @@ def pals_data(request, analysis_id):
     return JsonResponse({'data': pals_data})
 
 
-def peak_compare_data(request, peak_compare_list):
+def peak_compare_data(request, analysis_id, peak_compare_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
-    analysis = Analysis.objects.get(name='Tissue Comparisons')
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     if peak_compare_list == "All":
 
@@ -721,13 +736,13 @@ def peak_compare_data(request, peak_compare_list):
     return JsonResponse({'data': peak_compare_data})
 
 
-def peak_mf_compare_data(request):
+def peak_mf_compare_data(request, analysis_id):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
 
-    analysis = Analysis.objects.get(name="M/F Comparisons")
+    analysis = Analysis.objects.get(pk=analysis_id)
 
     view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
@@ -737,78 +752,6 @@ def peak_mf_compare_data(request):
 
     logger.info("returning the peak comparison data")
     return JsonResponse({'data': peak_compare_mf_data})
-
-
-def peak_age_compare_data(request, peak_compare_list):
-    analysis = Analysis.objects.get(name='Age Comparisons')
-
-    if peak_compare_list == "All":
-        peaks = Peak.objects.all()
-
-    else:
-        peak_compare_list = peak_compare_list.split(',')
-        peaks = Peak.objects.filter(id__in=list(peak_compare_list))
-
-    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
-
-    view_df_sorted = sort_df_and_headers(view_df1, analysis)
-    view_df = view_df_sorted.fillna("-")
-
-    peak_age_compare_data = view_df.values.tolist()
-
-    logger.info("returning the peak comparison data")
-    return JsonResponse({'data': peak_age_compare_data})
-
-
-def peak_mf_age_data(request):
-    """
-        :param request: Request for the peak data for the Peak Explorer page
-        :return: The cached url of the ajax data for the peak data table.
-        """
-    analysis = Analysis.objects.get(name="Age M/F Comparisons")
-
-    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
-    view_df_sorted = sort_df_and_headers(view_df1, analysis)
-    view_df = view_df_sorted.fillna("-")
-    #
-    peak_compare_mf_data = view_df.values.tolist()
-
-    logger.info("returning the peak comparison data")
-    return JsonResponse({'data': peak_compare_mf_data})
-
-
-def peak_age_data(request, peak_list):
-    """
-    :param request: Request for the peak data for the Peak Explorer page
-    :return: The cached url of the ajax data for the peak data table.
-    """
-    analysis = Analysis.objects.get(name='Age Comparisons')
-
-    if peak_list == "All":
-        peaks = Peak.objects.all()
-    else:
-        peak_list = peak_list.split(',')
-        peaks = Peak.objects.filter(id__in=list(peak_list))
-
-    required_data = peaks.values('id', 'm_z', 'rt')
-
-    peak_df = pd.DataFrame.from_records(required_data)
-
-    # # Get all of the peaks and all of the intensities of the sample files
-    group_df = cmpd_selector.get_group_df(analysis, peaks)
-    group_df.reset_index(inplace=True)
-    group_df.rename(columns={'peak': 'id'}, inplace=True)
-
-    view_df1 = pd.merge(peak_df, group_df, on='id')
-
-    # Sort df to match headers
-    view_df = sort_df_and_headers(view_df1, analysis)
-    view_df = view_df.fillna("-")
-
-    peak_data = view_df.values.tolist()
-
-    logger.info("returning the peak data", peak_data)
-    return JsonResponse({'data': peak_data})
 
 
 def peak_data(request, analysis_id, peak_list):

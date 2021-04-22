@@ -24,22 +24,7 @@ urlpatterns = [
     path('about', views.about, name='about'),
     path('plate/', include('django_spaghetti.urls')),
 
-    # Tissue specific views
-
-    path('peak_ex_compare/<str:peak_compare_list>', c(views.peak_ex_compare), name='peak_ex_compare'),
-    path('peak_mf_compare', views.peak_mf_compare, name='peak_mf_compare'),
-    path('peak_compare_data/<str:peak_compare_list>', c(views.peak_compare_data), name='peak_compare_data'),
-    path('peak_mf_compare_data', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
-
-    # Age specific views
-
-    path('peak_age_compare/<str:peak_compare_list>', c(views.peak_age_compare), name='peak_age_compare'),
-    path('peak_mf_age_compare', views.peak_mf_age_compare, name='peak_mf_age_compare'),
-    path('peak_age_data/<str:peak_list>', c(views.peak_age_data), name='peak_age_data'),
-    path('peak_age_compare_data/<str:peak_compare_list>', c(views.peak_age_compare_data), name='peak_age_compare_data'),
-    path('peak_mf_age_data', c(views.peak_mf_age_data), name='peak_mf_age_data'),
-
-    # Common views
+    # Metabolomics views
     path('met_ex_all/<int:analysis_id>/<str:cmpd_list>', views.met_ex_all, name='met_ex_all'),
     path('met_ex_tissues/<int:analysis_id>', views.met_ex_tissues, name='met_ex_tissues'),
     path('metabolite_search/<int:analysis_id>', views.metabolite_search, name='metabolite_search'),
@@ -56,6 +41,10 @@ urlpatterns = [
     path('pals_data/<int:analysis_id>', c(views.pals_data), name='pals_data'),
     path('peak_explorer/<int:analysis_id>/<str:peak_list>', c(views.peak_explorer), name='peak_explorer'),
     path('peak_data/<int:analysis_id>/<str:peak_list>', c(views.peak_data), name='peak_data'),
+    path('peak_ex_compare/<int:analysis_id>/<str:peak_compare_list>', c(views.peak_ex_compare), name='peak_ex_compare'),
+    path('peak_compare_data/<int:analysis_id>/<str:peak_compare_list>', c(views.peak_compare_data), name='peak_compare_data'),
+    path('peak_mf_compare/<int:analysis_id>', views.peak_mf_compare, name='peak_mf_compare'),
+    path('peak_mf_compare_data/<int:analysis_id>', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
 
     # Enzyme specific views
 

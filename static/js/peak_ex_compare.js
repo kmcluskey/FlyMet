@@ -58,10 +58,10 @@ $(document).ready(function() {
     console.log("peak compare list", peak_compare_list)
 
     let nd_title = "This MS peak was not detected for this tissue/life stage combination";
-    let ajax_url = `peak_compare_data/${peak_compare_list}`;
-    let peak_side_url = `peak_explorer/`;
+    let ajax_url = `peak_compare_data/${analysis_id}/${peak_compare_list}`;
+    let peak_side_url = `peak_explorer/${analysis_id}/`;
     let peak_side_text =`Intensities for peak `;
-    let met_url = `met_ex_all/`;
+    let met_url = `met_ex_all/${analysis_id}/`;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
     nd_title, ajax_url, headerTips);

@@ -40,10 +40,10 @@ $('[data-toggle="tooltip"]').tooltip({
   $("fieldset[class^='peak_details']").hide();
 
     let nd_title = " M and/or F data was not detected for this peak";
-    let ajax_url = "peak_mf_compare_data";
-    let peak_side_url = `peak_explorer/`;
+    let ajax_url = `peak_mf_compare_data/${analysis_id}`;
+    let peak_side_url = `peak_explorer/${linked_analysis_id}/`;
     let peak_side_text =`Intensities for peak `
-    let met_url = `met_ex_all/`;
+    let met_url = `met_ex_all/${linked_analysis_id}/`;
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 

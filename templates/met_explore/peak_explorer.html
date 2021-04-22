@@ -23,11 +23,13 @@
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
                 {% for curr_category_desc, curr_analysis_id in all_categories %}
                     {% if curr_analysis_id == analysis_id %}
-                        <a class="navdark nav-item nav-link active" href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
+                        <a class="navdark nav-item nav-link active"
+                           href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
                             {{ curr_category_desc }}
                         </a>
                     {% else %}
-                        <a class="navdark nav-item nav-link" href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
+                        <a class="navdark nav-item nav-link"
+                           href="{% url 'peak_explorer' analysis_id=curr_analysis_id peak_list='All' %}">
                             {{ curr_category_desc }}
                         </a>
                     {% endif %}
@@ -36,29 +38,52 @@
         </nav>
 
         <!--Tabs to go to new pages-->
-{#        <div class="card text-center">#}
-{#            <div class="card-header">#}
-{##}
-{#                <ul class="nav nav-tabs card-header-tabs">#}
-{#                    <li class="nav-item">#}
-{#                        <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>#}
-{#                    </li>#}
-{#                    <li class="nav-item">#}
-{#                        <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a>#}
-{#                    </li>#}
-{#                    <li class="nav-item">#}
-{#                        <a class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>#}
-{#                    </li>#}
-{#                </ul>#}
-{#                <div class="top-right">#}
-{#                    <p class="title_text">Peak Explorer</p>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
+        {% if is_fly_tissue_data %}
+            <div class="card text-center">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active"
+                               href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Intensities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_ex_compare' analysis_id=analysis_id peak_compare_list='All' %}"> Tissue/Whole
+                                Comparisons</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=2 %}">M/F Comparisons</a>
+                        </li>
+                    </ul>
+                    <div class="top-right">
+                        <p class="title_text">Peak Explorer</p>
+                    </div>
+                </div>
+            </div>
+        {% elif is_fly_age_data %}
+            <div class="card text-center">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active"
+                               href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Intensities</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_ex_compare' analysis_id=analysis_id peak_compare_list='All' %}">Age/Whole Comparisons</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=4 %}">M/F Age Comparisons</a>
+                        </li>
+                    </ul>
+                    <div class="top-right">
+                        <p class="title_text">Peak Explorer</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
         <div>
             <p class="mt-4 mb-4">
-                The average peak intensity levels found in different <i>{{ species }}</i> tissues
+                The average peak intensity levels found in different <i>{{ species }}</i> {{ current_category }}
             </p>
         </div>
 
