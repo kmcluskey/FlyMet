@@ -75,7 +75,7 @@
       <tr>
             {% for m in met_exp_data %}
             {% if forloop.first %}
-              <td><a href="metabolite_search?metabolite_search={{m}}" target="_blank">{{m}}</a></td>
+              <td><a href="metabolite_search_tissue?metabolite_search_tissue={{m}}" target="_blank">{{m}}</a></td>
             {% else %}
               {% if m > 0 %}
                 <td>{{m|stringformat:".2e"}}</td>
