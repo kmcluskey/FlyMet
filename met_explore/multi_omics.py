@@ -166,6 +166,25 @@ def remove_dupes(df):
     return df
 
 
+def get_single_entity_relation(entities, relation, ap):
+    """
+
+    :param entities: List. The entities that you want to map from eg. Compound (entity)---> Pathway (relation)
+    :param relation: List: The relational results required e.g is you want Pathways (relation) associate with compounds (entity)
+    :param ap: The pyMultiOmics analysis pipeline.
+    :return: A DF with all the required relations.
+    """
+
+    mapping_df = QueryBuilder(ap) \
+        .add(Entity(entities)) \
+        .add(Connected()) \
+        .run()
+
+    relation_df = mapping_df[mapping_df.data_type.isin([relation])]
+
+    return relation_df
+
+
 def get_fbgn_codes(genes):
     """
     :param genes: The annotation codes for genes
