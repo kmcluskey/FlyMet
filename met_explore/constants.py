@@ -1,5 +1,6 @@
 CSV_GROUP_COLNAME = 'group'
 
+INITIAL_PROJECT_ID = 1 # assume only one project, TODO: might not be the case
 LABEL_METABOLOMICS = 'metabolomics'
 LABEL_CATEGORIES = 'categories'
 LABEL_PROJECT_CONFIG = 'ui_config'

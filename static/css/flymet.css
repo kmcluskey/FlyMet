@@ -20,33 +20,33 @@
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  color:#5D2627;
+  color:#005db3;
 }
 
 .btn-outline-primary {
-  color: #5D2627;
+  color: #005db3;
   background-color: transparent;
   background-image: none;
-  border-color: #5D2627; }
+  border-color: #005db3; }
 
 .btn-outline-primary:hover {
     color: #fff;
-    background-color: #5D2627;
-    border-color: #5D2627; }
+    background-color: #005db3;
+    border-color: #005db3; }
 
 .btn-outline-primary:focus, .btn-outline-primary.focus {
       -webkit-box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5);
       box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5); }
 
 .btn-outline-primary.disabled, .btn-outline-primary:disabled {
-        color: #5D2627;
+        color: #005db3;
         background-color: transparent; }
 
 .btn-outline-primary:not(:disabled):not(.disabled):active, .btn-outline-primary:not(:disabled):not(.disabled).active,
         .show > .btn-outline-primary.dropdown-toggle {
           color: #fff;
-          background-color: #5D2627;
-          border-color: #5D2627; }
+          background-color: #005db3;
+          border-color: #005db3; }
 
 .btn-outline-primary:not(:disabled):not(.disabled):active:focus, .btn-outline-primary:not(:disabled):not(.disabled).active:focus,
           .show > .btn-outline-primary.dropdown-toggle:focus {
@@ -54,13 +54,13 @@
             box-shadow: 0 0 0 0.2rem rgba(0, 133, 255, 0.5); }
 
 .btn-secondary {
-    color: #5D2627;
+    color: #005db3;
     background-color: rgba(0, 0, 0, 0.03);
     border-color: #d6dce6;
   }
 
 a.nav-link {
-  color: #5D2627;
+  color: #005db3;
   }
 
 a.nav-link:hover {
@@ -87,7 +87,7 @@ a:hover {
             }
 
 p a:hover{
-     color: #5D2627;
+     color: #005db3;
      text-decoration: underline;
    }
 
@@ -103,7 +103,7 @@ body
       height:8%;
       width: 100%;
       background-color:#D6DCE6;
-      color: #5D2627;
+      color: #005db3;
   }
 
   .img-fluid-logos{
@@ -117,7 +117,7 @@ body
   }
 
   .footer_text{
-    color: #5D2627;
+    color: #005db3;
     font-family: 'Sue Ellen Francisco', sans-serif;
     font-size: 1.7rem;
   }
@@ -177,7 +177,7 @@ div.dt-buttons {
 /*Change pagination colours to match scheme*/
 
 .page-link {
-  color: #5D2627;
+  color: #005db3;
    }
 
 .page-item.active .page-link {
@@ -186,7 +186,7 @@ div.dt-buttons {
       border-color: #99abc9 ; }
 
 .table-card-header {
-  color: #5D2627;
+  color: #005db3;
   background-color:  #D6DCE6;
 }
 
@@ -196,7 +196,7 @@ card-header {
   padding: 0.5rem 0.75rem;
   margin-bottom: 0;
   /*background-color:*/
-  color: #5D2627;
+  color: #005db3;
   border-bottom: 1px solid rgba(0, 0, 0, 0.125); }
   .card-header:first-child {
     border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0; }
@@ -339,7 +339,7 @@ card-header {
 table.dataTable tbody > tr.selected,
 table.dataTable tbody > tr > .selected {
   background-color: #99abc9 ;
-  color:  #5D2627;
+  color:  #005db3;
   font-weight: bold;
   width:100% !important;
 }
@@ -365,16 +365,16 @@ table.dataTable.fixedHeader-locked {
 
 th {
     font-weight: bold;
-    background-color: #5D2627;
+    background-color: #005db3;
     color: #fff;
 }
 
 
 .fieldset-details {
-  border: 1px solid #5D2627;
+  border: 1px solid #005db3;
     padding: 0 0 10px 0;
     border-radius: 5px;
-    box-shadow: 2px 2px 2px #5D2627;
+    box-shadow: 2px 2px 2px #005db3;
     margin-bottom: 25px;
 }
 
@@ -551,10 +551,10 @@ table.dataTable .maxpx300 {
 .dropdown-item.active, .dropdown-item:active {
   color: #fff;
   text-decoration: none;
-  background-color: #5D2627; }
+  background-color: #005db3; }
 
 .title_text {
-  color: #5D2627;
+  color: #005db3;
   font-family: 'Sue Ellen Francisco',  Helvetica, sans-serif;
   font-size: 2.0rem;
   text-shadow: 4px 4px 0px rgba(0,0,0,0.1);
@@ -598,5 +598,5 @@ table.dataTable .maxpx300 {
 .nav-tabs .navdark.nav-link.active,
     .nav-tabs .nav-item.show .nav-link {
       color: #fff;
-      background-color: #5D2627;
+      background-color: #005db3;
        }

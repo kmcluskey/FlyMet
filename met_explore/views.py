@@ -14,7 +14,7 @@ from django.urls import reverse
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES
+from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES, INITIAL_PROJECT_ID
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
     get_search_categories, get_project_config
@@ -67,22 +67,18 @@ except Exception as e:
 
 
 def index(request):
-    project_id = 1  # assume only one project, TODO: might not be the case
-
-    project = Project.objects.get(pk=project_id)
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
     config = project.metadata[LABEL_PROJECT_CONFIG]
-    initial_analysis = config[LABEL_INITIAL_ANALYSIS]
-    analysis = Analysis.objects.get(name=initial_analysis)
-    analysis_id = analysis.id
 
     species = config[LABEL_SPECIES]
-    uic = get_analysis_config(config, analysis_id)
+    uic = get_analysis_config(config, analysis.id)
     current_category = uic.category
 
     all_categories = get_search_categories(config)
     context = {
         'json_url': reverse('get_metabolite_names'),
-        'analysis_id': analysis_id,
+        'analysis_id': analysis.id,
         'all_categories': all_categories,
         'species': species,
         'current_category': current_category
@@ -90,54 +86,78 @@ def index(request):
 
     return render(request, 'met_explore/index.html', context)
 
+def get_initial_project():
+    project = Project.objects.get(pk=INITIAL_PROJECT_ID)
+    return project
 
-def about(request):
-    project_id = 1  # assume only one project, TODO: might not be the case
-
-    project = Project.objects.get(pk=project_id)
+def get_initial_analysis(project):
     config = project.metadata[LABEL_PROJECT_CONFIG]
     initial_analysis = config[LABEL_INITIAL_ANALYSIS]
     analysis = Analysis.objects.get(name=initial_analysis)
+    return analysis
 
+
+def about(request):
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
     context = {
         'analysis_id': analysis.id,
     }
-
     return render(request, 'met_explore/about.html', context)
 
 
 def background(request):
-    return render(request, 'met_explore/background.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/background.html', context)
 
 
 def exp_protocols(request):
-    return render(request, 'met_explore/exp_protocols.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/exp_protocols.html', context)
 
 
 def glossary(request):
-    return render(request, 'met_explore/glossary.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/glossary.html', context)
 
 
 def feedback(request):
-    # add to the top
-
-    # add to your views
-    # def contact(request):
-    #     form_class = ContactForm
-    #
-    #     return render(request, 'met_explore/feedback.html', {
-    #         'form': form_class,
-    #     })
-
-    return render(request, 'met_explore/feedback.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/feedback.html', context)
 
 
 def links(request):
-    return render(request, 'met_explore/links.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/links.html', context)
 
 
 def credits(request):
-    return render(request, 'met_explore/credits.html')
+    project = get_initial_project()
+    analysis = get_initial_analysis(project)
+    context = {
+        'analysis_id': analysis.id,
+    }
+    return render(request, 'met_explore/credits.html', context)
 
 
 def metabolite_data(request, cmpd_ids):
