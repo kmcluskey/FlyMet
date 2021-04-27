@@ -528,7 +528,8 @@ def met_ex_pathway_data(request, cmpd_id):
     analysis = Analysis.objects.get(name="Tissue Comparisons")
     chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
 
-    entities = get_related_chebi_ids([chebi_id])
+    entities = [chebi_id] + list(get_related_chebi_ids(["cheb_id"]))
+
     ap = get_cache_ap(analysis)
 
     #Get the pathways associated with the compound
