@@ -19,7 +19,10 @@ from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_N
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, get_factors_from_samples
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group, Factor
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
+get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, get_related_chebi_ids, MIN_HITS
+
+from met_explore.multi_omics import *
+
 
 from met_explore.peak_groups import PeakGroups
 
@@ -514,6 +517,29 @@ def met_ex_all(request, cmpd_list):
     response = {'cmpd_list': cmpd_list, 'columns': columns}
 
     return render(request, 'met_explore/met_ex_all.html', response)
+
+
+def met_ex_pathway_data(request, cmpd_id):
+    """
+    :param request:
+    :param cmpd_id: ID of compound for which we need pathways.
+    :return: List of pathways (ID, name) associated with the compound.
+    """
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+    chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
+
+    entities = get_related_chebi_ids([chebi_id])
+    ap = get_cache_ap(analysis)
+
+    #Get the pathways associated with the compound
+    pathway_df = get_single_entity_relation(entities, "pathways", ap)
+
+    # pwy_df = pathway_df.reset_index()
+    pwy_data = pathway_df.T.to_dict()
+
+
+    return JsonResponse({'pwy_data': pwy_data})
+
 
 
 def met_age_all(request, cmpd_list):

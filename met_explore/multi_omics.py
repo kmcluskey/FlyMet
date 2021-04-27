@@ -13,8 +13,26 @@ from pyMultiOmics.pipelines import *
 from pyMultiOmics.common import set_log_level_info
 
 
-DATA_FOLDER = os.path.abspath(os.path.join('..', 'omics_data'))
+DATA_FOLDER = os.path.abspath(os.path.join('..', 'FlyMet/omics_data'))
 fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'), encoding = 'unicode_escape', index_col='FlyBaseID')
+
+
+
+def get_cache_ap(analysis):
+    # cache.delete('pals_ds')
+    a_id = str(analysis.id)
+    cache_name = 'ap_' + a_id
+
+    if cache.get(cache_name) is None:
+        logger.info("we dont have cache so running the pals_ds function")
+        cache.set(cache_name, get_analysis_pipeline(analysis), 60 * 180000)
+        ap = cache.get(cache_name)
+    else:
+        logger.info("we have cache for the pals ds, so retrieving it")
+        ap = cache.get(cache_name)
+
+    return ap
+
 
 def get_analysis_pipeline(analysis):
 

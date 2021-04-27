@@ -65,6 +65,7 @@ urlpatterns = [
     path('peak_explore_annotation_data/<int:peak_id>', views.peak_explore_annotation_data, name='peak_explore_annotation_data'),
     path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
+    path('met_ex_pathway_data/<int:cmpd_id>', views.met_ex_pathway_data, name='met_ex_pathway_data'),
 
     # Enzyme specific views
 

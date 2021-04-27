@@ -91,6 +91,53 @@ function initialise_met_table(tableName){
     return table;
 }
 
+function updatePathwayPanel(obj){
+  let currentRow = $(obj).closest("tr");
+  let cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
+  let cmpd_name = $(obj).children().first().text();
+
+  // Returned data is the data returned from the url below.
+  const handleUpdate = function(returned_data) {
+
+    let pwyDiv =  document.getElementById("pathwayDetails");
+    pwyDiv.innerHTML = "";
+
+    let pwy_dict = returned_data.pwy_data;
+    let no_pwys = Object.keys(pwy_dict).length
+
+    if (no_pwys === 0){
+      let pwy_text = `<p> There are currently no Pathways mapped to ${cmpd_name}</p>`
+      let groupDiv = document.createElement('div');
+      groupDiv.setAttribute('class', 'p-1');
+      groupDiv.innerHTML =  pwy_text;
+      pwyDiv.appendChild(groupDiv)
+    }
+    else {
+        for (var pwy_id in pwy_dict) {
+            console.log("adding pwy_id")
+            let groupDiv = document.createElement('div');
+            groupDiv.setAttribute('class', 'p-1');
+            let pwy_name = pwy_dict[pwy_id]['display_name'];
+            // let pwy_name = details['display_name']
+            let pwy_url =`<a href="pathway_search?pathway_search=${pwy_name}" data-toggle="tooltip"
+            title="${pwy_name} changes in FlyMet tissues" target="_blank">${pwy_name}</a>`
+            groupDiv.innerHTML =  pwy_url;
+            pwyDiv.appendChild(groupDiv)
+      }
+    } }
+
+  const pwy_url = `/met_explore/met_ex_pathway_data/${cmpd_id}`
+  fetch(pwy_url)
+  .then(res => res.json())//response type
+  .then(handleUpdate);
+
+  // find all the paragraphs with id peak in the side panel
+  $("#pathwaysDiv").show();
+  $("legend[id^='pwy_name']").text(`Pathways associated with ${cmpd_name}`);
+
+};
+
+
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
 function updateMetboliteSidePanel(obj, peak_url){
@@ -293,5 +340,6 @@ function add_side_tooltips(){
 export {
     initialise_met_table,
     updateMetboliteSidePanel,
+    updatePathwayPanel,
     get_data_index
   }
