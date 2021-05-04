@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} Gene Explorer: Tissues {% endblock %}
+
+{% block head_block %}
+  {% render_bundle 'gene_tissue_explorer' 'css' %}
+{% endblock %}
+
+{% block body_block %}
+
+<!-- Div for main body -->
+
+<div class="container-fluid p-4">
+  <!-- Splitting into two columns using flex to display the logo-->
+<div class="logo_row">
+  <div class="logo_main mt-4">
+    <p class="lead">
+        Investigate the <i> Drosophila </i> genes that have been mapped to FlyMet metabolites. </p>
+    </div>
+  </div>
+<!--Tabs to go to new pages-->
+ <div class="card text-center">
+   <div class="card-header">
+     <ul id = "menu" class="nav nav-tabs card-header-tabs float_title">
+       <li class="nav-item">
+         <a class="nav-link active" href="{% url 'gene_tissue_explorer' 'All' %}">Tissues</a>
+       </li>
+       <li class="nav-item">
+         <a class="nav-link" href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
+       </li>
+     </ul>
+     <div class="top-right">
+       <p class ="title_text">Gene Explorer</p>
+    </div>
+    </div>
+  </div>
+  <div>
+    <p class="mt-4 mb-4" >
+    Genes associated with different metabolites in Drosophila tissues
+    </p>
+  </div>
+  <div class="card mt-4 p-2 pb-2 border border-table rounded">
+    <div class="container-fluid pb-0" >
+      <div class="row pb-0">
+        <div class="myspan80 p-2 mt-2">
+          <p>Columns can be dragged to reorganise the data as required.</p>
+          <table id="gene_list" class="try_hide table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <thead class="thead-light">
+              <tr id = "columns">
+                {% for column_name in columns %}
+                <th class = "col">{{column_name}}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+          </table>
+
+        </div>
+
+
+
+    </div>
+    </div>
+    </div>
+
+    <!-- <div id="reactomeWidgetDialog" title="Reactome Viewer" style="display: none">
+        <div id="diagramHolder"></div>
+    </div> -->
+
+    </div>
+
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
+
+  {% endblock %}
+
+  {% block js_block %}
+  <script type='text/javascript'>
+    let gene_list = "{{gene_list | safe}}"
+    console.log("The gene list is "+ gene_list)
+  </script>
+
+{% render_bundle 'gene_tissue_explorer' 'js' %}
+{% endblock %}

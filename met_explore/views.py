@@ -16,12 +16,13 @@ from django.db.models import Q
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
-from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, get_factors_from_samples
+from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, get_factors_from_samples, \
+set_log_level_info, set_log_level_debug
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group, Factor
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
 get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, get_related_chebi_ids, MIN_HITS
 
-from met_explore.multi_omics import *
+from met_explore.multi_omics import MultiOmics
 
 
 from met_explore.peak_groups import PeakGroups
@@ -38,9 +39,14 @@ WF_MIN = 1000  # Minimum value used for missing values in the whole fly data.
 # If the Db exists and has been initialised:
 try:
     cmpd_selector = CompoundSelector()
-    # DFs for all the peaks
-    # int_df = cmpd_selector.construct_cmpd_intensity_df()
-    # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
+
+    # This is here so we only call these once but this is not the way to do it.
+
+    analysis_tissue = Analysis.objects.get(name="Tissue Comparisons")
+    analysis_age = Analysis.objects.get(name="Age Comparisons")
+    mo_tissue = MultiOmics(analysis_tissue)
+    mo_age = MultiOmics(analysis_age)
+
 
     # DF for the Highly confident peaks
     hc_int_df = cmpd_selector.get_hc_int_df()
@@ -525,15 +531,12 @@ def met_ex_pathway_data(request, cmpd_id):
     :param cmpd_id: ID of compound for which we need pathways.
     :return: List of pathways (ID, name) associated with the compound.
     """
-    analysis = Analysis.objects.get(name="Tissue Comparisons")
+
     chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
-
-    entities = [chebi_id] + list(get_related_chebi_ids(["cheb_id"]))
-
-    ap = get_cache_ap(analysis)
+    entities = [chebi_id] + list(get_related_chebi_ids([chebi_id]))
 
     #Get the pathways associated with the compound
-    pathway_df = get_single_entity_relation(entities, "pathways", ap)
+    pathway_df = mo_tissue.get_single_entity_relation(entities, "pathways")
 
     # pwy_df = pathway_df.reset_index()
     pwy_data = pathway_df.T.to_dict()
@@ -1706,3 +1709,50 @@ def get_peak_mf_header(view_df, analysis):
 def enzyme_search(request):
 
     return render(request, 'met_explore/enzyme_search.html')
+
+
+def gene_tissue_explorer(request, gene_list):
+
+    gene_df = mo_tissue.get_cache_gene_df().reset_index()
+
+    column_headers = gene_df.columns.tolist()
+
+    response = {'gene_list': gene_list, 'columns': column_headers}
+
+    return render(request, 'met_explore/gene_tissue_explorer.html', response)
+
+
+def gene_age_explorer(request, gene_list):
+
+    gene_df = mo_age.get_cache_gene_df().reset_index()
+    column_headers = gene_df.columns.tolist()
+
+    response = {'gene_list': gene_list, 'columns': column_headers}
+
+    return render(request, 'met_explore/gene_age_explorer.html', response)
+
+
+def gene_data(request, gene_ids):
+    """
+    :param request: Request for the gene data for the Gene Explorer all page and a list of gene_ids (string)
+    :return: The cached url of the ajax data for the gene data table.
+    """
+    logger.info("Gene data requested")
+
+    start = timeit.default_timer()
+
+    gene_list = gene_ids.split(",")
+    gene_df = mo_tissue.get_cache_gene_df().reset_index()
+
+    gene_df = gene_df.fillna("-")
+
+    if gene_ids == "All":
+        gene_data = gene_df.values.tolist()
+    else:
+        gene_data = gene_df[gene_df.FlyBaseID.isin(gene_list)].values.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the gene_data took: %s S" % str(stop - start))
+
+    return JsonResponse({'data': gene_data})

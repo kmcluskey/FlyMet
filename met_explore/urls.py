@@ -39,6 +39,7 @@ urlpatterns = [
     path('pathway_explorer', views.pathway_explorer, name='pathway_explorer'),
     path('pathway_search', views.pathway_search, name='pathway_search'),
     path('pathway_metabolites', views.pathway_metabolites, name='pathway_metabolites'),
+    path('gene_tissue_explorer/<str:gene_list>', views.gene_tissue_explorer, name='gene_tissue_explorer'),
 
     # Age specific views
 
@@ -55,6 +56,7 @@ urlpatterns = [
     path('pathway_age_explorer', views.pathway_age_explorer, name='pathway_age_explorer'),
     path('pathway_age_search', views.pathway_age_search, name='pathway_age_search'),
     path('pathway_age_metabolites', views.pathway_age_metabolites, name='pathway_age_metabolites'),
+    path('gene_age_explorer/<str:gene_list>', views.gene_age_explorer, name='gene_age_explorer'),
 
     # Common views
 
@@ -66,6 +68,7 @@ urlpatterns = [
     path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
     path('met_ex_pathway_data/<int:cmpd_id>', views.met_ex_pathway_data, name='met_ex_pathway_data'),
+    path('gene_data/<str:gene_ids>', views.gene_data, name='gene_data'),
 
     # Enzyme specific views
 
