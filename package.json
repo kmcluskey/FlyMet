@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config webpack.config.js --progress --colors --mode production",
-    "dev": "webpack --config webpack.config.js --watch --mode development --display-error-details"
+    "dev": "webpack --config webpack.config.js --watch --mode development"
   },
   "repository": {
     "type": "git",
