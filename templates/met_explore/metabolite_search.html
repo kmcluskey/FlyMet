@@ -198,7 +198,7 @@
                                         <span id="A" class="badge badge-pill badge-danger">A</span>
                                     {% endif %}
                                     {% if peak_id > 0 %}
-                                        <p><a href="{% url 'peak_explorer' peak_id %}"> Peak {{ peak_id }}</a></p>
+                                        <p><a href="{% url 'peak_explorer' analysis_id=analysis_id peak_list=peak_id %}"> Peak {{ peak_id }}</a></p>
                                     {% endif %}
                                     <hr>
                                     <div class="row">
