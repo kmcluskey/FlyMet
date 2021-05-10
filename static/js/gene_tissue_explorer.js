@@ -1,20 +1,20 @@
-import {initialise_gene_table} from './gene_tables_general.js'
+import {initialise_gene_table, updateGeneSidePanel} from './gene_tables_general.js'
 
 $(document).ready(function() {
 
-  let gene_table = initialise_gene_table("gene_list");
 
-    // $("fieldset[class^='pathway_details']").hide();
+    $("fieldset[class^='multi_omics_details']").hide();
     // $("#diagram_info").hide();
     //
     // let data_url = "pals_data";
     // let met_ex_url = "met_ex_all/";
     // let pwy_met_url = "pathway_metabolites";
     //
-    // let pals_table = initialise_pals_table("pals_data", min_value, mean_value, max_value, data_url);
-    //
-    //   pals_table.on( 'click', 'tr', function () {
-    //     updatePathwaySidePanel(this, data_url, met_ex_url, pwy_met_url);
-    //   } );
+    let gene_table = initialise_gene_table("gene_list");
+
+      gene_table.on( 'click', 'tr', function () {
+        console.log("I've been clicked")
+        updateGeneSidePanel(this);
+      } );
 
 });

@@ -68,8 +68,8 @@ urlpatterns = [
     path('get_pathway_names', views.get_pathway_names, name='get_pathway_names'),
     path('metabolite_pathway_data/<str:pw_id>', views.metabolite_pathway_data, name='metabolite_pathway_data'),
     path('met_ex_pathway_data/<int:cmpd_id>', views.met_ex_pathway_data, name='met_ex_pathway_data'),
-    path('gene_data/<str:gene_ids>', views.gene_data, name='gene_data'),
-
+    path('gene_data/<str:gene_ids>', c(views.gene_data), name='gene_data'),
+    path('gene_omics_data/<str:gene_id>', views.gene_omics_data, name='gene_omics_data'),
     # Enzyme specific views
 
     path('enzyme_search', views.enzyme_search, name='enzyme_search'),

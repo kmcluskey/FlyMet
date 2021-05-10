@@ -12,6 +12,7 @@ from pyMultiOmics.query import *
 from pyMultiOmics.pipelines import *
 from pyMultiOmics.common import set_log_level_info
 
+from rpy2.rinterface_lib import openrlib
 
 DATA_FOLDER = os.path.abspath(os.path.join('..', 'FlyMet/omics_data'))
 fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'), encoding = 'unicode_escape', index_col='FlyBaseID')
@@ -36,7 +37,7 @@ class MultiOmics(object):
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the ap function")
-            cache.set(cache_name, self.get_analysis_pipeline(self.analysis), 60 * 180000)
+            cache.set(cache_name, self.get_analysis_pipeline(), 60 * 180000)
             ap = cache.get(cache_name)
         else:
             logger.info("we have cache for the ap so retrieving it")
@@ -56,10 +57,16 @@ class MultiOmics(object):
 
         set_log_level_info()
 
-        m = Mapper(DROSOPHILA_MELANOGASTER, metabolic_pathway_only=True, include_related_chebi=True) \
-            .set_gene(gene_data, gene_design) \
-            .set_compound(compound_data, compound_design) \
-            .build()
+        # Testing if this solves the error:
+        # R[write to console]: Fatal error: unable to initialize the JIT
+
+        with openrlib.rlock:
+            m = Mapper(DROSOPHILA_MELANOGASTER, metabolic_pathway_only=True, include_related_chebi=True) \
+                .set_gene(gene_data, gene_design) \
+                .set_compound(compound_data, compound_design) \
+                .build()
+            pass
+
 
         ap = AnalysisPipeline(m)
 
@@ -195,9 +202,9 @@ class MultiOmics(object):
         return df
 
 
-    def get_single_entity_relation(self, entities, relation):
+    def get_single_entity_relation(self, entities, relation=None):
         """
-
+        Returns the mapping DF for a certain relation eg. Pathways, or ALL if relation is not passed.
         :param entities: List. The entities that you want to map from eg. Compound (entity)---> Pathway (relation)
         :param relation: List: The relational results required e.g is you want Pathways (relation) associate with compounds (entity)
         :param ap: The pyMultiOmics analysis pipeline.
@@ -209,7 +216,10 @@ class MultiOmics(object):
             .add(Connected()) \
             .run()
 
-        relation_df = mapping_df[mapping_df.data_type.isin([relation])]
+        if relation is not None:
+            relation_df = mapping_df[mapping_df.data_type.isin([relation])]
+        else:
+            relation_df = mapping_df
 
         return relation_df
 
@@ -239,7 +249,7 @@ class MultiOmics(object):
             cache.set(cache_name, self.get_gene_df(), 60 * 180000)
             gene_df = cache.get(cache_name)
         else:
-            logger.info("we have cache for the ap so retrieving it")
+            logger.info("we have cache for the gene_df so retrieving it")
             gene_df = cache.get(cache_name)
 
         return gene_df

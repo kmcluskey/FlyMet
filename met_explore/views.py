@@ -12,10 +12,9 @@ from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-
 from loguru import logger
 
-from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
+from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME, get_cmpid_from_chebi
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, get_factors_from_samples, \
 set_log_level_info, set_log_level_debug
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, Group, Factor
@@ -28,7 +27,7 @@ from met_explore.multi_omics import MultiOmics
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
-
+set_log_level_debug()
 MIN = -7
 MAX = 7
 MEAN = 0
@@ -1756,3 +1755,30 @@ def gene_data(request, gene_ids):
     logger.info("Returning the gene_data took: %s S" % str(stop - start))
 
     return JsonResponse({'data': gene_data})
+
+def gene_omics_data(request, gene_id):
+    """
+    :param request:
+    :param gene_id: The FbgnCode for which the omics data is required
+    :return: Dict of omics data with the relation/source eg. compounds as key and [ID, name, observed] as the value
+    """
+    omics_data_df = mo_tissue.get_single_entity_relation([gene_id])
+    omics_data_df.reset_index(inplace=True)
+    omics_dict = {}
+
+    columns = ['ID', 'Name', 'Observed']
+    grouped_source = omics_data_df.groupby('data_type')
+
+    for source, group in grouped_source:
+        attribute_list = []
+        for ix, row in group.iterrows():
+
+            if source =='compounds':
+                cmpd_id = get_cmpid_from_chebi(row.entity_id)
+                attribute_list.append([cmpd_id, row.display_name, row.observed])
+            else:
+                attribute_list.append([row.entity_id, row.display_name, row.observed])
+
+        omics_dict[source]=attribute_list
+
+    return JsonResponse({'columns': columns, 'omics_data': omics_dict})

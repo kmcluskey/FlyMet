@@ -19,15 +19,18 @@
       Investigate the <i> Drosophila </i> genes that have been mapped to FlyMet metabolites. </p>
     </div>
   </div>
+  <nav>
+    <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
+      <a class="navdark nav-item nav-link"  href="{% url 'gene_tissue_explorer' 'All' %}">Tissues</a>
+      <a class="navdark nav-item nav-link active" href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
+    </div>
+  </nav>
 <!--Tabs to go to new pages-->
  <div class="card text-center">
    <div class="card-header">
      <ul id = "menu" class="nav nav-tabs card-header-tabs float_title">
        <li class="nav-item">
-         <a class="nav-link" href="{% url 'gene_tissue_explorer' 'All' %}">Tissues</a>
-       </li>
-       <li class="nav-item">
-         <a class="nav-link active" href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
+         <a class="nav-link active" href="{% url 'gene_age_explorer' 'All' %}">Genes</a>
        </li>
      </ul>
      <div class="top-right">
