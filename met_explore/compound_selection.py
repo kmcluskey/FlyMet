@@ -527,7 +527,11 @@ def get_kegg_id(cmpd_name):
     return kegg_id
 
 def get_cmpid_from_chebi(chebi_id):
+
     cmpds =  Compound.objects.filter(Q(chebi_id=chebi_id) | Q(related_chebi__contains=chebi_id))
-    cmpd_id = cmpds[0].id
+    if cmpds:
+        cmpd_id = cmpds[0].id
+    else:
+        cmpd_id = None
 
     return cmpd_id
