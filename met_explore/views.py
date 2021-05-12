@@ -1766,7 +1766,7 @@ def gene_omics_data(request, gene_id):
     omics_data_df.reset_index(inplace=True)
     omics_dict = {}
 
-    columns = ['ID', 'Name', 'Observed']
+    columns = ['ID', 'Name']
     grouped_source = omics_data_df.groupby('data_type')
 
     for source, group in grouped_source:
@@ -1775,9 +1775,9 @@ def gene_omics_data(request, gene_id):
 
             if source =='compounds':
                 cmpd_id = get_cmpid_from_chebi(row.entity_id)
-                attribute_list.append([cmpd_id, row.display_name, row.observed])
+                attribute_list.append([cmpd_id, row.display_name])
             else:
-                attribute_list.append([row.entity_id, row.display_name, row.observed])
+                attribute_list.append([row.entity_id, row.display_name])
 
         omics_dict[source]=attribute_list
 

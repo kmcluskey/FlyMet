@@ -129,7 +129,8 @@ function updateOmicsData(returned_data){
     groupDiv.setAttribute('class', 'p-1');
 
     let group_header = `<p class= "sidebar">${capital_letter(group_name)}</p>`;
-    let group_table = get_omics_gp_table(columns, attribute_list);
+
+    let group_table = get_omics_gp_table(columns, attribute_list, group_name);
 
     let group = group_header+group_table;
     groupDiv.innerHTML =  group;
@@ -143,7 +144,7 @@ function updateOmicsData(returned_data){
 }
 //
 // Returns a single HTML table for a single peak group
-function get_omics_gp_table(columns, attribute_list){
+function get_omics_gp_table(columns, attribute_list, group_name){
 //
 //
 
@@ -153,24 +154,34 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
        <table class="table table-sm table-bordered side_table">
      <thead>
             <tr>`
-
       // Add Table headers from column names
       for (var i = 0; i < columns.length; i++) {
         let head = `<th class=${columns[i]}>${columns[i]}</th>`
         group_table = group_table+head
       };
       //Start the table body
+      let data_segment
       group_table = group_table+`<tbody>`
         for (var i = 0; i < attribute_list.length; i++) {
           let current_attributes = attribute_list[i];
-          group_table = group_table+`<tr>`;
           //Add the data for a row
+          group_table = group_table+`<tr>`;
           for (var d = 0; d < current_attributes.length; d++) {
-             group_table = group_table+`<td>${current_attributes[d]}</td>`
+          if (group_name=='compounds' && columns[d]=='ID' && current_attributes[d]!==null){
+            data_segment =`<td><a href="met_ex_all/${current_attributes[d]}" data-toggle="tooltip"
+            title="Compound ${current_attributes[d]}}" target="_blank">${current_attributes[d]}</a></td>`
+          }
+          else if (group_name=='pathways' && columns[d]=='ID') {
+            data_segment=`<td><a href="pathway_search?pathway_search=${current_attributes[d+1]}" data-toggle="tooltip"
+            title="${current_attributes[d+1]}} changes in FlyMet tissues" target="_blank">${current_attributes[d]}</a></td>`
+          }
+          else  {
+              data_segment = `<td>${current_attributes[d]}</td>`
+            };
+            group_table = group_table+data_segment
           }
           //
           group_table = group_table+`</tr>`
-
           };
  console.log("returning omics table for a group")
  return group_table
