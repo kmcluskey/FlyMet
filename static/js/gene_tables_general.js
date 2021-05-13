@@ -139,7 +139,7 @@ function updateOmicsData(returned_data){
 
 //
 //       //Add the tooltips after all divs created.
-//       add_side_tooltips()
+      add_side_tooltips()
 //     }
 }
 //
@@ -156,7 +156,7 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
             <tr>`
       // Add Table headers from column names
       for (var i = 0; i < columns.length; i++) {
-        let head = `<th class=${columns[i]}>${columns[i]}</th>`
+        let head = `<th class="${columns[i]} ${group_name}">${columns[i]}</th>`
         group_table = group_table+head
       };
       //Start the table body
@@ -173,7 +173,7 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
           }
           else if (group_name=='pathways' && columns[d]=='ID') {
             data_segment=`<td><a href="pathway_search?pathway_search=${current_attributes[d+1]}" data-toggle="tooltip"
-            title="${current_attributes[d+1]}} changes in FlyMet tissues" target="_blank">${current_attributes[d]}</a></td>`
+            title="${current_attributes[d+1]} changes in FlyMet tissues" target="_blank">${current_attributes[d]}</a></td>`
           }
           else  {
               data_segment = `<td>${current_attributes[d]}</td>`
@@ -189,17 +189,12 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
 };
 // // Add table header tooltips --these are temporary.
 // //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
-// function add_side_tooltips(){
-//
-//   $('.I').tooltip({title: `This peak has been Identified using a library standard`, placement: "top"});
-//   $('.F').tooltip({title: `MS/MS Fragmentation data has been used to identify this peak`, placement: "top"});
-//   $('.A').tooltip({title: `This peak also annotates X other compounds`, placement: "top"});
-//   $('.Conf').tooltip({title: `The confidence level given to this annotation (see Key)`, placement: "top"});
-//   $('.Ion').tooltip({title: `The ion species`, placement: "top"});
-//   $('.Mass').tooltip({title: `The neutral mass of the compound associated with this annotation`, placement: "top"});
-//   $('.RT').tooltip({title: `The retention time of the compound`, placement: "top"});
-//
-// };
+function add_side_tooltips(){
+  $('.ID.compounds').tooltip({title: `Linked compounds can be found in FlyMet tissues`, placement: "top"});
+  $('.ID.pathways').tooltip({title: `Pathways changing in FlyMet tissues`, placement: "top"});
+  $('.ID.proteins').tooltip({title: `Link through to Reactome proteins`, placement: "top"});
+  $('.ID.reactions').tooltip({title: `Link through to Reactome reactions`, placement: "top"});
+};
 //
 // // Given an array return a simple array index that corresponds to the data in the table
 // // Basically this is just columns in Table-1 for the Tissue or Age column

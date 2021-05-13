@@ -70,7 +70,7 @@ except FileNotFoundError as e:
 except Exception as e:
     logger.warning("I'm catching this error %s" % e)
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
-    raise e
+   # raise e
 
 
 def index(request):
@@ -333,12 +333,16 @@ def pathway_age_search(request):
 def get_pwy_search_table(pals_df, search_query, analysis):
 
     logger.info("getting %s table data" %search_query)
-
     pathway_id, summ_values, pwy_table_data = "", [], []
     pathway_id_names_dict = get_pathway_id_names_dict()
 
     try:
-        pathway_id = pathway_id_names_dict[search_query]
+        try:
+            pathway_id = pathway_id_names_dict[search_query]
+        #If the search query is not a name key it might be the pathway_id
+        except KeyError:
+            pathway_id = search_query
+
         summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
         summ_values_orig = summ_table.values.flatten().tolist()
         summ_values = [int(i) for i in summ_values_orig[:-1]]
@@ -375,7 +379,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
 
     except KeyError:
 
-        logger.warning("A pathway name %s was not passed to the search" % search_query)
+        logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
         raise
 
     return columns, pathway_id, summ_values, pwy_table_data

@@ -119,13 +119,14 @@ function updatePathwayPanel(obj){
             groupDiv.setAttribute('class', 'p-1');
             let pwy_name = pwy_dict[pwy_id]['display_name'];
             // let pwy_name = details['display_name']
-            let pwy_url =`<a href="pathway_search?pathway_search=${pwy_name}" data-toggle="tooltip"
+            // let pathway_name = escape(pwy_name)
+
+            let pwy_url =`<a href="pathway_search?pathway_search=${pwy_id}" data-toggle="tooltip"
             title="${pwy_name} changes in FlyMet tissues" target="_blank">${pwy_name}</a>`
             groupDiv.innerHTML =  pwy_url;
             pwyDiv.appendChild(groupDiv)
       }
     } }
-
   const pwy_url = `/met_explore/met_ex_pathway_data/${cmpd_id}`
   fetch(pwy_url)
   .then(res => res.json())//response type
