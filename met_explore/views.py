@@ -272,7 +272,7 @@ def pathway_search(request):
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            columns, pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+            columns, pathway_id, summ_values, pwy_table_data, pathway_name = get_pwy_search_table(pals_df, search_query, analysis)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
@@ -284,7 +284,7 @@ def pathway_search(request):
             'pals_max': pals_max,
             'pals_mean': pals_mean,
             'reactome_token': reactome_token,
-            'pathway_name': search_query,
+            'pathway_name': pathway_name,
             'pathway_id': pathway_id,
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names')
@@ -304,12 +304,12 @@ def pathway_age_search(request):
         analysis = Analysis.objects.get(name="Age Comparisons")
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-        columns, pathway_id, summ_values, pwy_table_data = [], "", [], []
+        columns, pathway_id, summ_values, pwy_table_data, pathway_name = [], "", [], [], ""
 
         # If we get a metabolite sent from the view
         if search_query is not None:
 
-            columns, pathway_id, summ_values, pwy_table_data = get_pwy_search_table(pals_df, search_query, analysis)
+            columns, pathway_id, summ_values, pwy_table_data, pathway_name = get_pwy_search_table(pals_df, search_query, analysis)
 
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
@@ -321,7 +321,7 @@ def pathway_age_search(request):
             'pals_max': pals_max,
             'pals_mean': pals_mean,
             'reactome_token': reactome_token,
-            'pathway_name': search_query,
+            'pathway_name': pathway_name,
             'pathway_id': pathway_id,
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names')
@@ -339,9 +339,12 @@ def get_pwy_search_table(pals_df, search_query, analysis):
     try:
         try:
             pathway_id = pathway_id_names_dict[search_query]
+            pathway_name = search_query
+
         #If the search query is not a name key it might be the pathway_id
         except KeyError:
             pathway_id = search_query
+            pathway_name = get_name_id_dict(analysis)[search_query]
 
         summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
         summ_values_orig = summ_table.values.flatten().tolist()
@@ -382,7 +385,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
         raise
 
-    return columns, pathway_id, summ_values, pwy_table_data
+    return columns, pathway_id, summ_values, pwy_table_data, pathway_name
 
 
 def pathway_metabolites(request):

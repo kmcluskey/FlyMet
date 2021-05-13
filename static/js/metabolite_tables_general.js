@@ -91,13 +91,19 @@ function initialise_met_table(tableName){
     return table;
 }
 
-function updatePathwayPanel(obj){
+function updatePathwayPanel(obj, pathway_url){
   let currentRow = $(obj).closest("tr");
   let cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
   let cmpd_name = $(obj).children().first().text();
 
+  console.log("PWY_URL1", pathway_url)
+
   // Returned data is the data returned from the url below.
   const handleUpdate = function(returned_data) {
+
+    console.log("PWY_URL", pathway_url)
+
+    // updatePathways(returned_data, pathways_url)
 
     let pwyDiv =  document.getElementById("pathwayDetails");
     pwyDiv.innerHTML = "";
@@ -121,7 +127,7 @@ function updatePathwayPanel(obj){
             // let pwy_name = details['display_name']
             // let pathway_name = escape(pwy_name)
 
-            let pwy_url =`<a href="pathway_search?pathway_search=${pwy_id}" data-toggle="tooltip"
+            let pwy_url =`<a href="${pathway_url}?${pathway_url}=${pwy_id}" data-toggle="tooltip"
             title="${pwy_name} changes in FlyMet tissues" target="_blank">${pwy_name}</a>`
             groupDiv.innerHTML =  pwy_url;
             pwyDiv.appendChild(groupDiv)

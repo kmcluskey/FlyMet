@@ -6,11 +6,12 @@ $(document).ready(function() {
   $("#pathwaysDiv").hide();
 
   let peak_url = `peak_explorer/`
+  let pathway_url = `pathway_search`
   let metabolite_table = initialise_met_table("metabolite_list");
 
       metabolite_table.on( 'click', 'tr', function () {
       updateMetboliteSidePanel(this, peak_url);
-      updatePathwayPanel(this);
+      updatePathwayPanel(this, pathway_url);
       } );
 
 });
