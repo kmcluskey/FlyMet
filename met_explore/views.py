@@ -267,7 +267,7 @@ def pathway_search(request):
         analysis = Analysis.objects.get(name="Tissue Comparisons")
 
         pals_df, pals_min, pals_mean, pals_max = get_pals_view_data(analysis)
-        columns, pathway_id, summ_values, pwy_table_data = [], "", [], []
+        columns, pathway_id, summ_values, pwy_table_data, pathway_name = [], "", [], [], ""
 
         # If we get a metabolite sent from the view
         if search_query is not None:
