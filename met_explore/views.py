@@ -333,13 +333,13 @@ def pathway_age_search(request):
 def get_pwy_search_table(pals_df, search_query, analysis):
 
     logger.info("getting %s table data" %search_query)
-    pathway_id, summ_values, pwy_table_data = "", [], []
+    pathway_id, summ_values, pwy_table_data, columns = "", [], [], []
     pathway_id_names_dict = get_pathway_id_names_dict()
+    pathway_name = search_query
 
     try:
         try:
             pathway_id = pathway_id_names_dict[search_query]
-            pathway_name = search_query
 
         #If the search query is not a name key it might be the pathway_id
         except KeyError:
@@ -383,7 +383,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
     except KeyError:
 
         logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
-        raise
+        pathway_id = "" #The pathway_id wasn't passed so reset to empty string.
 
     return columns, pathway_id, summ_values, pwy_table_data, pathway_name
 
