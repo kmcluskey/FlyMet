@@ -7,14 +7,13 @@ https://docs.djangoproject.com/en/2.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.0/ref/settings/
 """
+import logging
 import os
+import sys
 
 from configurations import Configuration, values
 from django.contrib.messages import constants as message_constants
 from django.urls import reverse_lazy
-
-import logging
-import sys
 
 
 def getString(name, default):
@@ -22,12 +21,11 @@ def getString(name, default):
         return default
     return os.environ[name]
 
-CACHE_DURATION = int(getString('CACHE_DURATION', '604800')) # defaults to a week in seconds
+
+CACHE_DURATION = int(getString('CACHE_DURATION', '604800'))  # defaults to a week in seconds
 
 
 class Common(Configuration):
-
-
     # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -36,10 +34,11 @@ class Common(Configuration):
 
     # SECURITY WARNING: don't run with debug turned on in production!
     DEBUG = values.BooleanValue(False)
+    CACHE_VIEWS = True  # whether to cache views in metexplore urls.py
 
     ALLOWED_HOSTS = []
 
-    #Trying to set up email contact for the website
+    # Trying to set up email contact for the website
     SENDGRID_API_KEY = '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'
 
     EMAIL_HOST = 'smtp.sendgrid.net'
@@ -68,9 +67,9 @@ class Common(Configuration):
     ]
 
     SPAGHETTI_SAUCE = {
-  'apps':['met_explore'],
-  'show_fields':True,
-  'exclude':{'auth':['user']}}
+        'apps': ['met_explore'],
+        'show_fields': True,
+        'exclude': {'auth': ['user']}}
 
     LOGGING = {
         'version': 1,
@@ -86,7 +85,6 @@ class Common(Configuration):
             'handlers': ['console']
         }
     }
-
 
     WEBPACK_LOADER = {
         'DEFAULT': {
@@ -164,19 +162,18 @@ class Common(Configuration):
     # Static files (CSS, JavaScript, Images)
     # https://docs.djangoproject.com/en/2.0/howto/static-files/
     STATIC_URL = '/static/'
-    STATIC_PATH = os.path.join(BASE_DIR,'static')
-    STATIC_ROOT = os.path.join(BASE_DIR,'assets')
+    STATIC_PATH = os.path.join(BASE_DIR, 'static')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
     STATICFILES_DIRS = (
         STATIC_PATH,
     )
 
-
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-            'LOCATION': os.path.join(BASE_DIR,'django_cache'),
+            'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
             'TIMEOUT': CACHE_DURATION
         }
     }
@@ -189,11 +186,14 @@ class Common(Configuration):
     AUTH_USER_MODEL = 'users.User'
     LOGIN_URL = reverse_lazy('login')
 
+
 class Development(Common):
     """
     The in-development settings and the default configuration.
     """
     DEBUG = True
+    CACHE_VIEWS = False
+
     MESSAGE_LEVEL = message_constants.DEBUG
 
     ALLOWED_HOSTS = ['*']
@@ -247,6 +247,7 @@ class Staging(Common):
     SECURE_PROXY_SSL_HEADER = values.TupleValue(
         ('HTTP_X_FORWARDED_PROTO', 'https')
     )
+
 
 class Dev(Configuration):
     DEBUG = True
