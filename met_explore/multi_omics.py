@@ -2,9 +2,6 @@ from met_explore.pathway_analysis import *
 from django.core.cache import cache
 from loguru import logger
 
-import sys
-sys.path.append('/Users/Karen/pyMultiOmics')
-
 from pyMultiOmics.constants import *
 from pyMultiOmics.mapping import Mapper
 from pyMultiOmics.analysis import *
@@ -12,7 +9,6 @@ from pyMultiOmics.query import *
 from pyMultiOmics.pipelines import *
 from pyMultiOmics.common import set_log_level_info
 
-from rpy2.rinterface_lib import openrlib
 
 DATA_FOLDER = os.path.abspath(os.path.join('..', 'FlyMet/omics_data'))
 fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'), encoding = 'unicode_escape', index_col='FlyBaseID')

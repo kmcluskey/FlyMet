@@ -40,6 +40,10 @@ module.exports = {
         path: path.resolve('./static/bundles/'),
     },
 
+    optimization: {
+    minimize: false
+    },
+
     plugins: [
         new BundleTracker({filename: './webpack-stats.json'}),
         new CleanWebpackPlugin(path.resolve('./static/bundles/')),
@@ -91,7 +95,7 @@ module.exports = {
         ],
     },
 
-    devtool: 'source-map',
+   devtool: 'source-map',
 
     resolve: {
         modules: ['node_modules', 'bower_components'],
