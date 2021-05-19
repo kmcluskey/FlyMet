@@ -24,7 +24,7 @@ jupyter = "*"
 jsonfield = "*"
 jsonpickle = "*"
 tzlocal = "*"
-django-webpack-loader = "*"
+django-webpack-loader = "==0.7.0" # https://github.com/django-webpack/django-webpack-loader/issues/280
 djangorestframework = "*"
 nbconvert = "*"
 nbstripout = "*"
