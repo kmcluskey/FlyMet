@@ -27,10 +27,10 @@ class MultiOmics(object):
         self.ap =  self.get_cache_ap() # Analysis_pipeline
 
     def get_cache_ap(self):
-        # cache.delete('pals_ds')
         a_id = str(self.analysis.id)
         cache_name = 'ap_' + a_id
 
+        # cache.delete(cache_name)
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the ap function")
             cache.set(cache_name, self.get_analysis_pipeline(), 60 * 180000)
@@ -229,26 +229,18 @@ class MultiOmics(object):
 
 
     def get_cache_gene_df(self):
-        try:
-            a_id = str(self.analysis.id)
-            # cache.delete('omics_df'+a_id)
-            cache_name = 'gene_df' + a_id
 
-            if cache.get(cache_name) is None:
-                logger.info("we dont have cache so getting the gene_df")
-                cache.set(cache_name, self.get_gene_df(), 60 * 180000)
-                gene_df = cache.get(cache_name)
-            else:
-                logger.info("we have cache for the gene_df so retrieving it")
-                gene_df = cache.get(cache_name)
+        a_id = str(self.analysis.id)
+        # cache.delete('omics_df'+a_id)
+        cache_name = 'gene_df' + a_id
 
-        except:
-
-            template = "An exception at FlyMet import of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(e).__name__, e.args)
-            print(message)
-            gene_df = None
-
+        if cache.get(cache_name) is None:
+            logger.info("we dont have cache so getting the gene_df")
+            cache.set(cache_name, self.get_gene_df(), 60 * 180000)
+            gene_df = cache.get(cache_name)
+        else:
+            logger.info("we have cache for the gene_df so retrieving it")
+            gene_df = cache.get(cache_name)
 
         return gene_df
 

@@ -172,7 +172,7 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
             title="Compound ${current_attributes[d]}}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='pathways' && columns[d]=='ID') {
-            data_segment=`<td><a href="pathway_search?pathway_search=${current_attributes[d+1]}" data-toggle="tooltip"
+            data_segment=`<td><a href="pathway_search?pathway_search=${current_attributes[d]}" data-toggle="tooltip"
             title="${current_attributes[d+1]} changes in FlyMet tissues" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='proteins' && columns[d]=='ID') {
