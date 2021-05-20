@@ -85,14 +85,12 @@
                         <tr>
                           <th class="col vw150">Tissue-Type</th>
                           {% for c in columns %}
-                          {% if c == "Adult F/W p-value" %}
+                          {% if c == "F" %}
                           <th id='AF-pvalue' class="col vw150">Adult F/W p-value</th>
-                          {% elif c == "Adult Male FC" %}
+                          {% elif c == "M" %}
                           <th id='AM-pvalue' class="col vw150">Adult M/W p-value</th>
-                          {% elif c == "Larvae/W p-value" %}
+                          {% elif c == "L" %}
                           <th id='L-pvalue' class="col vw150">Larvae/W p-value</th>
-                          {% else %}
-                          <th class="col vw150">{{ c }}</th>
                           {% endif %}
                           {% endfor %}
                         </tr>
