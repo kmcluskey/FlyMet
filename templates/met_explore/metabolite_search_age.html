@@ -112,13 +112,17 @@
             <fieldset class="fieldset-details">
               <legend>Pathways containing {{metabolite}} </legend>
               <div class="p-2">
+                {% if pathways|length > 0 %}
                 <ul>
                   {% for id, name in pathways.items %}
-                  <li><a href="{% url 'pathway_search' %}?pathway_search={{name}}">{{ name }}</a>
+                  <li><a href="{% url 'pathway_age_search' %}?pathway_age_search={{name}}">{{name}}</a>
                     <p class="m-2">This is currently a placeholder for details of {{name}}.</p>
                   </li>
                   {% endfor %}
                 </ul>
+                  {% else %}
+                  <p class='p-2'>There are no Reactome pathways currently mapped to {{metabolite}} in <i>Drosophila</i>.</p>
+                  {% endif %}
               </div>
             </fieldset>
           </div>
