@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joewandy/WebOmics.git"
+    "url": "git+https://github.com/kmcluskey/FlyMet.git"
   },
   "keywords": [
     "Drosophila",
@@ -71,7 +71,7 @@
     "datatables.net-select": "^1.2.7",
     "datatables.net-select-bs4": "^1.2.7",
     "datatables.net-select-dt": "^1.2.7",
-    "highcharts": "^7.2.2",
+    "highcharts": "^9.0.0",
     "jquery": "^3.5.1",
     "pdfmake": "^0.1.39",
     "popper.js": "^1.14.4",

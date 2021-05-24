@@ -17,16 +17,22 @@ module.exports = {
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
         pathway_metabolites: './static/js/pathway_metabolites',
+        gene_tissue_explorer: './static/js/gene_tissue_explorer',
         peak_explorer: './static/js/peak_explorer',
         peak_ex_compare: './static/js/peak_ex_compare',
         peak_mf_compare: './static/js/peak_mf_compare',
         pathway_explorer: './static/js/pathway_explorer',
+        gene_age_explorer: './static/js/gene_age_explorer',
         index:'./static/js/index',
     },
 
     output: {
         filename: "[name]-[hash].js",
         path: path.resolve('./static/bundles/'),
+    },
+
+    optimization: {
+    minimize: false
     },
 
     plugins: [
@@ -80,7 +86,7 @@ module.exports = {
         ],
     },
 
-    devtool: 'source-map',
+   devtool: 'source-map',
 
     resolve: {
         modules: ['node_modules', 'bower_components'],

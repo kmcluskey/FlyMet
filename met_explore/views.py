@@ -11,21 +11,25 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
+
 from loguru import logger
 
-from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME
+from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME, get_cmpid_from_chebi
 from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES, INITIAL_PROJECT_ID
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
-    get_search_categories, get_project_config
+    get_search_categories, get_project_config, set_log_level_info, set_log_level_debug
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
     Group, Factor, Project
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
-    get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, MIN_HITS
+    get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, get_related_chebi_ids, MIN_HITS
+from met_explore.multi_omics import MultiOmics
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
-
+set_log_level_debug()
 MIN = -7
 MAX = 7
 MEAN = 0
@@ -36,9 +40,6 @@ WF_MIN = 1000  # Minimum value used for missing values in the whole fly data.
 # If the Db exists and has been initialised:
 try:
     cmpd_selector = CompoundSelector()
-    # DFs for all the peaks
-    # int_df = cmpd_selector.construct_cmpd_intensity_df()
-    # peak_group_int_df =  cmpd_selector.get_group_df(int_df)
 
     # DF for the Highly confident peaks
     hc_int_df = cmpd_selector.get_hc_int_df()
@@ -63,7 +64,22 @@ except FileNotFoundError as e:
 except Exception as e:
     logger.warning("I'm catching this error %s" % e)
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
-    raise e
+   # raise e
+
+
+try:
+    # This is here so we only call these once but this is not the way to do it.
+
+    analysis_tissue = Analysis.objects.get(name="Tissue Comparisons")
+    analysis_age = Analysis.objects.get(name="Age Comparisons")
+    mo_tissue = MultiOmics(analysis_tissue)
+    mo_age = MultiOmics(analysis_age)
+except Exception as e:
+    logger.warning("Cannot initialise multi-omics studies for tissue and age comparisons due to %s" % e)
+    logger.warning("Hopefully just that the DB not ready, start server again once populated")
+    mo_tissue = None
+    mo_age = None
+
 
 
 def index(request):
@@ -293,9 +309,8 @@ def pathway_search(request, analysis_id):
         single_factor = False
         config = get_project_config(analysis)
         if search_query is not None:
-            pathway_id, summ_values, pwy_table_data, columns, single_factor = get_pwy_search_table(pals_df,
-                                                                                                   search_query,
-                                                                                                   analysis)
+            pathway_id, summ_values, pwy_table_data, columns, single_factor, pathway_name = get_pwy_search_table(
+                pals_df, search_query, analysis)
             uic = get_analysis_config(config, analysis_id)
             current_category = uic.category
             case_label = uic.case_label
@@ -321,7 +336,7 @@ def pathway_search(request, analysis_id):
             'pals_max': pals_max,
             'pals_mean': pals_mean,
             'reactome_token': reactome_token,
-            'pathway_name': search_query,
+            'pathway_name': pathway_name,
             'pathway_id': pathway_id,
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
@@ -329,15 +344,22 @@ def pathway_search(request, analysis_id):
 
         return render(request, 'met_explore/pathway_search.html', context)
 
-
 def get_pwy_search_table(pals_df, search_query, analysis):
     logger.info("getting %s table data" % search_query)
 
     pathway_id, summ_values, pwy_table_data = "", [], []
     pathway_id_names_dict = get_pathway_id_names_dict(analysis)
+    pathway_name = search_query
 
     try:
-        pathway_id = pathway_id_names_dict[search_query]
+        try:
+            pathway_id = pathway_id_names_dict[search_query]
+
+        #If the search query is not a name key it might be the pathway_id
+        except KeyError:
+            pathway_id = search_query
+            pathway_name = get_name_id_dict(analysis)[search_query]
+
         summ_table = pals_df[pals_df['Reactome ID'] == pathway_id][['PW F', 'DS F', 'F Cov']]
         summ_values_orig = summ_table.values.flatten().tolist()
         summ_values = [int(i) for i in summ_values_orig[:-1]]
@@ -381,10 +403,10 @@ def get_pwy_search_table(pals_df, search_query, analysis):
 
     except KeyError:
 
-        logger.warning("A pathway name %s was not passed to the search" % search_query)
-        raise
+        logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
+        pathway_id = "" #The pathway_id wasn't passed so reset to empty string.
 
-    return pathway_id, summ_values, pwy_table_data, columns, single_factor
+    return pathway_id, summ_values, pwy_table_data, columns, single_factor, pathway_name
 
 
 def pathway_metabolites(request, analysis_id):
@@ -474,20 +496,38 @@ def met_ex_all(request, analysis_id, cmpd_list):
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
-    peak_url = 'peak_explorer/'
 
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
     response = {
         'cmpd_list': cmpd_list,
         'columns': columns,
         'analysis_id': analysis_id,
-        'peak_url': peak_url,
         'all_categories': all_categories,
         'current_category': current_category,
         'species': species
     }
 
     return render(request, 'met_explore/met_ex_all.html', response)
+
+
+def met_ex_pathway_data(request, cmpd_id):
+    """
+    :param request:
+    :param cmpd_id: ID of compound for which we need pathways.
+    :return: List of pathways (ID, name) associated with the compound.
+    """
+
+    chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
+    entities = [chebi_id] + list(get_related_chebi_ids([chebi_id]))
+
+    #Get the pathways associated with the compound
+    pathway_df = mo_tissue.get_single_entity_relation(entities, "pathways")
+
+    # pwy_df = pathway_df.reset_index()
+    pwy_data = pathway_df.T.to_dict()
+
+
+    return JsonResponse({'pwy_data': pwy_data})
 
 
 def peak_ex_compare(request, analysis_id, peak_compare_list):
@@ -1587,3 +1627,77 @@ def get_peak_mf_header(view_df, analysis):
 
 def enzyme_search(request):
     return render(request, 'met_explore/enzyme_search.html')
+
+
+def gene_tissue_explorer(request, gene_list):
+
+    gene_df = mo_tissue.get_cache_gene_df().reset_index()
+
+    column_headers = gene_df.columns.tolist()
+
+    response = {'gene_list': gene_list, 'columns': column_headers}
+
+    return render(request, 'met_explore/gene_tissue_explorer.html', response)
+
+
+def gene_age_explorer(request, gene_list):
+
+    gene_df = mo_age.get_cache_gene_df().reset_index()
+    column_headers = gene_df.columns.tolist()
+
+    response = {'gene_list': gene_list, 'columns': column_headers}
+
+    return render(request, 'met_explore/gene_age_explorer.html', response)
+
+
+def gene_data(request, gene_ids):
+    """
+    :param request: Request for the gene data for the Gene Explorer all page and a list of gene_ids (string)
+    :return: The cached url of the ajax data for the gene data table.
+    """
+    logger.info("Gene data requested")
+
+    start = timeit.default_timer()
+
+    gene_list = gene_ids.split(",")
+    gene_df = mo_tissue.get_cache_gene_df().reset_index()
+
+    gene_df = gene_df.fillna("-")
+
+    if gene_ids == "All":
+        gene_data = gene_df.values.tolist()
+    else:
+        gene_data = gene_df[gene_df.FlyBaseID.isin(gene_list)].values.tolist()
+
+    stop = timeit.default_timer()
+
+    logger.info("Returning the gene_data took: %s S" % str(stop - start))
+
+    return JsonResponse({'data': gene_data})
+
+def gene_omics_data(request, gene_id):
+    """
+    :param request:
+    :param gene_id: The FbgnCode for which the omics data is required
+    :return: Dict of omics data with the relation/source eg. compounds as key and [ID, name, observed] as the value
+    """
+    omics_data_df = mo_tissue.get_single_entity_relation([gene_id])
+    omics_data_df.reset_index(inplace=True)
+    omics_dict = {}
+
+    columns = ['ID', 'Name']
+    grouped_source = omics_data_df.groupby('data_type')
+
+    for source, group in grouped_source:
+        attribute_list = []
+        for ix, row in group.iterrows():
+
+            if source =='compounds':
+                cmpd_id = get_cmpid_from_chebi(row.entity_id)
+                attribute_list.append([cmpd_id, row.display_name])
+            else:
+                attribute_list.append([row.entity_id, row.display_name])
+
+        omics_dict[source]=attribute_list
+
+    return JsonResponse({'columns': columns, 'omics_data': omics_dict})

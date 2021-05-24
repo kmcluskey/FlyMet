@@ -43,6 +43,7 @@ urlpatterns = [
     path('get_pathway_names/<int:analysis_id>', views.get_pathway_names, name='get_pathway_names'),
     path('metabolite_pathway_data/<str:analysis_id>/<str:pw_id>', views.metabolite_pathway_data,
          name='metabolite_pathway_data'),
+    path('met_ex_pathway_data/<int:cmpd_id>', views.met_ex_pathway_data, name='met_ex_pathway_data'),
     path('pathway_search/<int:analysis_id>', views.pathway_search, name='pathway_search'),
     path('pathway_metabolites/<int:analysis_id>', views.pathway_metabolites, name='pathway_metabolites'),
     path('pathway_explorer/<int:analysis_id>', views.pathway_explorer, name='pathway_explorer'),
@@ -54,6 +55,13 @@ urlpatterns = [
          name='peak_compare_data'),
     path('peak_mf_compare/<int:analysis_id>', views.peak_mf_compare, name='peak_mf_compare'),
     path('peak_mf_compare_data/<int:analysis_id>', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
+
+    # Gene views
+
+    path('gene_tissue_explorer/<str:gene_list>', views.gene_tissue_explorer, name='gene_tissue_explorer'),
+    path('gene_age_explorer/<str:gene_list>', views.gene_age_explorer, name='gene_age_explorer'),
+    path('gene_data/<str:gene_ids>', c(views.gene_data), name='gene_data'),
+    path('gene_omics_data/<str:gene_id>', views.gene_omics_data, name='gene_omics_data'),
 
     # Enzyme specific views
 
