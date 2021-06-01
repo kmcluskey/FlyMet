@@ -126,3 +126,4 @@ yarn.lock
 old_data
 data
 Pipfile.lock
+omics_data/

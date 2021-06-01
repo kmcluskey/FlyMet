@@ -8,24 +8,23 @@ import pandas as pd
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
-from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
-
 from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME, get_cmpid_from_chebi
-from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES, INITIAL_PROJECT_ID
+from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES, INITIAL_PROJECT_ID, \
+    LABEL_COLOR_SCHEME, LABEL_LOGO_FILENAME, LABEL_LOGO_ALT, LABEL_FOOTER_EMAIl, LABEL_FOOTER_SHOW
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
-    get_search_categories, get_project_config, set_log_level_info, set_log_level_debug
+    get_search_categories, get_project_config, set_log_level_debug
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
     Group, Factor, Project
+from met_explore.multi_omics import MultiOmics
 from met_explore.pathway_analysis import get_pathway_id_names_dict, get_highlight_token, get_cache_df, \
     get_fly_pw_cmpd_formula, get_cmpd_pwys, get_name_id_dict, get_related_chebi_ids, MIN_HITS
-from met_explore.multi_omics import MultiOmics
 from met_explore.peak_groups import PeakGroups
 
 # from met_explore.forms import ContactForm
@@ -64,7 +63,7 @@ except FileNotFoundError as e:
 except Exception as e:
     logger.warning("I'm catching this error %s" % e)
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
-   # raise e
+# raise e
 
 
 try:
@@ -81,13 +80,27 @@ except Exception as e:
     mo_age = None
 
 
+def set_ui_config(context, config, project=None, analysis_id=None):
+    if project is not None:
+        config = project.metadata[LABEL_PROJECT_CONFIG]
+    ui_config = {
+        LABEL_SPECIES: config[LABEL_SPECIES],
+        LABEL_COLOR_SCHEME: config[LABEL_COLOR_SCHEME],
+        LABEL_LOGO_FILENAME: config[LABEL_LOGO_FILENAME],
+        LABEL_LOGO_ALT: config[LABEL_LOGO_ALT],
+        LABEL_FOOTER_SHOW: config[LABEL_FOOTER_SHOW],
+        LABEL_FOOTER_EMAIl: config[LABEL_FOOTER_EMAIl],
+    }
+    new_context = dict(context)
+    new_context.update(ui_config)
+    return new_context
+
 
 def index(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
     config = project.metadata[LABEL_PROJECT_CONFIG]
 
-    species = config[LABEL_SPECIES]
     uic = get_analysis_config(config, analysis.id)
     current_category = uic.category
 
@@ -96,15 +109,16 @@ def index(request):
         'json_url': reverse('get_metabolite_names'),
         'analysis_id': analysis.id,
         'all_categories': all_categories,
-        'species': species,
         'current_category': current_category
     }
-
+    context = set_ui_config(context, config)
     return render(request, 'met_explore/index.html', context)
+
 
 def get_initial_project():
     project = Project.objects.get(pk=INITIAL_PROJECT_ID)
     return project
+
 
 def get_initial_analysis(project):
     config = project.metadata[LABEL_PROJECT_CONFIG]
@@ -119,6 +133,7 @@ def about(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/about.html', context)
 
 
@@ -128,6 +143,7 @@ def background(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/background.html', context)
 
 
@@ -137,6 +153,7 @@ def exp_protocols(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/exp_protocols.html', context)
 
 
@@ -146,6 +163,7 @@ def glossary(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/glossary.html', context)
 
 
@@ -155,6 +173,7 @@ def feedback(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/feedback.html', context)
 
 
@@ -164,6 +183,7 @@ def links(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/links.html', context)
 
 
@@ -173,6 +193,7 @@ def credits(request):
     context = {
         'analysis_id': analysis.id,
     }
+    context = set_ui_config(context, None, project=project)
     return render(request, 'met_explore/credits.html', context)
 
 
@@ -253,7 +274,6 @@ def metabolite_search(request, analysis_id):
         columns, met_table_data, min, max, mean, pathways, references, peak_id = get_metabolite_search_page(analysis,
                                                                                                             search_query)
         config = get_project_config(analysis)
-        species = config[LABEL_SPECIES]
         all_categories = get_search_categories(config)
         uic = get_analysis_config(config, analysis_id)
         current_category = uic.category
@@ -273,7 +293,6 @@ def metabolite_search(request, analysis_id):
             'current_category': current_category,
             'case_label': case_label,
             'control_label': control_label,
-            'species': species,
             'met_table_data': met_table_data,
             'min': min,
             'max': max,
@@ -284,6 +303,8 @@ def metabolite_search(request, analysis_id):
         }
 
         logger.debug("The references are %s" % references)
+
+        context = set_ui_config(context, config)
         return render(request, 'met_explore/metabolite_search.html', context)
 
 
@@ -320,7 +341,6 @@ def pathway_search(request, analysis_id):
         reactome_token = get_highlight_token()
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
-        species = config[LABEL_SPECIES]
         all_categories = get_search_categories(config)
         context = {
             'analysis_id': analysis_id,
@@ -329,7 +349,6 @@ def pathway_search(request, analysis_id):
             'columns': display_colnames,
             'case_label': case_label,
             'control_label': control_label,
-            'species': species,
             'pwy_table_data': pwy_table_data,
             'single_factor': single_factor,
             'pals_min': pals_min,
@@ -341,8 +360,9 @@ def pathway_search(request, analysis_id):
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
-
+        context = set_ui_config(context, config)
         return render(request, 'met_explore/pathway_search.html', context)
+
 
 def get_pwy_search_table(pals_df, search_query, analysis):
     logger.info("getting %s table data" % search_query)
@@ -355,7 +375,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         try:
             pathway_id = pathway_id_names_dict[search_query]
 
-        #If the search query is not a name key it might be the pathway_id
+        # If the search query is not a name key it might be the pathway_id
         except KeyError:
             pathway_id = search_query
             pathway_name = get_name_id_dict(analysis)[search_query]
@@ -404,7 +424,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
     except KeyError:
 
         logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
-        pathway_id = "" #The pathway_id wasn't passed so reset to empty string.
+        pathway_id = ""  # The pathway_id wasn't passed so reset to empty string.
 
     return pathway_id, summ_values, pwy_table_data, columns, single_factor, pathway_name
 
@@ -457,7 +477,6 @@ def pathway_metabolites(request, analysis_id):
 
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
         config = get_project_config(analysis)
-        species = config[LABEL_SPECIES]
         all_categories = get_search_categories(config)
         uic = get_analysis_config(config, analysis_id)
         current_category = uic.category
@@ -470,7 +489,6 @@ def pathway_metabolites(request, analysis_id):
             'current_category': current_category,
             'case_label': case_label,
             'control_label': control_label,
-            'species': species,
             'cmpd_id_list': cmpd_id_list,
             'name_data': name_data_list,
             'metabolite_names': metabolite_names,
@@ -481,7 +499,7 @@ def pathway_metabolites(request, analysis_id):
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
-
+        context = set_ui_config(context, config)
         return render(request, 'met_explore/pathway_metabolites.html', context)
 
 
@@ -492,22 +510,20 @@ def met_ex_all(request, analysis_id, cmpd_list):
     """
     analysis = Analysis.objects.get(pk=analysis_id)
     config = get_project_config(analysis)
-    species = config[LABEL_SPECIES]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
 
     columns = ['cmpd_id', 'Metabolite', 'Formula', 'Synonyms', 'DB Identifiers']
-    response = {
+    context = {
         'cmpd_list': cmpd_list,
         'columns': columns,
         'analysis_id': analysis_id,
         'all_categories': all_categories,
         'current_category': current_category,
-        'species': species
     }
-
-    return render(request, 'met_explore/met_ex_all.html', response)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/met_ex_all.html', context)
 
 
 def met_ex_pathway_data(request, cmpd_id):
@@ -520,12 +536,11 @@ def met_ex_pathway_data(request, cmpd_id):
     chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
     entities = [chebi_id] + list(get_related_chebi_ids([chebi_id]))
 
-    #Get the pathways associated with the compound
+    # Get the pathways associated with the compound
     pathway_df = mo_tissue.get_single_entity_relation(entities, "pathways")
 
     # pwy_df = pathway_df.reset_index()
     pwy_data = pathway_df.T.to_dict()
-
 
     return JsonResponse({'pwy_data': pwy_data})
 
@@ -555,7 +570,6 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
     stop = timeit.default_timer()
 
     config = get_project_config(analysis)
-    species = config[LABEL_SPECIES]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
@@ -567,7 +581,7 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
     is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {
+    context = {
         'peak_compare_list': peak_compare_list,
         'columns': column_headers,
         'max_value': max,
@@ -578,12 +592,11 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
         'current_category': current_category,
         'case_label': case_label,
         'control_label': control_label,
-        'species': species,
         'is_fly_tissue_data': is_fly_tissue_data,
         'is_fly_age_data': is_fly_age_data
     }
-
-    return render(request, 'met_explore/peak_ex_compare.html', response)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/peak_ex_compare.html', context)
 
 
 def peak_mf_compare(request, analysis_id):
@@ -602,7 +615,6 @@ def peak_mf_compare(request, analysis_id):
     stop = timeit.default_timer()
 
     config = get_project_config(analysis)
-    species = config[LABEL_SPECIES]
 
     # special FlyMet workaround to show some specific views
     is_fly_tissue_data = False
@@ -616,19 +628,18 @@ def peak_mf_compare(request, analysis_id):
         linked_analysis_id = 3
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {
+    context = {
         'columns': column_headers,
         'max_value': max,
         'min_value': min,
         'mean_value': mean,
         'analysis_id': analysis_id,
         'linked_analysis_id': linked_analysis_id,
-        'species': species,
         'is_fly_tissue_data': is_fly_tissue_data,
         'is_fly_age_data': is_fly_age_data
     }
-
-    return render(request, 'met_explore/peak_mf_compare.html', response)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/peak_mf_compare.html', context)
 
 
 def peak_mf_age_compare(request):
@@ -648,10 +659,12 @@ def peak_mf_age_compare(request):
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+    context = {'columns': column_headers, 'max_value': max, 'min_value': min,
                 'mean_value': mean}
 
-    return render(request, 'met_explore/peak_mf_age_compare.html', response)
+    config = get_project_config(analysis)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/peak_mf_age_compare.html', context)
 
 
 def peak_explorer(request, analysis_id, peak_list):
@@ -705,6 +718,11 @@ def peak_explorer(request, analysis_id, peak_list):
 
     config = get_project_config(analysis)
     species = config[LABEL_SPECIES]
+    color_scheme = config[LABEL_COLOR_SCHEME]
+    logo_filename = config[LABEL_LOGO_FILENAME]
+    logo_alt = config[LABEL_LOGO_ALT]
+    footer_show = config[LABEL_LOGO_ALT]
+    footer_email = config[LABEL_FOOTER_EMAIl]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
@@ -716,7 +734,7 @@ def peak_explorer(request, analysis_id, peak_list):
     is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {
+    context = {
         'peak_list': peak_list,
         'columns': column_headers,
         'max_value': max_value,
@@ -727,12 +745,11 @@ def peak_explorer(request, analysis_id, peak_list):
         'current_category': current_category,
         'case_label': case_label,
         'control_label': control_label,
-        'species': species,
         'is_fly_tissue_data': is_fly_tissue_data,
         'is_fly_age_data': is_fly_age_data
     }
-
-    return render(request, 'met_explore/peak_explorer.html', response)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/peak_explorer.html', context)
 
 
 def get_all_peaks_compare_df(analysis):
@@ -867,6 +884,11 @@ def pathway_explorer(request, analysis_id):
     reactome_token = get_highlight_token()
     config = get_project_config(analysis)
     species = config[LABEL_SPECIES]
+    color_scheme = config[LABEL_COLOR_SCHEME]
+    logo_filename = config[LABEL_LOGO_FILENAME]
+    logo_alt = config[LABEL_LOGO_ALT]
+    footer_show = config[LABEL_LOGO_ALT]
+    footer_email = config[LABEL_FOOTER_EMAIl]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
@@ -876,6 +898,11 @@ def pathway_explorer(request, analysis_id):
     response = {
         'analysis_id': analysis_id,
         'species': species,
+        'color_scheme': color_scheme,
+        'logo_filename': logo_filename,
+        'logo_alt': logo_alt,
+        'footer_show': footer_show,
+        'footer_email': footer_email,
         'all_categories': all_categories,
         'current_category': current_category,
         'case_label': case_label,
@@ -920,11 +947,16 @@ def met_ex_tissues(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
     config = get_project_config(analysis)
     species = config[LABEL_SPECIES]
+    color_scheme = config[LABEL_COLOR_SCHEME]
+    logo_filename = config[LABEL_LOGO_FILENAME]
+    logo_alt = config[LABEL_LOGO_ALT]
+    footer_show = config[LABEL_LOGO_ALT]
+    footer_email = config[LABEL_FOOTER_EMAIl]
     all_categories = get_search_categories(config)
     uic = get_analysis_config(config, analysis_id)
     current_category = uic.category
 
-    response = {
+    context = {
         'columns': column_headers,
         'data': met_ex_list,
         'max_value': max_value,
@@ -933,10 +965,9 @@ def met_ex_tissues(request, analysis_id):
         'analysis_id': analysis_id,
         'all_categories': all_categories,
         'current_category': current_category,
-        'species': species
     }
-
-    return render(request, 'met_explore/met_ex_tissues.html', response)
+    context = set_ui_config(context, config)
+    return render(request, 'met_explore/met_ex_tissues.html', context)
 
 
 def get_metabolite_names(request):
@@ -1630,7 +1661,6 @@ def enzyme_search(request):
 
 
 def gene_tissue_explorer(request, gene_list):
-
     gene_df = mo_tissue.get_cache_gene_df().reset_index()
 
     column_headers = gene_df.columns.tolist()
@@ -1641,7 +1671,6 @@ def gene_tissue_explorer(request, gene_list):
 
 
 def gene_age_explorer(request, gene_list):
-
     gene_df = mo_age.get_cache_gene_df().reset_index()
     column_headers = gene_df.columns.tolist()
 
@@ -1675,6 +1704,7 @@ def gene_data(request, gene_ids):
 
     return JsonResponse({'data': gene_data})
 
+
 def gene_omics_data(request, gene_id):
     """
     :param request:
@@ -1692,12 +1722,12 @@ def gene_omics_data(request, gene_id):
         attribute_list = []
         for ix, row in group.iterrows():
 
-            if source =='compounds':
+            if source == 'compounds':
                 cmpd_id = get_cmpid_from_chebi(row.entity_id)
                 attribute_list.append([cmpd_id, row.display_name])
             else:
                 attribute_list.append([row.entity_id, row.display_name])
 
-        omics_dict[source]=attribute_list
+        omics_dict[source] = attribute_list
 
     return JsonResponse({'columns': columns, 'omics_data': omics_dict})
