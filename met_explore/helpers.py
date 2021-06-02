@@ -176,6 +176,9 @@ def get_factors_from_samples(samples, factor_type):
 
     factor_list = list(factor_set)
 
+    # special hack for flymet
+    if ('F' in factor_list) and ('M' in factor_list) and ('L' in factor_list) and (len(factor_list) == 3):
+        factor_list = ['F', 'M', 'L']
     return factor_list
 
 
@@ -193,7 +196,7 @@ def get_analysis_config(project_config, current_analysis_id):
         cat = ann.category
         if ann.id == current_analysis_id:
             current_category = cat.name
-            colnames = config['colnames']
+            colnames = collections.OrderedDict(config['colnames'])
             case_label = config['case_label']
             control_label = config['control_label']
             uic = UIConfig(analysis=ann, category=current_category, colnames=colnames, case_label=case_label,

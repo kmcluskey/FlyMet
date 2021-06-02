@@ -55,7 +55,7 @@ $(document).ready(function() {
   try {
   let num_index = get_data_index(met_table_data)
     let met_table = initialise_table("tissue_met_table", min, mid, max, num_index);
-    add_met_tooltips(met_table);
+    add_met_tooltips(met_table, metabolite);
     add_table_tooltips(tissue_met_table);
 
     met_table.on( 'click', 'tr', function () {

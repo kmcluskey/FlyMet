@@ -121,16 +121,7 @@
                                         {% for pwy_data in pwy_table_data %}
                                             <tr>
                                                 {% for p in pwy_data %}
-                                                    <td class="vw150">{{ p }}</td>
-{#                                                    {% if forloop.first %}#}
-{#                                                        <td class="vw150">{{ p }}</td>#}
-{#                                                    {% else %}#}
-{#                                                        {% if p == "NM" %}#}
-{#                                                            <td class="vw150">nm</td>#}
-{#                                                        {% else %}#}
-{#                                                            <td class="vw150">{{ p }}</td>#}
-{#                                                        {% endif %}#}
-{#                                                    {% endif %}#}
+                                                    <th class="col vw150">{{ c }}/{{ control_label }} p-value</th>
                                                 {% endfor %}
                                             </tr>
                                         {% endfor %}

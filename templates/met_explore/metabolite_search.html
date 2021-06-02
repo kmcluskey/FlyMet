@@ -96,14 +96,14 @@
                                     <th class="data">{{ current_category }}</th>
                                     <!-- special hardcoding for FlyMet tooltip -->
                                     {% for c in columns %}
-                                        {% if c == "Adult Female FC" %}
+                                        {% if c == "Female" %}
                                             <th class="AM_met_WT_ratio data">Adult Female FC</th>
-                                        {% elif c == "Adult Male FC" %}
+                                        {% elif c == "Male" %}
                                             <th class="AF_met_WT_ratio data">Adult Male FC</th>
-                                        {% elif c == "Larvae FC" %}
+                                        {% elif c == "Larvae" %}
                                             <th class="L_met_WT_ratio data">Larvae FC</th>
                                         {% else %}
-                                            <th class="data">{{ c }}</th>
+                                            <th class="data">{{ c }}/{{ control_label }} FC</th>
                                         {% endif %}
                                     {% endfor %}
                                 </tr>
