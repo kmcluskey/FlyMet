@@ -100,7 +100,6 @@
                     </small></p>
                 </div>
             {% endif %}
-
             {% if pathway_id|length > 0 %}
                 <div class="pathway_details card mt-4 p-2 pb-2 border border-table rounded">
                     <div class="container-fluid pb-0">
@@ -138,20 +137,19 @@
                                         </tbody>
 
                                     {% else %}
-
                                         <thead class="thead-light">
                                         <tr>
                                             <th class="col vw150">{{ current_category }}</th>
                                             <!-- special hardcoding for FlyMet tooltip -->
                                             {% for c in columns %}
-                                                {% if c == "Adult F/W p-value" %}
+                                                {% if c == "Female" %}
                                                     <th id='AF-pvalue' class="col vw150">Adult F/W p-value</th>
-                                                {% elif c == "Adult Male FC" %}
+                                                {% elif c == "Male" %}
                                                     <th id='AM-pvalue' class="col vw150">Adult M/W p-value</th>
-                                                {% elif c == "Larvae/W p-value" %}
+                                                {% elif c == "Larvae" %}
                                                     <th id='L-pvalue' class="col vw150">Larvae/W p-value</th>
                                                 {% else %}
-                                                    <th class="col vw150">{{ c }}</th>
+                                                    <th class="col vw150">{{ c }}/{{ control_label }} p-value</th>
                                                 {% endif %}
                                             {% endfor %}
                                         </tr>

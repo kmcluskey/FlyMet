@@ -146,7 +146,8 @@ def get_factor_type_from_analysis(analysis, factor_rank):
     factor_types = [a.type for a in analysis_case_factors if a.name != 'nan']
 
     try:
-        config = get_project_config(analysis)
+        project = analysis.category.project
+        config = project.metadata[LABEL_PROJECT_CONFIG]
         factor_order_dict = config[LABEL_FACTOR_ORDER_DICT]
         ps_factors = [f for f in factor_types if f in factor_order_dict[factor_rank]]
         factor_count = Counter(ps_factors)
@@ -176,11 +177,6 @@ def get_factors_from_samples(samples, factor_type):
     factor_list = list(factor_set)
 
     return factor_list
-
-
-def get_project_config(analysis):
-    config = analysis.category.project.metadata[LABEL_PROJECT_CONFIG]
-    return config
 
 
 UIConfig = collections.namedtuple('UIConfig', 'analysis category colnames case_label control_label')
