@@ -1218,7 +1218,7 @@ def metabolite_peak_data(request, cmpd_id):
             row.no_annots = len(annots)
             group_df.loc[index, 'no_adducts'] = len(annots)
 
-        gp_df_list.append(group_df.to_dict('r'))
+        gp_df_list.append(group_df.to_dict('records'))
         # columns = group_df.columns.tolist()
         columns = []
 

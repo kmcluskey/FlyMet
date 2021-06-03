@@ -10,8 +10,8 @@ from pyMultiOmics.pipelines import *
 from pyMultiOmics.common import set_log_level_info
 
 
-DATA_FOLDER = os.path.abspath(os.path.join('..', 'FlyMet/omics_data'))
-fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'), encoding = 'unicode_escape', index_col='FlyBaseID')
+# DATA_FOLDER = os.path.abspath(os.path.join('.', 'omics_data'))
+# fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'), encoding = 'unicode_escape', index_col='FlyBaseID')
 
 class MultiOmics(object):
     """
@@ -20,9 +20,10 @@ class MultiOmics(object):
 
     def __init__(self, analysis):
 
-        self.DATA_FOLDER = os.path.abspath(os.path.join('..', 'FlyMet/omics_data'))
-        self.fly_atlas2_df = pd.read_csv(os.path.join(DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'),
+        self.DATA_FOLDER = os.path.abspath(os.path.join('.', 'omics_data'))
+        self.fly_atlas2_df = pd.read_csv(os.path.join(self.DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'),
                                     encoding='unicode_escape', index_col='FlyBaseID')
+
         self.analysis = analysis
         self.ap =  self.get_cache_ap() # Analysis_pipeline
 
