@@ -77,12 +77,21 @@ def index(request):
     # return HttpResponse("Hello, world. You're at the met_explore index page.")
 
     context = {
-        'json_url': reverse('get_metabolite_names')
+        'json_url': reverse('get_metabolite_names'),
+        'json_pwy_url': reverse('get_pathway_names')
     }
 
     return render(request, 'met_explore/index.html', context)
 
+def index_age(request):
+    # View to mimic the inxex page for the age data
 
+    context = {
+        'json_url': reverse('get_metabolite_names'),
+        'json_pwy_url': reverse('get_pathway_names')
+    }
+
+    return render(request, 'met_explore/index_age.html', context)
 
 def about(request):
     return render(request, 'met_explore/about.html')

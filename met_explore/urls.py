@@ -57,6 +57,7 @@ urlpatterns = [
     path('pathway_age_search', views.pathway_age_search, name='pathway_age_search'),
     path('pathway_age_metabolites', views.pathway_age_metabolites, name='pathway_age_metabolites'),
     path('gene_age_explorer/<str:gene_list>', views.gene_age_explorer, name='gene_age_explorer'),
+    path('index_age', views.index_age, name='index_age'),
 
     # Common views
 

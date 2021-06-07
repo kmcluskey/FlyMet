@@ -46,8 +46,8 @@ class MultiOmics(object):
     def get_analysis_pipeline(self):
 
         ## Currently the gene data and design were just produced by hand from the flyatlas data
-        gene_data = pd.read_csv(os.path.join(DATA_FOLDER, 'flyatlas_data.csv'), index_col='Identifier')
-        gene_design = pd.read_csv(os.path.join(DATA_FOLDER, 'flyatlas_design.csv'), index_col='sample')
+        gene_data = pd.read_csv(os.path.join(self.DATA_FOLDER, 'flyatlas_data.csv'), index_col='Identifier')
+        gene_design = pd.read_csv(os.path.join(self.DATA_FOLDER, 'flyatlas_design.csv'), index_col='sample')
 
         compound_data = self.get_cache_omics_df()
         compound_design = self.get_omics_design()
@@ -223,7 +223,7 @@ class MultiOmics(object):
 
         fb_genes = []
         for gene in genes:
-            fb_id = fly_atlas2_df[fly_atlas2_df.Annotation == gene].index.tolist()
+            fb_id = self.fly_atlas2_df[self.fly_atlas2_df.Annotation == gene].index.tolist()
             fb_genes.extend(fb_id)
 
         return fb_genes
@@ -255,7 +255,7 @@ class MultiOmics(object):
             .run()
 
         unique_mapped_genes = all_genes.source_id.unique()
-        mapped_flyatlas = fly_atlas2_df[fly_atlas2_df.index.isin(unique_mapped_genes)]
+        mapped_flyatlas = self.fly_atlas2_df[self.fly_atlas2_df.index.isin(unique_mapped_genes)]
         mapped_flyatlas = mapped_flyatlas[["Name", "Annotation", "Symbol"]]
 
         return mapped_flyatlas

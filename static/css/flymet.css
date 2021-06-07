@@ -265,7 +265,7 @@ card-header {
     overflow-y: scroll;
     float: right;
     width: 50%;
-    /* background-color: #f5f5f5; */
+    background-color: #f5f5f5;
     z-index: 1;
     height: 100%;
 }
@@ -276,8 +276,8 @@ card-header {
     float: left;
     margin-left:0px;
 }
-.myspan50{
-    /* overflow: scroll; */
+.myspan50 {
+    background-color: #f5f5f5;
     width: 50%;
     float: left;
     margin-left:0px;
@@ -296,6 +296,9 @@ card-header {
     background-color: #f5f5f5;
     z-index: 1;
     height: 100%;
+}
+.shaded {
+  background-color: #f5f5f5 !important;
 }
 
 .mol_span50_R {
@@ -398,6 +401,10 @@ table.dataTable td.sorting_1 {
 }
 
 table.dataTable .dt-center {
+  text-align: center;
+}
+
+.centre {
   text-align: center;
 }
 

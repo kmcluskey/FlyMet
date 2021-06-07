@@ -32,7 +32,8 @@ module.exports = {
         pathway_age_search: './static/js/pathway_age_search',
         pathway_age_metabolites: './static/js/pathway_age_metabolites',
         gene_age_explorer: './static/js/gene_age_explorer',
-        index:'./static/js/index',
+        index_age:'./static/js/index_age',
+        index:'./static/js/index',      
     },
 
     output: {
