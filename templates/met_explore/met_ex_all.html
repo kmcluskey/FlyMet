@@ -130,6 +130,7 @@
 {% block js_block %}
 
     <script type='text/javascript'>
+        const analysis_id = {{ analysis_id }};
         var cmpd_list = "{{cmpd_list | safe}}"
         console.log("The cmpd list is " + cmpd_list)
     </script>

@@ -19,7 +19,7 @@ from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, 
     LABEL_COLOR_SCHEME, LABEL_LOGO_FILENAME, LABEL_LOGO_ALT, LABEL_FOOTER_EMAIl, LABEL_FOOTER_SHOW
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
-    get_search_categories, set_log_level_debug
+    get_search_categories, set_log_level_debug, reorder_columns
 from met_explore.models import Peak, CompoundDBDetails, Compound, Sample, Annotation, Analysis, AnalysisComparison, \
     Group, Factor, Project
 from met_explore.multi_omics import MultiOmics
@@ -357,6 +357,7 @@ def get_pwy_search_table(pals_df, search_query, analysis):
 
         analysis_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
+        columns = reorder_columns(columns)
         single_factor = False
         if len(columns) == 0:  # if no secondary factor, then just use the primary factor as the names
             columns = factor_names
@@ -543,15 +544,13 @@ def peak_mf_compare(request, analysis_id):
 
     logger.info("Peak m/f comparison table requested")
     start = timeit.default_timer()
+    peaks = Peak.objects.all()
 
     analysis = Analysis.objects.get(pk=analysis_id)
-    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
+    view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
     column_headers = get_peak_mf_header(view_df, analysis)
 
     stop = timeit.default_timer()
-
-    project = analysis.category.project
-    config = project.metadata[LABEL_PROJECT_CONFIG]
 
     # special FlyMet workaround to show some specific views
     is_fly_tissue_data = False
@@ -575,6 +574,7 @@ def peak_mf_compare(request, analysis_id):
         'is_fly_tissue_data': is_fly_tissue_data,
         'is_fly_age_data': is_fly_age_data
     }
+    project = analysis.category.project
     context = set_ui_config(context, project)
     return render(request, 'met_explore/peak_mf_compare.html', context)
 
@@ -1240,6 +1240,7 @@ def get_peak_mf_compare_df(analysis):
 
 
 def get_peak_compare_df(analysis, peaks):
+
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
@@ -1273,16 +1274,17 @@ def get_peak_compare_df(analysis, peaks):
                 control = get_control_from_case(c, analysis_comparison)
                 group_df[c] = group_df[c].div(group_df[control])
             except ObjectDoesNotExist:
-                logger.warning('%s is not a case so skipping this column' % c)
+                logger.warning('%s is not a case so skipping this column' % c )
                 pass
 
-    drop_list = ['id'] + controls
+    drop_list = ['id']+controls
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
     peak_compare_df = peak_compare_df.drop(controls, axis=1)
+
 
     return peak_compare_df, min_value, mean_value, max_value
 
@@ -1333,7 +1335,6 @@ def get_drilldown_data_structure(groups, analysis):
 
 def get_log_df(df, drop_list):
     """
-
     :param df: DF that you want the log df calculated from, contains only values and an id column
     :param drop_list: list of columns to be dropped from the final dataframe
     :return: log_df, min, mean, max values found in this df

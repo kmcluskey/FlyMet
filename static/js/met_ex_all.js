@@ -5,7 +5,8 @@ $(document).ready(function() {
   $("fieldset[class^='peak_details']").hide();
   $("#pathwaysDiv").hide();
 
-  let peak_url = `peak_explorer/`
+  let peak_url = `peak_explorer/${analysis_id}/`;
+  debugger;
   let pathway_url = `pathway_search`
   let metabolite_table = initialise_met_table("metabolite_list");
 
