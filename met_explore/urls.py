@@ -40,6 +40,7 @@ urlpatterns = [
     path('pathway_search', views.pathway_search, name='pathway_search'),
     path('pathway_metabolites', views.pathway_metabolites, name='pathway_metabolites'),
     path('gene_tissue_explorer/<str:gene_list>', views.gene_tissue_explorer, name='gene_tissue_explorer'),
+    path('met_ex_comp_tissue', views.met_ex_comp_tissue, name='met_ex_comp_tissue'),
 
     # Age specific views
 

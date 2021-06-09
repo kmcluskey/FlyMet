@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Tissue Lists {% endblock %}
+{% block title %} Metabolite Tissue Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_list' 'css' %}
+    {% render_bundle 'met_ex_comp_tissue' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -36,10 +36,10 @@
           <a class="nav-link" href="{% url 'met_ex_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_ex_tissues' %}">Identified</a>
+          <a class="nav-link" href="{% url 'met_ex_tissues' %}">Identified</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_comp_tissue' %}">Whole Comparisons</a>
+          <a class="nav-link active" href="{% url 'met_ex_comp_tissue' %}">Whole Comparisons</a>
         </li>
       </ul>
       <div class="top-right" >
@@ -49,8 +49,7 @@
   </div>
   <div class="mt-4 mb-4">
     <p>
-    The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-    tissues for Female (F), Male (M) and Larvae (L) <i>Drosophila</i>.
+      The log<sub>2</sub> fold-change (FC) in metabolite intesity levels between <i>Drosophila</i> tissues and the whole flies.
     </p>
     <p class="small">
     The metabolites in this list have a high confidence score having been
@@ -61,32 +60,34 @@
   </div>
 
   <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-    <thead class="thead-light">
-      <tr id = "columns">
-        {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for met_exp_data in data %}
-      <tr>
-            {% for m in met_exp_data %}
-            {% if forloop.first %}
-              <td><a href="metabolite_search_tissue?metabolite_search_tissue={{m}}" target="_blank">{{m}}</a></td>
-            {% else %}
-              {% if m > 0 %}
-                <td>{{m|stringformat:".2e"}}</td>
-                {% else %}
+    <table id="compare_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+      <thead class="thead-light">
+        <tr id = "columns">
+          {% for column_name in columns %}
+          <th class = "col">{{column_name}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for metabolite_row in compare_data %}
+        <tr>
+              {% for m in metabolite_row %}
+              {% if forloop.first %}
+                <td><a href="metabolite_search_tissue?metabolite_search_tissue={{m}}" target="_blank">{{m}}</a></td>
+              {% else %}
+                {% if m == '-' %}
                 <td class="NotDetected">-</td>
+                {% else %}
+                <!-- <td> {{m}} </td> -->
+                <td>{{m|floatformat:2}}</td>
+                {% endif %}
               {% endif %}
-            {% endif %}
+            {% endfor %}
+        </tr>
         {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+
   </div>
 
   </div>
@@ -105,9 +106,9 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    console.log(min_value, max_value, mean_value)
+    console.log(min_value, mean_value, max_value)
 
     </script>
 
-  {% render_bundle 'metabolite_list' 'js' %}
+  {% render_bundle 'met_ex_comp_tissue' 'js' %}
   {% endblock %}

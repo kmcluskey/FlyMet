@@ -17,6 +17,7 @@ module.exports = {
         met_ex_all:'./static/js/met_ex_all',
         met_age_id: './static/js/met_age_id',
         met_age_all: './static/js/met_age_all',
+        met_ex_comp_tissue: './static/js/met_ex_comp_tissue',
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
         pathway_metabolites: './static/js/pathway_metabolites',
@@ -33,7 +34,7 @@ module.exports = {
         pathway_age_metabolites: './static/js/pathway_age_metabolites',
         gene_age_explorer: './static/js/gene_age_explorer',
         index_age:'./static/js/index_age',
-        index:'./static/js/index',      
+        index:'./static/js/index',
     },
 
     output: {

@@ -1047,6 +1047,66 @@ def pathway_age_explorer(request):
     return render(request, 'met_explore/pathway_age_explorer.html', response)
 
 
+def met_ex_comp_age(request):
+
+    analysis = Analysis.objects.get(name="Age Comparisons")
+
+    peak_list = list(single_cmpds_df.index.values)
+    peaks = Peak.objects.filter(id__in=peak_list)
+
+    compare_df, min_value, mean_value, max_value = get_peak_compare_df(analysis, peaks)
+
+    sort_df_and_headers(compare_df, analysis)
+    compare_df = compare_df.set_index('Peak ID').copy()
+
+    met_dt = single_cmpds_df['Metabolite']
+
+    #Merge DF and move the Metbolite column to the front
+    merge_df = compare_df.merge(met_dt, how='outer', left_index=True, right_index=True)
+    first_col = merge_df.pop('Metabolite')
+    merge_df.insert(0, 'Metabolite', first_col)
+    new_df = merge_df.drop(['m/z', 'RT'], axis=1)
+    new_df = new_df.fillna("-")
+
+    column_headers = new_df.columns.tolist()
+    compare_data = new_df.values.tolist()
+
+    response = {'columns': column_headers, 'compare_data': compare_data, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/met_ex_comp_age.html', response)
+
+
+
+def met_ex_comp_tissue(request):
+
+    analysis = Analysis.objects.get(name="Tissue Comparisons")
+
+    peak_list = list(single_cmpds_df.index.values)
+    peaks = Peak.objects.filter(id__in=peak_list)
+
+    compare_df, min_value, mean_value, max_value = get_peak_compare_df(analysis, peaks)
+
+    sort_df_and_headers(compare_df, analysis)
+    compare_df = compare_df.set_index('Peak ID').copy()
+
+    met_dt = single_cmpds_df['Metabolite']
+
+    #Merge DF and move the Metbolite column to the front
+    merge_df = compare_df.merge(met_dt, how='outer', left_index=True, right_index=True)
+    first_col = merge_df.pop('Metabolite')
+    merge_df.insert(0, 'Metabolite', first_col)
+    new_df = merge_df.drop(['m/z', 'RT'], axis=1)
+    new_df = new_df.fillna("-")
+
+    column_headers = new_df.columns.tolist()
+    compare_data = new_df.values.tolist()
+
+    response = {'columns': column_headers, 'compare_data': compare_data, 'max_value': max_value, 'min_value': min_value,
+                'mean_value': mean_value}
+
+    return render(request, 'met_explore/met_ex_comp_tissue.html', response)
+
 
 
 def met_ex_tissues(request):
@@ -1666,7 +1726,7 @@ def sort_df_and_headers(view_df, analysis):
     :param view_df: A df that needs view headers and to be sorted (column order) to match headers.
     :return: view_df: sorted view df and sorted view headers
     """
-    column_names = view_df.columns.tolist()
+    column_names = list(view_df.columns)
 
     data_headers, group_headers = get_column_headers(column_names, analysis)
 
