@@ -14,7 +14,11 @@
         <div class="logo_row">
             <div class="logo_main mt-4">
                 <p class="lead">
-                    Investigate the metabolite peaks found in <i> {{ species }} </i>.
+                    {% if is_fly_tissue_data or is_fly_age_data %}
+                        Investigate the metabolite peaks found in <i>Drosophila</i> tissues and Aged Flies.
+                    {% else %}
+                        Investigate the metabolite peaks found in <i> {{ species }} </i>.
+                    {% endif %}
                 </p>
             </div>
         </div>
@@ -72,7 +76,7 @@
                             <a class="nav-link active" href="{% url 'peak_ex_compare' analysis_id=analysis_id peak_compare_list='All' %}">Age/Whole Comparisons</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=4 %}">M/F Age Comparisons</a>
+                            <a class="nav-link" href="{% url 'peak_mf_compare' analysis_id=4 %}">F/M Age Comparisons</a>
                         </li>
                     </ul>
                     <div class="top-right">
@@ -100,8 +104,16 @@
         {% endif %}
         <div>
             <p class="mt-4 mb-4">
-                The log<sub>2</sub> fold-change (FC) in peak intensity levels between <i>{{ species }}</i> {{ case_label }} and
-                {{ control_label }}
+                {% if is_fly_tissue_data %}
+                    The log<sub>2</sub> fold-change (FC) in peak intensity levels between <i>Drosophila</i>
+                    tissues and the whole flies
+                {% elif is_fly_age_data %}
+                    The log<sub>2</sub> fold-change (FC) in peak intensity levels between aged <i>Drosophila</i>
+                    and the whole flies (7 days old)
+                {% else %}
+                    The log<sub>2</sub> fold-change (FC) in peak intensity levels between <i>{{ species }}</i> {{ case_label }} and
+                    {{ control_label }}
+                {% endif %}
             </p>
         </div>
 
@@ -180,7 +192,12 @@
         const mean_value = {{mean_value}};
         const peak_compare_list = "{{peak_compare_list | safe}}";
         const analysis_id = {{ analysis_id }};
-        console.log(min_value, mean_value, max_value, peak_compare_list, analysis_id);
+        const is_fly_tissue_data =  {{ is_fly_tissue_data | yesno:"true,false" }};
+        const is_fly_age_data = {{ is_fly_age_data | yesno:"true,false" }};
+        const case_label = "{{ case_label }}";
+        const control_label = "{{ control_label }}";
+        console.log(min_value, mean_value, max_value, peak_compare_list, analysis_id,
+            is_fly_tissue_data, is_fly_age_data, case_label, control_label);
 
     </script>
 

@@ -94,18 +94,18 @@ def set_ui_config(context, project, analysis_id=None, columns=None):
     }
 
     if analysis_id is not None:
-        uic = get_analysis_config(config, analysis_id)
-        current_category = uic.category
-        case_label = uic.case_label
-        control_label = uic.control_label
-        ui_config['current_category'] = current_category
-        ui_config['case_label'] = case_label
-        ui_config['control_label'] = control_label
         ui_config['analysis_id'] = analysis_id
-
-        if columns is not None:
-            display_colnames = get_display_colnames(columns, uic.colnames)
-            ui_config['columns'] = display_colnames
+        uic = get_analysis_config(config, analysis_id)
+        if uic is not None:
+            current_category = uic.category
+            case_label = uic.case_label
+            control_label = uic.control_label
+            ui_config['current_category'] = current_category
+            ui_config['case_label'] = case_label
+            ui_config['control_label'] = control_label
+            if columns is not None:
+                display_colnames = get_display_colnames(columns, uic.colnames)
+                ui_config['columns'] = display_colnames
 
     new_context = dict(context)     # copy old dict
     new_context.update(ui_config)   # add UI config stuff
@@ -548,7 +548,10 @@ def peak_mf_compare(request, analysis_id):
 
     analysis = Analysis.objects.get(pk=analysis_id)
     view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
-    column_headers = get_peak_mf_header(view_df, analysis)
+
+    sorted_view_df = sort_df_and_headers(view_df, analysis)
+    # column_headers = sorted_view_df.columns.tolist()
+    column_headers = get_peak_mf_header(sorted_view_df, analysis)
 
     stop = timeit.default_timer()
 
@@ -743,7 +746,10 @@ def peak_mf_compare_data(request, analysis_id):
 
     analysis = Analysis.objects.get(pk=analysis_id)
 
-    view_df1, _, _, _ = get_peak_mf_compare_df(analysis)
+    peaks = Peak.objects.all()
+
+
+    view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
     view_df = view_df_sorted.fillna("-")
     #
@@ -1528,18 +1534,29 @@ def sort_df_and_headers(view_df, analysis):
 
 def get_peak_mf_header(view_df, analysis):
     """
-
     :param view_df: A dataframe with group
     :return: A list of view headers for the DF
     """
 
-    sorted_view_df = sort_df_and_headers(view_df, analysis)
-    column_heads = sorted_view_df.columns.tolist()
+    # sorted_view_df = sort_df_and_headers(view_df, analysis)
+    column_heads = view_df.columns.tolist()
+
+    secondary_factor = get_factor_type_from_analysis(analysis, 'secondary_factor')
+    control_sec_factors = Factor.objects.filter(Q(group__control_group__analysis=analysis), Q(type=secondary_factor))
+    case_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
+
+    cont_sfs = set([sf.name for sf in control_sec_factors])
+    case_sfs = set([sf.name for sf in case_sec_factors])
+
+    assert len(cont_sfs)==len(case_sfs)==1, 'The number of control and case secondary factors should both be 1'
+
+    cont_sf = cont_sfs.pop()
+    case_sf = case_sfs.pop()
 
     column_headers = []
     for new_header in column_heads:
-        if new_header.endswith('(F)'):
-            new_header = new_header.replace('(F)', "(F/M)")
+        if new_header.endswith('('+case_sf+')'):
+            new_header = new_header.replace('('+case_sf+')', '('+case_sf+'/'+cont_sf+')')
         column_headers.append(new_header)
 
     return column_headers
