@@ -36,7 +36,8 @@ function initialise_list_table(tableName, lowpoint, midpoint, highpoint){
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
+            {sType: "num-html", "targets":0},
+            {type: "scientific", "targets":"_all"},
             {
                 "targets": '_all',
                 'type': dashType,

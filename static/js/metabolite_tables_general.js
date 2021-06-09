@@ -20,10 +20,12 @@ function initialise_compare_list_table(tableName, lowpoint, midpoint, highpoint,
         "scrollY": "100vh",
         "scrollCollapse": true,
         "scrollX": true,
+        colReorder: true,
         fixedheader: true,
         select: {
             style: 'single'
         },
+
         //code to override bootstrap and keep buttons on one line.
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
@@ -39,7 +41,8 @@ function initialise_compare_list_table(tableName, lowpoint, midpoint, highpoint,
         //Code to add the colours to the data - temporary numbers have been added.
         "columnDefs": [
             {className: "dt-center", "targets":"_all"},
-            {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
+            // {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
+            {sType: "num-html", "targets":0 },
             {
                 "targets": '_all',
                 'type': dashType,
