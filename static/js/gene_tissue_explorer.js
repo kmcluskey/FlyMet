@@ -2,19 +2,17 @@ import {initialise_gene_table, updateGeneSidePanel} from './gene_tables_general.
 
 $(document).ready(function() {
 
-
     $("fieldset[class^='multi_omics_details']").hide();
-    // $("#diagram_info").hide();
-    //
-    // let data_url = "pals_data";
-    // let met_ex_url = "met_ex_all/";
-    // let pwy_met_url = "pathway_metabolites";
-    //
+
+    let cmpd_url = "met_ex_all"
+    let pwy_url = "pathway_search"
+    let category ="tissues"
+
     let gene_table = initialise_gene_table("gene_list");
 
       gene_table.on( 'click', 'tr', function () {
         console.log("I've been clicked")
-        updateGeneSidePanel(this);
+        updateGeneSidePanel(this, category, cmpd_url, pwy_url);
       } );
 
 });

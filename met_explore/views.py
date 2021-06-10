@@ -1789,7 +1789,6 @@ def enzyme_search(request):
 def gene_tissue_explorer(request, gene_list):
 
     gene_df = mo_tissue.get_cache_gene_df().reset_index()
-
     column_headers = gene_df.columns.tolist()
 
     response = {'gene_list': gene_list, 'columns': column_headers}

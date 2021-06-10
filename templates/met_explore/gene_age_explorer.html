@@ -16,15 +16,18 @@
 <div class="logo_row">
   <div class="logo_main mt-4">
     <p class="lead">
-      Investigate the <i> Drosophila </i> genes that have been mapped to FlyMet metabolites. </p>
+        Investigate the <i> Drosophila </i> genes that have been mapped to FlyMet metabolites. </p>
     </div>
   </div>
+
+  <!-- extra Tabs for Analysis type -->
   <nav>
     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
       <a class="navdark nav-item nav-link"  href="{% url 'gene_tissue_explorer' 'All' %}">Tissues</a>
-      <a class="navdark nav-item nav-link active" href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
+      <a class="navdark nav-item nav-link active " href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
     </div>
   </nav>
+
 <!--Tabs to go to new pages-->
  <div class="card text-center">
    <div class="card-header">
@@ -40,48 +43,41 @@
   </div>
   <div>
     <p class="mt-4 mb-4" >
-    Genes associated with different metabolites in <i>Drosophila</i> tissues
+    Select a gene to investigate the metabolites, reactions and pathways associated with it.
     </p>
   </div>
   <div class="card mt-4 p-2 pb-2 border border-table rounded">
     <div class="container-fluid pb-0" >
       <div class="row pb-0">
-        <div class="myspan80 p-2 mt-2">
+        <div class="myspan75 p-2 mt-2">
           <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="pals_data" class="try_hide table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+          <table id="gene_list" class="try_hide table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
             <thead class="thead-light">
               <tr id = "columns">
                 {% for column_name in columns %}
-                <th class = "col">{{column_name}}</th>
+                  {% if column_name == "Annotation" %}
+                  <th class = "{{column_name}} col" >FlyAtlas2 link</th>
+                  {% else %}
+                  <th class = "{{column_name}} col" >{{column_name}}</th>
+                  {% endif %}
                 {% endfor %}
               </tr>
             </thead>
           </table>
-
-          <hr class="my-3">
-          <div id="diagramTitle">
-          </div>
-              <div id="diagramHolder">
-              </div>
-              <div id = "diagram_info">
-                <hr class="my-3">
-                  <p> In this diagram the overrepresentation shown as <img src="{% static 'images/reactome_highlight.png' %}" class="tiny_img" alt="ReactomeH">
-              highlights compounds (with associated peaks) that are found in FlyMet</p>
-              </div>
         </div>
 
-        <div class="myspan20 sticky-top pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+        <div class="myspan25 sticky-top pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
           <fieldset id="click_info" class="fieldset-details">
-            <legend class="sidebar">Reactome Pathway</legend>
+            <legend class="sidebar">Multi-Omics Info</legend>
             <div class="p-2">
-              <p class="m-2">Click on a pathway to view the details.</p>
+              <p class="m-2">Click on a row in the table to view the details for the gene.</p>
             </div>
           </fieldset>
 
-          <fieldset class="pathway_details fieldset-details">
-            <legend class="sidebar">Selected Pathway</legend>
+          <fieldset class="multi_omics_details fieldset-details">
+            <legend class="sidebar">Selected Gene</legend>
             <div class="p-2">
-              <p id ="pwy_id" class="m-2"></p>
+              <p id ="gene_id" class="m-2"></p>
               </div>
 
               <hr class="my-3">
@@ -97,6 +93,8 @@
     </div>
     </div>
 
+
+
     <!-- <div id="reactomeWidgetDialog" title="Reactome Viewer" style="display: none">
         <div id="diagramHolder"></div>
     </div> -->
@@ -110,10 +108,11 @@
 
   {% endblock %}
 
-
   {% block js_block %}
-
-
+  <script type='text/javascript'>
+    let gene_list = "{{gene_list | safe}}"
+    console.log("The gene list is "+ gene_list)
+  </script>
 
 {% render_bundle 'gene_age_explorer' 'js' %}
 {% endblock %}
