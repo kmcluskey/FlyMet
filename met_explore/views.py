@@ -16,7 +16,10 @@ from loguru import logger
 
 from met_explore.compound_selection import CompoundSelector, HC_INTENSITY_FILE_NAME, get_cmpid_from_chebi
 from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, LABEL_SPECIES, INITIAL_PROJECT_ID, \
-    LABEL_COLOR_SCHEME, LABEL_LOGO_FILENAME, LABEL_LOGO_ALT, LABEL_FOOTER_EMAIl, LABEL_FOOTER_SHOW
+    LABEL_COLOR_SCHEME, LABEL_FOOTER_EMAIl, LABEL_FOOTER_SHOW, \
+    LABEL_SPONSOR1_LOGO_ALT, LABEL_SPONSOR2_LOGO_ALT, \
+    LABEL_PROJECT_DESCRIPTION, LABEL_PROJECT_NAME, LABEL_HEADER_LOGO, LABEL_HEADER_LOGO_ALT, LABEL_SPONSOR1_LOGO, \
+    LABEL_SPONSOR2_LOGO, LABEL_FOOTER_LOGO, LABEL_FOOTER_LOGO_ALT, LABEL_FOOTER_TAGLINE
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
     get_search_categories, set_log_level_debug, reorder_columns
@@ -80,18 +83,32 @@ except Exception as e:
     mo_age = None
 
 
+def str2bool(v):
+    return v.lower() in ("yes", "true", "t", "1")
+
+
 def set_ui_config(context, project, analysis_id=None, columns=None):
     config = project.metadata[LABEL_PROJECT_CONFIG]
     all_categories = get_search_categories(config)
     ui_config = {
+        LABEL_PROJECT_NAME: project.name,
+        LABEL_PROJECT_DESCRIPTION: project.description,
         LABEL_SPECIES: config[LABEL_SPECIES],
         LABEL_COLOR_SCHEME: config[LABEL_COLOR_SCHEME],
-        LABEL_LOGO_FILENAME: config[LABEL_LOGO_FILENAME],
-        LABEL_LOGO_ALT: config[LABEL_LOGO_ALT],
-        LABEL_FOOTER_SHOW: config[LABEL_FOOTER_SHOW],
-        LABEL_FOOTER_EMAIl: config[LABEL_FOOTER_EMAIl],
+        LABEL_FOOTER_SHOW: str2bool(config[LABEL_FOOTER_SHOW]),
         'all_categories': all_categories
     }
+
+    add_if_found(config, ui_config, LABEL_HEADER_LOGO)
+    add_if_found(config, ui_config, LABEL_HEADER_LOGO_ALT)
+    add_if_found(config, ui_config, LABEL_SPONSOR1_LOGO)
+    add_if_found(config, ui_config, LABEL_SPONSOR1_LOGO_ALT)
+    add_if_found(config, ui_config, LABEL_SPONSOR2_LOGO)
+    add_if_found(config, ui_config, LABEL_SPONSOR2_LOGO_ALT)
+    add_if_found(config, ui_config, LABEL_FOOTER_LOGO)
+    add_if_found(config, ui_config, LABEL_FOOTER_LOGO_ALT)
+    add_if_found(config, ui_config, LABEL_FOOTER_EMAIl)
+    add_if_found(config, ui_config, LABEL_FOOTER_TAGLINE)
 
     if analysis_id is not None:
         ui_config['analysis_id'] = analysis_id
@@ -107,9 +124,13 @@ def set_ui_config(context, project, analysis_id=None, columns=None):
                 display_colnames = get_display_colnames(columns, uic.colnames)
                 ui_config['columns'] = display_colnames
 
-    new_context = dict(context)     # copy old dict
-    new_context.update(ui_config)   # add UI config stuff
+    new_context = dict(context)  # copy old dict
+    new_context.update(ui_config)  # add UI config stuff
     return new_context
+
+
+def add_if_found(config, ui_config, key):
+    ui_config[key] = config[key] if key in config else None
 
 
 def index(request):
@@ -600,7 +621,7 @@ def peak_mf_age_compare(request):
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     context = {'columns': column_headers, 'max_value': max, 'min_value': min,
-                'mean_value': mean}
+               'mean_value': mean}
 
     project = analysis.category.project
     context = set_ui_config(context, project)
@@ -747,7 +768,6 @@ def peak_mf_compare_data(request, analysis_id):
     analysis = Analysis.objects.get(pk=analysis_id)
 
     peaks = Peak.objects.all()
-
 
     view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)
@@ -1246,7 +1266,6 @@ def get_peak_mf_compare_df(analysis):
 
 
 def get_peak_compare_df(analysis, peaks):
-
     """
     Get the DF needed for the peak-tissue-compare page
     :return: peak_df, min, mean, max values needed for colouring the table.
@@ -1280,17 +1299,16 @@ def get_peak_compare_df(analysis, peaks):
                 control = get_control_from_case(c, analysis_comparison)
                 group_df[c] = group_df[c].div(group_df[control])
             except ObjectDoesNotExist:
-                logger.warning('%s is not a case so skipping this column' % c )
+                logger.warning('%s is not a case so skipping this column' % c)
                 pass
 
-    drop_list = ['id']+controls
+    drop_list = ['id'] + controls
 
     # Calculate the log fold change values for the table.
     log_df, min_value, mean_value, max_value = get_log_df(group_df, drop_list)
 
     peak_compare_df = pd.merge(peak_df, log_df, on='id')
     peak_compare_df = peak_compare_df.drop(controls, axis=1)
-
 
     return peak_compare_df, min_value, mean_value, max_value
 
@@ -1548,15 +1566,15 @@ def get_peak_mf_header(view_df, analysis):
     cont_sfs = set([sf.name for sf in control_sec_factors])
     case_sfs = set([sf.name for sf in case_sec_factors])
 
-    assert len(cont_sfs)==len(case_sfs)==1, 'The number of control and case secondary factors should both be 1'
+    assert len(cont_sfs) == len(case_sfs) == 1, 'The number of control and case secondary factors should both be 1'
 
     cont_sf = cont_sfs.pop()
     case_sf = case_sfs.pop()
 
     column_headers = []
     for new_header in column_heads:
-        if new_header.endswith('('+case_sf+')'):
-            new_header = new_header.replace('('+case_sf+')', '('+case_sf+'/'+cont_sf+')')
+        if new_header.endswith('(' + case_sf + ')'):
+            new_header = new_header.replace('(' + case_sf + ')', '(' + case_sf + '/' + cont_sf + ')')
         column_headers.append(new_header)
 
     return column_headers
