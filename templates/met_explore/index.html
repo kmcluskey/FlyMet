@@ -48,14 +48,15 @@
     <div class="card mt-4 p-2 pb-2 border border-table rounded">
     <div class="container-fluid pb-0 shaded">
         <div class="row pb-0">
+<<<<<<< HEAD
             <div class="myspan50 p-2 mt-2">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item lead shaded p-4">
-                        Investigate annotated {{ project_name }} metabolites using the <a href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">Metabolite
+                        Investigate {{ project_name }} metabolites using the <a href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">Metabolite
                         Explorer</a>
                     </li>
                     <li class="list-group-item lead shaded p-4">
-                        Investigate annotated {{ project_name }} peaks using the <a href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Peak
+                        Investigate {{ project_name }} MS peaks using the <a href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Peak
                         Explorer</a>
                     </li>
                     <li class="list-group-item lead shaded p-4">
@@ -72,6 +73,33 @@
                         {% endif %}
                     </li>
                 </ul>
+=======
+          <div class="myspan50 p-2 mt-2">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item lead shaded p-4">
+              Investigate FlyMet metabolites using the <a href="{% url 'met_ex_all' 'All' %}">Metabolite Explorer</a>
+              </li>
+            <li class="list-group-item lead shaded p-4">
+              Investigate FlyMet MS peaks using the <a href="{% url 'peak_explorer' 'All' %}">Peak Explorer</a>
+            </li>
+            <li class="list-group-item lead shaded p-4">
+              Investigate ranked FlyMet pathways using the <a href="{% url 'pathway_explorer' %}">Pathway Explorer</a>
+              </li>
+            <li class="list-group-item lead shaded p-4">
+                Investigate mapped FlyMet genes using the <a href="{% url 'gene_tissue_explorer' 'All' %}">Gene Explorer</a>
+              </li>
+              </ul>
+          </div>
+          <div class="myspan50 p-2 mt-2 mb-2">
+            <div>
+              <p class = 'lead'>
+                 Quick start: Search for metabolites identified in <i>Drosophila</i> tissues.
+                </p>
+                <form action="metabolite_search_tissue" method="get" class="form-inline my-2 my-lg-0">
+                  <input id = "metabolite_search_tissue" name ='metabolite_search_tissue' class="form-control mr-sm-2" type="text" placeholder="Metabolite Search">
+                  <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+                </form>
+>>>>>>> 462a099e8c22291d9345c467040894052dc39160
             </div>
             <div class="myspan50 p-2 mt-2 mb-2">
                 <div>
