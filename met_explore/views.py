@@ -19,7 +19,7 @@ from met_explore.constants import LABEL_INITIAL_ANALYSIS, LABEL_PROJECT_CONFIG, 
     LABEL_COLOR_SCHEME, LABEL_FOOTER_EMAIl, LABEL_FOOTER_SHOW, \
     LABEL_SPONSOR1_LOGO_ALT, LABEL_SPONSOR2_LOGO_ALT, \
     LABEL_PROJECT_DESCRIPTION, LABEL_PROJECT_NAME, LABEL_HEADER_LOGO, LABEL_HEADER_LOGO_ALT, LABEL_SPONSOR1_LOGO, \
-    LABEL_SPONSOR2_LOGO, LABEL_FOOTER_LOGO, LABEL_FOOTER_LOGO_ALT, LABEL_FOOTER_TAGLINE
+    LABEL_SPONSOR2_LOGO, LABEL_FOOTER_LOGO, LABEL_FOOTER_LOGO_ALT, LABEL_FOOTER_TAGLINE, LABEL_TITLE_TAGLINE
 from met_explore.helpers import natural_keys, get_control_from_case, get_group_names, get_factor_type_from_analysis, \
     get_factors_from_samples, get_analysis_config, get_display_colnames, \
     get_search_categories, set_log_level_debug, reorder_columns
@@ -93,6 +93,7 @@ def set_ui_config(context, project, analysis_id=None, columns=None):
     ui_config = {
         LABEL_PROJECT_NAME: project.name,
         LABEL_PROJECT_DESCRIPTION: project.description,
+        LABEL_TITLE_TAGLINE: config[LABEL_TITLE_TAGLINE],
         LABEL_SPECIES: config[LABEL_SPECIES],
         LABEL_COLOR_SCHEME: config[LABEL_COLOR_SCHEME],
         LABEL_FOOTER_SHOW: str2bool(config[LABEL_FOOTER_SHOW]),
