@@ -67,15 +67,8 @@
     <form action="{% url 'pathway_search' analysis_id=analysis_id %}" method="get" class="form-inline my-2 my-lg-0">
         <input id="pathway_search" name='pathway_search' class="form-control mr-sm-2" type="text"
                placeholder="Pathway Search">
-        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
+        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Pathway Search</button>
     </form>
-
-    {#    <!-- age -->#}
-    {#    <form action="pathway_age_search" method="get" class="form-inline my-2 my-lg-0">#}
-    {#        <input id="pathway_age_search" name='pathway_age_search' class="form-control mr-sm-2" type="text"#}
-    {#               placeholder="Pathway Search">#}
-    {#        <button class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>#}
-    {#    </form>#}
 
     <!--Div for a single table-->
     {% if pathway_name|length > 0 %}

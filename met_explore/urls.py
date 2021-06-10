@@ -18,6 +18,7 @@ def c(f, timeout=60 * 18000):
 
 urlpatterns = [
     path('', views.index, name='met_explore_index'),
+    path('<int:analysis_id>', views.index, name='met_explore_index'),
 
     # general views
     path('background', views.background, name='background'),

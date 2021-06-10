@@ -133,12 +133,24 @@ def add_if_found(config, ui_config, key):
     ui_config[key] = config[key] if key in config else None
 
 
-def index(request):
+def index(request, analysis_id=None):
+    if analysis_id is None:
+        project = get_initial_project()
+        analysis = get_initial_analysis(project)
+    else:
+        analysis = Analysis.objects.get(id=analysis_id)
+        project = analysis.category.project
+
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
+    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+
     context = {
         'json_url': reverse('get_metabolite_names'),
+        'json_pwy_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis.id}),
+        'is_fly_tissue_data': is_fly_tissue_data,
+        'is_fly_age_data': is_fly_age_data
     }
-    project = get_initial_project()
-    analysis = get_initial_analysis(project)
     context = set_ui_config(context, project, analysis_id=analysis.id)
     return render(request, 'met_explore/index.html', context)
 
