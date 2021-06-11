@@ -14,6 +14,7 @@ module.exports = {
         metabolite_list: './static/js/metabolite_list',
         metabolite_search: './static/js/metabolite_search',
         met_ex_all:'./static/js/met_ex_all',
+        met_ex_comp_tissue: './static/js/met_ex_comp_tissue',
         enzyme_search: './static/js/enzyme_search',
         pathway_search: './static/js/pathway_search',
         pathway_metabolites: './static/js/pathway_metabolites',

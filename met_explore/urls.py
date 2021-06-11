@@ -56,6 +56,7 @@ urlpatterns = [
          name='peak_compare_data'),
     path('peak_mf_compare/<int:analysis_id>', views.peak_mf_compare, name='peak_mf_compare'),
     path('peak_mf_compare_data/<int:analysis_id>', c(views.peak_mf_compare_data), name='peak_mf_age_data'),
+    path('met_ex_comp_tissue/<int:analysis_id>', views.met_ex_comp_tissue, name='met_ex_comp_tissue'),
 
     # Gene views
 

@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Explorer Identified Metabolites {% endblock %}
+{% block title %} Metabolite Tissue Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'metabolite_list' 'css' %}
+    {% render_bundle 'met_ex_comp_tissue' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -25,12 +25,12 @@
                 {% for curr_category_desc, curr_analysis_id in all_categories %}
                     {% if curr_analysis_id == analysis_id %}
                         <a class="navdark nav-item nav-link active"
-                           href="{% url 'met_ex_tissues' analysis_id=curr_analysis_id %}">
+                           href="{% url 'met_ex_comp_tissue' analysis_id=curr_analysis_id %}">
                             {{ curr_category_desc }}
                         </a>
                     {% else %}
                         <a class="navdark nav-item nav-link"
-                           href="{% url 'met_ex_tissues' analysis_id=curr_analysis_id %}">
+                           href="{% url 'met_ex_comp_tissue' analysis_id=curr_analysis_id %}">
                             {{ curr_category_desc }}
                         </a>
                     {% endif %}
@@ -44,13 +44,16 @@
 
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
+                        <a class="nav-link"
+                           href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
+                        <a class="nav-link" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }} Comparisons</a>
+                        <a class="nav-link active"
+                           href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }}
+                            Comparisons</a>
                     </li>
                 </ul>
                 <div class="top-right">
@@ -60,41 +63,40 @@
         </div>
         <div class="mt-4 mb-4">
             <p>
-                The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-                {{ current_category|lower }} of <i>{{ species }}</i>.
-
+                The log<sub>2</sub> fold-change (FC) in metabolite intensity levels between <i>{{ species }}</i>
+                {{ current_category }} and {{ control_label }}.
             </p>
             <p class="small">
-                The metabolites in this list have a high confidence score having been
-                <a href="#" class="Identified">identified</a> by a standard compound libary or by <a href="#"
-                                                                                                     class="FragA">fragmentation
-                analysis</a>.
-                Expansion of these terms can be found in the <a href="{% url 'glossary' %}">Glossary</a>
+                The metabolites in this list have a high confidence score having been <a href="#" class="Identified">identified</a> by
+                a standard compound library or by <a href="#" class="FragA">fragmentation analysis</a>. Expansion of
+                these terms can be found in the <a href="{% url 'glossary' %}">Glossary</a>
             </p>
 
         </div>
 
         <div>
-            <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+            <table id="compare_list" class="table-sm table-bordered table-hover table-striped nowrap"
+                   style="width:100%">
                 <thead class="thead-light">
                 <tr id="columns">
                     {% for column_name in columns %}
-                        <th id="col">{{ column_name }}</th>
+                        <th class="col">{{ column_name }}</th>
                     {% endfor %}
                 </tr>
                 </thead>
                 <tbody>
-                {% for met_exp_data in data %}
+                {% for metabolite_row in compare_data %}
                     <tr>
-                        {% for m in met_exp_data %}
+                        {% for m in metabolite_row %}
                             {% if forloop.first %}
-                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search={{ m }}" target="_blank">{{ m }}</a>
-                                </td>
+                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search_tissue={{ m }}"
+                                       target="_blank">{{ m }}</a></td>
                             {% else %}
-                                {% if m > 0 %}
-                                    <td>{{ m|stringformat:".2e" }}</td>
-                                {% else %}
+                                {% if m == '-' %}
                                     <td class="NotDetected">-</td>
+                                {% else %}
+                                    <!-- <td> {{m}} </td> -->
+                                    <td>{{ m|floatformat:2 }}</td>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
@@ -102,6 +104,7 @@
                 {% endfor %}
                 </tbody>
             </table>
+
         </div>
 
     </div>
@@ -122,9 +125,16 @@
         var max_value =
         {{max_value}}
         var mean_value = {{mean_value}}
-            console.log(min_value, max_value, mean_value)
+        console.log(min_value, mean_value, max_value)
+
+        const analysis_id = {{ analysis_id }};
+        const is_fly_tissue_data =  {{ is_fly_tissue_data | yesno:"true,false" }};
+        const is_fly_age_data = {{ is_fly_age_data | yesno:"true,false" }};
+        const case_label = "{{ case_label }}";
+        const control_label = "{{ control_label }}";
+        console.log(analysis_id, is_fly_tissue_data, is_fly_age_data)
 
     </script>
 
-    {% render_bundle 'metabolite_list' 'js' %}
+    {% render_bundle 'met_ex_comp_tissue' 'js' %}
 {% endblock %}

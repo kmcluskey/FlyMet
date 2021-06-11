@@ -1,4 +1,8 @@
-import {get_lifestage, initialise_pcompare_table, updatePeakSidePanel} from './peak_tables_general.js';
+require('./init_datatables.js');
+const d3 = require('d3');
+require('bootstrap/js/dist/tooltip');
+import {initialise_compare_list_table} from './metabolite_tables_general';
+import {get_lifestage} from './peak_tables_general';
 
 function headerTips(settings) {
 
@@ -11,12 +15,8 @@ function headerTips(settings) {
         let string = "";
         let ls = "";
 
-        if (head_split[0] == "m/z") {
-            string = "mass-to-charge ratio";
-        } else if (head_split[0] == "Peak") {
-            string = "";
-        } else if (head_split[0] == "RT") {
-            string = "Retention Time";
+        if (head_split[0] == "Metabolite") {
+            string = "Identified Metabolite";
         } else {
             if (is_fly_tissue_data) {
                 tissue = `Fold change between ${head_split[0]} tissue from`;
@@ -50,35 +50,7 @@ function headerTips(settings) {
 
 };
 
-//
-// function get_lifestage(ls_string){
-//
-//   let ls = "";
-//   if (ls_string=="(F)")
-//     ls ="Females";
-//   else if (ls_string=="(M)")
-//       ls ="Males";
-//   else if (ls_string=="(L)")
-//         ls ="Larvae";
-//
-//   return ls
-// };
-
 $(document).ready(function () {
-    $("fieldset[class^='peak_details']").hide();
-    console.log("peak compare list", peak_compare_list)
-
-    let nd_title = "This MS peak was not detected for this tissue/life stage combination";
-    let ajax_url = `peak_compare_data/${analysis_id}/${peak_compare_list}`;
-    let peak_side_url = `peak_explorer/${analysis_id}/`;
-    let peak_side_text = `Intensities for peak `;
-    let met_url = `met_ex_all/${analysis_id}/`;
-
-    let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
-        nd_title, ajax_url, headerTips);
-
-    peak_table.on('click', 'tr', function () {
-        updatePeakSidePanel(this, peak_side_url, peak_side_text, met_url);
-    });
+    let met_table = initialise_compare_list_table("compare_list", min_value, mean_value, max_value, headerTips);
 
 });

@@ -24,11 +24,13 @@
             <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
                 {% for curr_category_desc, curr_analysis_id in all_categories %}
                     {% if curr_analysis_id == analysis_id %}
-                        <a class="navdark nav-item nav-link active" href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
+                        <a class="navdark nav-item nav-link active"
+                           href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
                             {{ curr_category_desc }}
                         </a>
                     {% else %}
-                        <a class="navdark nav-item nav-link" href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
+                        <a class="navdark nav-item nav-link"
+                           href="{% url 'met_ex_all' analysis_id=curr_analysis_id cmpd_list='All' %}">
                             {{ curr_category_desc }}
                         </a>
                     {% endif %}
@@ -41,10 +43,14 @@
 
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
+                        <a class="nav-link active"
+                           href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }} Comparisons</a>
                     </li>
                 </ul>
                 <div class="top-right">
@@ -53,76 +59,83 @@
             </div>
         </div>
 
-<div class="card mt-4 p-2 pb-2 border border-table rounded">
-    <div class="container-fluid pb-0" >
-      <div class="row pb-0">
-        <div class="myspan80 p-2 mt-2">
-          <p>Columns can be dragged to reorganise the data as required.</p>
-          <table id="metabolite_list" class="display table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-            <thead class="thead-light">
-              <tr id = "columns">
-                {% for column_name in columns %}
-                  {% if column_name == 'cmpd_id' %}
-                    <th class = "cmpd_id" >{{column_name}}</th>
-                    {% else %}
-                    <th class = {{column_name}} >{{column_name}}</th>
-                    {% endif %}
-                {% endfor %}
-              </tr>
-            </thead>
-          </table>
+        <div class="card mt-4 p-2 pb-2 border border-table rounded">
+            <div class="container-fluid pb-0">
+                <div class="row pb-0">
+                    <div class="myspan80 p-2 mt-2">
+                        <p>Columns can be dragged to reorganise the data as required.</p>
+                        <table id="metabolite_list"
+                               class="display table-sm table-bordered table-hover table-striped nowrap"
+                               style="width:100%">
+                            <thead class="thead-light">
+                            <tr id="columns">
+                                {% for column_name in columns %}
+                                    {% if column_name == 'cmpd_id' %}
+                                        <th class="cmpd_id">{{ column_name }}</th>
+                                    {% else %}
+                                        <th class={{ column_name }}>{{ column_name }}</th>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                        </table>
 
-          <div id ="pathwaysDiv" class="mt-4">
-          <fieldset class="fieldset-details">
-            <legend id='pwy_name'>
-            </legend>
-            <div class=p-2 id="pathwayDetails">
-            </div>
-          </fieldset>
-          </div>
+                        <div id="pathwaysDiv" class="mt-4">
+                            <fieldset class="fieldset-details">
+                                <legend id='pwy_name'>
+                                </legend>
+                                <div class=p-2 id="pathwayDetails">
+                                </div>
+                            </fieldset>
+                        </div>
 
-        </div>
+                    </div>
 
-        <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
-          <fieldset id="click_info" class="fieldset-details">
-            <legend class="sidebar">Related Peaks</legend>
-            <div class="p-2">
-              <p class="m-2">Click on a metabolite to see the related peaks</p>
-            </div>
-          </fieldset>
+                    <div class="myspan20 pl-2 pr-2 pt-2 rounded" style="height:100vh; overflow:scroll">
+                        <fieldset id="click_info" class="fieldset-details">
+                            <legend class="sidebar">Related Peaks</legend>
+                            <div class="p-2">
+                                <p class="m-2">Click on a metabolite to see the related peaks</p>
+                            </div>
+                        </fieldset>
 
-          <fieldset class="peak_details fieldset-details">
-            <legend class="sidebar">Related Peaks</legend>
-            <div class="pr-2 pl-2">
-              <p id ="compound_id" class="m-2"></p>
+                        <fieldset class="peak_details fieldset-details">
+                            <legend class="sidebar">Related Peaks</legend>
+                            <div class="pr-2 pl-2">
+                                <p id="compound_id" class="m-2"></p>
 
-              <div class="row">
-                <div class ="col-6">
-                <input type="radio" name="radio_adducts" id="filtered" autocomplete="off" checked=""> <small>M+H/M-H</small>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <input type="radio" name="radio_adducts" id="filtered" autocomplete="off"
+                                               checked=""> <small>M+H/M-H</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" name="radio_adducts" id="all_adducts"
+                                               autocomplete="off"><small>All adducts</small>
+                                    </div>
+                                </div>
+                                <p class='pt-2 pb-0 mb-0'>Key: <span
+                                        class="I badge badge-pill badge-success">I</span><span
+                                        class="F badge badge-pill badge-warning">F</span><span
+                                        class="A badge badge-pill badge-danger">AX</span></p>
+                            </div>
+                            <div id='dataDiv'>
+
+                            </div>
+                        </fieldset>
+
+                    </div>
+
                 </div>
-                <div class ="col-6">
-                <input type="radio" name="radio_adducts" id="all_adducts" autocomplete="off"><small>All adducts</small>
-                </div>
-              </div>
-              <p class='pt-2 pb-0 mb-0'>Key: <span class="I badge badge-pill badge-success">I</span><span class="F badge badge-pill badge-warning">F</span><span class="A badge badge-pill badge-danger">AX</span></p>
-              </div>
-              <div id='dataDiv'>
-
-              </div>
-            </fieldset>
-
             </div>
-
-        </div>
-        </div>
         </div>
 
-  </div>
+    </div>
 
-  <!--end of main div-->
-  <!--Spacer so that content is not hidden-->
-  <div class="spacer">
-  </div>
+    <!--end of main div-->
+    <!--Spacer so that content is not hidden-->
+    <div class="spacer">
+    </div>
 
 {% endblock %}
 

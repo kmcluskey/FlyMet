@@ -2,6 +2,79 @@ require('./init_datatables.js');
 const d3 = require('d3');
 require('bootstrap/js/dist/tooltip');
 
+function initialise_compare_list_table(tableName, lowpoint, midpoint, highpoint, headerTips){
+    const tName = '#'+tableName;
+
+    const dashType = $.fn.dataTable.absoluteOrderNumber({
+                value: '-', position: 'bottom'
+            });
+
+
+    let table = $(tName).DataTable({
+
+      drawCallback: function(settings){
+            /* Add some tooltips for demonstration purposes */
+            $('.NotDetected').tooltip({title: "Intensity data was not detected for this combinaton.", placement: "top"})
+        },
+        // responsive: true,
+        "scrollY": "100vh",
+        "scrollCollapse": true,
+        "scrollX": true,
+        fixedheader: true,
+        select: {
+            style: 'single'
+        },
+        //code to override bootstrap and keep buttons on one line.
+        dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
+        "<'row'<'col-sm-12'rt>>" +
+        "<'row'<'col-sm-6'i><'col-sm-6'p>>",
+        buttons: [ 'copy',
+            {
+                extend: 'collection',
+                text: 'Export',
+                buttons: [ 'csv', 'pdf' ]
+            }
+        ],
+
+        //Code to add the colours to the data - temporary numbers have been added.
+        "columnDefs": [
+            {className: "dt-center", "targets":"_all"},
+            {className: "maxpx300", "targets":0 }, //First column minumum size of 300px
+            {
+                "targets": '_all',
+                'type': dashType,
+                "createdCell": function (td, cellData, rowData, row, col) {
+
+                    let $td = $(td);
+
+                    let $th = $td.closest('table').find('th').eq($td.index());
+
+                        let colourLinear = d3.scaleLinear()
+                        .domain([lowpoint, midpoint, highpoint])
+                        .range(["#1184fc", "#D6DCE6", "#8e3b3d"]);
+
+                      //If the column header doesn't include the string Tissue then colour the column.
+
+                      if (!($th.text().includes('Metabolite'))) {
+                          if (cellData !=='-') {
+                            const colour = colourLinear(cellData);
+                            $(td).css('background-color', colour)
+                          }
+                        };
+
+                    if ($th.text().includes('Metabolite')){
+                      $(td).addClass("maxpx300")
+                    };
+                }
+            }
+        ],
+        // Add the tooltips to the dataTable header
+        "initComplete": headerTips
+    })
+//Return the table so that the it is resuable.
+    return table;
+}
+
 function initialise_met_table(tableName){
     const tName = '#'+tableName;
     console.log("tablename ", tName)
@@ -345,6 +418,7 @@ function add_side_tooltips(){
 };
 
 export {
+    initialise_compare_list_table,
     initialise_met_table,
     updateMetboliteSidePanel,
     updatePathwayPanel,

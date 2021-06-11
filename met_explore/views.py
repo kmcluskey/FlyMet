@@ -142,10 +142,7 @@ def index(request, analysis_id=None):
         analysis = Analysis.objects.get(id=analysis_id)
         project = analysis.category.project
 
-    # special FlyMet workaround to show some specific views
-    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
-    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
-
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
     context = {
         'json_url': reverse('get_metabolite_names'),
         'json_pwy_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis.id}),
@@ -549,10 +546,7 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
 
     stop = timeit.default_timer()
 
-    # special FlyMet workaround to show some specific views
-    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
-    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
-
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     context = {
         'peak_compare_list': peak_compare_list,
@@ -589,15 +583,11 @@ def peak_mf_compare(request, analysis_id):
 
     stop = timeit.default_timer()
 
-    # special FlyMet workaround to show some specific views
-    is_fly_tissue_data = False
-    if analysis.name == 'M/F Comparisons':
-        is_fly_tissue_data = True
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
+    linked_analysis_id = None
+    if is_fly_tissue_data:
         linked_analysis_id = 1
-
-    is_fly_age_data = False
-    if analysis.name == 'Age M/F Comparisons':
-        is_fly_age_data = True
+    elif is_fly_age_data:
         linked_analysis_id = 3
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
@@ -690,10 +680,7 @@ def peak_explorer(request, analysis_id, peak_list):
 
     stop = timeit.default_timer()
 
-    # special FlyMet workaround to show some specific views
-    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
-    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
-
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     context = {
         'peak_list': peak_list,
@@ -709,6 +696,12 @@ def peak_explorer(request, analysis_id, peak_list):
     project = analysis.category.project
     context = set_ui_config(context, project, analysis_id=analysis_id)
     return render(request, 'met_explore/peak_explorer.html', context)
+
+
+def flymet_workaround(analysis):
+    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
+    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+    return is_fly_tissue_data, is_fly_age_data
 
 
 def get_all_peaks_compare_df(analysis):
@@ -895,6 +888,41 @@ def met_ex_tissues(request, analysis_id):
     project = analysis.category.project
     context = set_ui_config(context, project, analysis_id=analysis_id)
     return render(request, 'met_explore/met_ex_tissues.html', context)
+
+
+def met_ex_comp_tissue(request, analysis_id):
+    analysis = Analysis.objects.get(pk=analysis_id)
+
+    peak_list = list(single_cmpds_df.index.values)
+    peaks = Peak.objects.filter(id__in=peak_list)
+
+    compare_df, min_value, mean_value, max_value = get_peak_compare_df(analysis, peaks)
+
+    sort_df_and_headers(compare_df, analysis)
+    compare_df = compare_df.set_index('Peak ID').copy()
+
+    met_dt = single_cmpds_df['Metabolite']
+
+    # Merge DF and move the Metbolite column to the front
+    merge_df = compare_df.merge(met_dt, how='outer', left_index=True, right_index=True)
+    first_col = merge_df.pop('Metabolite')
+    merge_df.insert(0, 'Metabolite', first_col)
+    new_df = merge_df.drop(['m/z', 'RT'], axis=1)
+    new_df = new_df.fillna("-")
+
+    column_headers = new_df.columns.tolist()
+    compare_data = new_df.values.tolist()
+
+    context = {'columns': column_headers, 'compare_data': compare_data, 'max_value': max_value, 'min_value': min_value,
+               'mean_value': mean_value}
+    project = analysis.category.project
+    context = set_ui_config(context, project, analysis_id=analysis_id)
+
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
+    context['is_fly_tissue_data'] = is_fly_tissue_data
+    context['is_fly_age_data'] = is_fly_age_data
+    return render(request, 'met_explore/met_ex_comp_tissue.html', context)
 
 
 def get_metabolite_names(request):
@@ -1537,7 +1565,7 @@ def sort_df_and_headers(view_df, analysis):
     :param view_df: A df that needs view headers and to be sorted (column order) to match headers.
     :return: view_df: sorted view df and sorted view headers
     """
-    column_names = view_df.columns.tolist()
+    column_names = list(view_df.columns)
 
     data_headers, group_headers = get_column_headers(column_names, analysis)
 
