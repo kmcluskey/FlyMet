@@ -90,14 +90,14 @@ function initialise_gene_table(tableName){
         }
 
 //Update the multi_omics side panel depending on which row is selected.
-function updateGeneSidePanel(obj){
+function updateGeneSidePanel(obj, category, cmpd_url, pwy_url){
 
   var currentRow = $(obj).closest("tr");
   var gene_id = $('#gene_list').DataTable().row(currentRow).data()[0];
 
   console.log("updating for cmpd", gene_id)
   const handleUpdate = function(returned_data) {
-    updateOmicsData(returned_data)
+    updateOmicsData(returned_data, category, cmpd_url, pwy_url)
 };
 
 const url = `/met_explore/gene_omics_data/${gene_id}`
@@ -113,7 +113,7 @@ $("p[id^='gene_id']").html(`Multi-omics data mapped to ${gene_id}`);
 }
 
 // // Update the compound names and any details we want on the side panel
-function updateOmicsData(returned_data){
+function updateOmicsData(returned_data, category, cmpd_url, pwy_url){
 //
   console.log("Updating omics data");
 
@@ -130,7 +130,7 @@ function updateOmicsData(returned_data){
 
     let group_header = `<p class= "sidebar">${capital_letter(group_name)}</p>`;
 
-    let group_table = get_omics_gp_table(columns, attribute_list, group_name);
+    let group_table = get_omics_gp_table(columns, attribute_list, group_name, cmpd_url, pwy_url, category);
 
     let group = group_header+group_table;
     groupDiv.innerHTML =  group;
@@ -139,12 +139,12 @@ function updateOmicsData(returned_data){
 
 //
 //       //Add the tooltips after all divs created.
-      add_side_tooltips()
+      add_side_tooltips(category)
 //     }
 }
 //
 // Returns a single HTML table for a single peak group
-function get_omics_gp_table(columns, attribute_list, group_name){
+function get_omics_gp_table(columns, attribute_list, group_name, cmpd_url, pwy_url, category){
 //
 //
 
@@ -168,12 +168,12 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
           group_table = group_table+`<tr>`;
           for (var d = 0; d < current_attributes.length; d++) {
           if (group_name=='compounds' && columns[d]=='ID' && current_attributes[d]!==null){
-            data_segment =`<td><a href="met_ex_all/${current_attributes[d]}" data-toggle="tooltip"
-            title="Compound ${current_attributes[d]}}" target="_blank">${current_attributes[d]}</a></td>`
+            data_segment =`<td><a href="${cmpd_url}/${current_attributes[d]}" data-toggle="tooltip"
+            title="Compound ${current_attributes[d]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='pathways' && columns[d]=='ID') {
-            data_segment=`<td><a href="pathway_search?pathway_search=${current_attributes[d]}" data-toggle="tooltip"
-            title="${current_attributes[d+1]} changes in FlyMet tissues" target="_blank">${current_attributes[d]}</a></td>`
+            data_segment=`<td><a href="${pwy_url}?pathway_search=${current_attributes[d]}" data-toggle="tooltip"
+            title="${current_attributes[d+1]} changes in FlyMet ${category}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='proteins' && columns[d]=='ID') {
             data_segment=`<td><a href="https://www.uniprot.org/uniprot/${current_attributes[d+1]}" data-toggle="tooltip"
@@ -197,9 +197,9 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
 };
 // // Add table header tooltips --these are temporary.
 // //KMCL: These tool tips have to be replaced with something responsive - i.e. where the buttons change depending on the data.
-function add_side_tooltips(){
-  $('.ID.compounds').tooltip({title: `Linked compounds can be found in FlyMet tissues`, placement: "top"});
-  $('.ID.pathways').tooltip({title: `Pathways changing in FlyMet tissues`, placement: "top"});
+function add_side_tooltips(category){
+  $('.ID.compounds').tooltip({title: `Linked compounds can be found in FlyMet ${category}`, placement: "top"});
+  $('.ID.pathways').tooltip({title: `Pathways changing in FlyMet ${category}`, placement: "top"});
   $('.ID.proteins').tooltip({title: `Link through to Reactome proteins`, placement: "top"});
   $('.ID.reactions').tooltip({title: `Link through to Reactome reactions`, placement: "top"});
 };

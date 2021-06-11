@@ -87,7 +87,8 @@ def str2bool(v):
     return v.lower() in ("yes", "true", "t", "1")
 
 
-def set_ui_config(context, project, analysis_id=None, columns=None):
+def set_ui_config(context, analysis, columns=None):
+    project = analysis.category.project
     config = project.metadata[LABEL_PROJECT_CONFIG]
     all_categories = get_search_categories(config)
     ui_config = {
@@ -111,19 +112,24 @@ def set_ui_config(context, project, analysis_id=None, columns=None):
     add_if_found(config, ui_config, LABEL_FOOTER_EMAIl)
     add_if_found(config, ui_config, LABEL_FOOTER_TAGLINE)
 
-    if analysis_id is not None:
-        ui_config['analysis_id'] = analysis_id
-        uic = get_analysis_config(config, analysis_id)
-        if uic is not None:
-            current_category = uic.category
-            case_label = uic.case_label
-            control_label = uic.control_label
-            ui_config['current_category'] = current_category
-            ui_config['case_label'] = case_label
-            ui_config['control_label'] = control_label
-            if columns is not None:
-                display_colnames = get_display_colnames(columns, uic.colnames)
-                ui_config['columns'] = display_colnames
+    analysis_id = analysis.id
+    ui_config['analysis_id'] = analysis_id
+    uic = get_analysis_config(config, analysis_id)
+    if uic is not None:
+        current_category = uic.category
+        case_label = uic.case_label
+        control_label = uic.control_label
+        ui_config['current_category'] = current_category
+        ui_config['case_label'] = case_label
+        ui_config['control_label'] = control_label
+        if columns is not None:
+            display_colnames = get_display_colnames(columns, uic.colnames)
+            ui_config['columns'] = display_colnames
+
+    # special FlyMet workaround to show some specific views
+    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
+    ui_config['is_fly_tissue_data'] = is_fly_tissue_data
+    ui_config['is_fly_age_data'] = is_fly_age_data
 
     new_context = dict(context)  # copy old dict
     new_context.update(ui_config)  # add UI config stuff
@@ -134,22 +140,24 @@ def add_if_found(config, ui_config, key):
     ui_config[key] = config[key] if key in config else None
 
 
+def flymet_workaround(analysis):
+    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
+    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+    return is_fly_tissue_data, is_fly_age_data
+
+
 def index(request, analysis_id=None):
     if analysis_id is None:
         project = get_initial_project()
         analysis = get_initial_analysis(project)
     else:
         analysis = Analysis.objects.get(id=analysis_id)
-        project = analysis.category.project
 
-    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
     context = {
         'json_url': reverse('get_metabolite_names'),
         'json_pwy_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis.id}),
-        'is_fly_tissue_data': is_fly_tissue_data,
-        'is_fly_age_data': is_fly_age_data
     }
-    context = set_ui_config(context, project, analysis_id=analysis.id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/index.html', context)
 
 
@@ -168,49 +176,49 @@ def get_initial_analysis(project):
 def about(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/about.html', context)
 
 
 def background(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/background.html', context)
 
 
 def exp_protocols(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/exp_protocols.html', context)
 
 
 def glossary(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/glossary.html', context)
 
 
 def feedback(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/feedback.html', context)
 
 
 def links(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/links.html', context)
 
 
 def credits(request):
     project = get_initial_project()
     analysis = get_initial_analysis(project)
-    context = set_ui_config({}, project, analysis_id=analysis.id)
+    context = set_ui_config({}, analysis)
     return render(request, 'met_explore/credits.html', context)
 
 
@@ -307,9 +315,7 @@ def metabolite_search(request, analysis_id):
         }
 
         logger.debug("The references are %s" % references)
-
-        project = analysis.category.project
-        context = set_ui_config(context, project, analysis_id=analysis_id, columns=columns)
+        context = set_ui_config(context, analysis, columns=columns)
         return render(request, 'met_explore/metabolite_search.html', context)
 
 
@@ -351,9 +357,7 @@ def pathway_search(request, analysis_id):
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
-
-        project = analysis.category.project
-        context = set_ui_config(context, project, analysis_id=analysis_id, columns=columns)
+        context = set_ui_config(context, analysis, columns=columns)
         return render(request, 'met_explore/pathway_search.html', context)
 
 
@@ -481,9 +485,7 @@ def pathway_metabolites(request, analysis_id):
             'summ_values': summ_values,
             'json_url': reverse('get_pathway_names', kwargs={'analysis_id': analysis_id})
         }
-
-        project = analysis.category.project
-        context = set_ui_config(context, project, analysis_id=analysis_id)
+        context = set_ui_config(context, analysis)
         return render(request, 'met_explore/pathway_metabolites.html', context)
 
 
@@ -498,8 +500,7 @@ def met_ex_all(request, analysis_id, cmpd_list):
         'columns': columns,
     }
     analysis = Analysis.objects.get(pk=analysis_id)
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/met_ex_all.html', context)
 
 
@@ -546,7 +547,6 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
 
     stop = timeit.default_timer()
 
-    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     context = {
         'peak_compare_list': peak_compare_list,
@@ -554,13 +554,8 @@ def peak_ex_compare(request, analysis_id, peak_compare_list):
         'max_value': max,
         'min_value': min,
         'mean_value': mean,
-        'analysis_id': analysis.id,
-        'is_fly_tissue_data': is_fly_tissue_data,
-        'is_fly_age_data': is_fly_age_data
     }
-
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/peak_ex_compare.html', context)
 
 
@@ -596,13 +591,9 @@ def peak_mf_compare(request, analysis_id):
         'max_value': max,
         'min_value': min,
         'mean_value': mean,
-        'analysis_id': analysis_id,
         'linked_analysis_id': linked_analysis_id,
-        'is_fly_tissue_data': is_fly_tissue_data,
-        'is_fly_age_data': is_fly_age_data
     }
-    project = analysis.category.project
-    context = set_ui_config(context, project)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/peak_mf_compare.html', context)
 
 
@@ -625,9 +616,7 @@ def peak_mf_age_compare(request):
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
     context = {'columns': column_headers, 'max_value': max, 'min_value': min,
                'mean_value': mean}
-
-    project = analysis.category.project
-    context = set_ui_config(context, project)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/peak_mf_age_compare.html', context)
 
 
@@ -688,20 +677,9 @@ def peak_explorer(request, analysis_id, peak_list):
         'max_value': max_value,
         'min_value': min_value,
         'mean_value': mean_value,
-        'analysis_id': analysis.id,
-        'is_fly_tissue_data': is_fly_tissue_data,
-        'is_fly_age_data': is_fly_age_data
     }
-
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/peak_explorer.html', context)
-
-
-def flymet_workaround(analysis):
-    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
-    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
-    return is_fly_tissue_data, is_fly_age_data
 
 
 def get_all_peaks_compare_df(analysis):
@@ -845,9 +823,7 @@ def pathway_explorer(request, analysis_id):
         'mean_value': pals_mean,
         'reactome_token': reactome_token
     }
-
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/pathway_explorer.html', context)
 
 
@@ -885,8 +861,7 @@ def met_ex_tissues(request, analysis_id):
         'min_value': min_value,
         'mean_value': mean_value,
     }
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/met_ex_tissues.html', context)
 
 
@@ -915,13 +890,7 @@ def met_ex_comp_tissue(request, analysis_id):
 
     context = {'columns': column_headers, 'compare_data': compare_data, 'max_value': max_value, 'min_value': min_value,
                'mean_value': mean_value}
-    project = analysis.category.project
-    context = set_ui_config(context, project, analysis_id=analysis_id)
-
-    # special FlyMet workaround to show some specific views
-    is_fly_tissue_data, is_fly_age_data = flymet_workaround(analysis)
-    context['is_fly_tissue_data'] = is_fly_tissue_data
-    context['is_fly_age_data'] = is_fly_age_data
+    context = set_ui_config(context, analysis)
     return render(request, 'met_explore/met_ex_comp_tissue.html', context)
 
 
@@ -1627,21 +1596,24 @@ def enzyme_search(request):
 
 def gene_tissue_explorer(request, gene_list):
     gene_df = mo_tissue.get_cache_gene_df().reset_index()
-
     column_headers = gene_df.columns.tolist()
 
-    response = {'gene_list': gene_list, 'columns': column_headers}
+    context = {'gene_list': gene_list, 'columns': column_headers}
 
-    return render(request, 'met_explore/gene_tissue_explorer.html', response)
+    analysis = Analysis.objects.get(pk=1)
+    context = set_ui_config(context, analysis)
+    return render(request, 'met_explore/gene_tissue_explorer.html', context)
 
 
 def gene_age_explorer(request, gene_list):
     gene_df = mo_age.get_cache_gene_df().reset_index()
     column_headers = gene_df.columns.tolist()
 
-    response = {'gene_list': gene_list, 'columns': column_headers}
+    context = {'gene_list': gene_list, 'columns': column_headers}
 
-    return render(request, 'met_explore/gene_age_explorer.html', response)
+    analysis = Analysis.objects.get(pk=3)
+    context = set_ui_config(context, analysis)
+    return render(request, 'met_explore/gene_age_explorer.html', context)
 
 
 def gene_data(request, gene_ids):

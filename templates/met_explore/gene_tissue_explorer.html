@@ -112,6 +112,7 @@
   <script type='text/javascript'>
     let gene_list = "{{gene_list | safe}}"
     console.log("The gene list is "+ gene_list)
+    const analysis_id = {{ analysis_id }};
   </script>
 
 {% render_bundle 'gene_tissue_explorer' 'js' %}
