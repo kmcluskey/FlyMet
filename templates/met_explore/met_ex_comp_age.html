@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Metabolite Aged Flies Lists {% endblock %}
+{% block title %} Metabolite Age Compare {% endblock %}
 
 {% block head_block %}
-    {% render_bundle 'met_age_id' 'css' %}
+    {% render_bundle 'met_ex_comp_age' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -18,11 +18,7 @@
           Investigate the metabolites found in <i> Drosophila </i>.
           </p>
         </div>
-        <!-- <div class = "logo_side">
-          <img src="{% static 'images/met_exp_logo.png'%}" class="explorer_logos" alt="Met_Ex_Logo">
-        </div> -->
       </div>
-
       <!-- extra Tabs for Analysis type -->
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
@@ -37,13 +33,13 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_age_all' 'All' %}">All</a>
+          <a class="nav-link" href="{% url 'met_ex_all' 'All' %}">All</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'met_age_id' %}">Identified</a>
+          <a class="nav-link" href="{% url 'met_ex_tissues' %}">Identified</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'met_ex_comp_age' %}">Whole Comparisons</a>
+          <a class="nav-link active" href="{% url 'met_ex_comp_age' %}">Whole Comparisons</a>
         </li>
       </ul>
       <div class="top-right" >
@@ -53,8 +49,7 @@
   </div>
   <div class="mt-4 mb-4">
     <p>
-    The average <a href="#" class="Intensity">peak intensity</a> levels for metabolites in different
-    ages of Female (F) and Male (M) <i>Drosophila</i>.
+      The log<sub>2</sub> fold-change (FC) in metabolite intesity levels between <i>Drosophila</i> aged and 7 day old flies.
     </p>
     <p class="small">
     The metabolites in this list have a high confidence score having been
@@ -65,32 +60,34 @@
   </div>
 
   <div>
-  <table id="met_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
-    <thead class="thead-light">
-      <tr id = "columns">
-        {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
-        {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for met_exp_data in data %}
-      <tr>
-            {% for m in met_exp_data %}
-            {% if forloop.first %}
-              <td><a href="metabolite_search_age?metabolite_search_age={{m}}" target="_blank">{{m}}</a></td>
-            {% else %}
-              {% if m > 0 %}
-                <td>{{m|stringformat:".2e"}}</td>
-                {% else %}
+    <table id="compare_list" class="table-sm table-bordered table-hover table-striped nowrap" style="width:100%">
+      <thead class="thead-light">
+        <tr id = "columns">
+          {% for column_name in columns %}
+          <th class = "col">{{column_name}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for metabolite_row in compare_data %}
+        <tr>
+              {% for m in metabolite_row %}
+              {% if forloop.first %}
+                <td><a href="metabolite_search_age?metabolite_search_age={{m}}" target="_blank">{{m}}</a></td>
+              {% else %}
+                {% if m == '-' %}
                 <td class="NotDetected">-</td>
+                {% else %}
+                <!-- <td> {{m}} </td> -->
+                <td>{{m|floatformat:2}}</td>
+                {% endif %}
               {% endif %}
-            {% endif %}
+            {% endfor %}
+        </tr>
         {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+
   </div>
 
   </div>
@@ -109,9 +106,9 @@
     var min_value = {{min_value}}
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
-    console.log(min_value, max_value, mean_value)
+    console.log(min_value, mean_value, max_value)
 
     </script>
 
-  {% render_bundle 'met_age_id' 'js' %}
+  {% render_bundle 'met_ex_comp_age' 'js' %}
   {% endblock %}

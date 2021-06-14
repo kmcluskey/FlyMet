@@ -1056,17 +1056,19 @@ def met_ex_comp_age(request):
 
     compare_df, min_value, mean_value, max_value = get_peak_compare_df(analysis, peaks)
 
-    sort_df_and_headers(compare_df, analysis)
-    compare_df = compare_df.set_index('Peak ID').copy()
+    comp_df = sort_df_and_headers(compare_df, analysis)
+    comp_df = comp_df.set_index('Peak ID').copy()
 
     met_dt = single_cmpds_df['Metabolite']
 
     #Merge DF and move the Metbolite column to the front
-    merge_df = compare_df.merge(met_dt, how='outer', left_index=True, right_index=True)
+    merge_df = comp_df.merge(met_dt, how='outer', left_index=True, right_index=True)
     first_col = merge_df.pop('Metabolite')
     merge_df.insert(0, 'Metabolite', first_col)
     new_df = merge_df.drop(['m/z', 'RT'], axis=1)
     new_df = new_df.fillna("-")
+
+    print (new_df)
 
     column_headers = new_df.columns.tolist()
     compare_data = new_df.values.tolist()
@@ -1087,13 +1089,13 @@ def met_ex_comp_tissue(request):
 
     compare_df, min_value, mean_value, max_value = get_peak_compare_df(analysis, peaks)
 
-    sort_df_and_headers(compare_df, analysis)
-    compare_df = compare_df.set_index('Peak ID').copy()
+    comp_df = sort_df_and_headers(compare_df, analysis)
+    comp_df = comp_df.set_index('Peak ID').copy()
 
     met_dt = single_cmpds_df['Metabolite']
 
     #Merge DF and move the Metbolite column to the front
-    merge_df = compare_df.merge(met_dt, how='outer', left_index=True, right_index=True)
+    merge_df = comp_df.merge(met_dt, how='outer', left_index=True, right_index=True)
     first_col = merge_df.pop('Metabolite')
     merge_df.insert(0, 'Metabolite', first_col)
     new_df = merge_df.drop(['m/z', 'RT'], axis=1)
