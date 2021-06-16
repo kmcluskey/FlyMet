@@ -91,12 +91,16 @@ def set_ui_config(context, analysis, columns=None):
     project = analysis.category.project
     config = project.metadata[LABEL_PROJECT_CONFIG]
     all_categories = get_search_categories(config)
+
+    colour_scheme = config[LABEL_COLOR_SCHEME]
+    if colour_scheme.lower() == 'default':
+        colour_scheme = '#5D2627' # for flymet
     ui_config = {
         LABEL_PROJECT_NAME: project.name,
         LABEL_PROJECT_DESCRIPTION: project.description,
         LABEL_TITLE_TAGLINE: config[LABEL_TITLE_TAGLINE],
         LABEL_SPECIES: config[LABEL_SPECIES],
-        LABEL_COLOR_SCHEME: config[LABEL_COLOR_SCHEME],
+        LABEL_COLOR_SCHEME: colour_scheme,
         LABEL_FOOTER_SHOW: str2bool(config[LABEL_FOOTER_SHOW]),
         'all_categories': all_categories
     }

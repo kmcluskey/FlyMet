@@ -35,6 +35,13 @@
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Sue+Ellen+Francisco" rel="stylesheet">
     <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" media="all" /> -->
+    <style>
+        :root {
+        {% if color_scheme %}
+            --colour-scheme: {{ color_scheme }};
+        {% endif %}
+        }
+    </style>
     {% block head_block %}
 
     {% endblock %}

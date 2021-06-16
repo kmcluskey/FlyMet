@@ -3,4 +3,4 @@ require('bootstrap');
 require('../css/Comfortaa_roboto.css');
 require('../css/bootstrap4-wizardry.css');
 //require('../css/sand-signika.css');
-require(`../css/app_${colorScheme}.css`);
+require(`../css/app_default.scss`);
