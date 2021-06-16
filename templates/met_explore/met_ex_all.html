@@ -50,7 +50,13 @@
                         <a class="nav-link" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }} Comparisons</a>
+                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">
+                            {% if is_fly_tissue_data or is_fly_age_data %}
+                                {{ control_label | title }} Comparisons
+                            {% else %}
+                                Comparisons
+                            {% endif %}
+                        </a>
                     </li>
                 </ul>
                 <div class="top-right">

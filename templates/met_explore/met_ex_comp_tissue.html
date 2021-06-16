@@ -51,9 +51,13 @@
                         <a class="nav-link" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active"
-                           href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }}
-                            Comparisons</a>
+                        <a class="nav-link active" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">
+                            {% if is_fly_tissue_data or is_fly_age_data %}
+                                {{ control_label | title }} Comparisons
+                            {% else %}
+                                Comparisons
+                            {% endif %}
+                        </a>
                     </li>
                 </ul>
                 <div class="top-right">
@@ -67,7 +71,8 @@
                 {{ current_category }} and {{ control_label }}.
             </p>
             <p class="small">
-                The metabolites in this list have a high confidence score having been <a href="#" class="Identified">identified</a> by
+                The metabolites in this list have a high confidence score having been <a href="#" class="Identified">identified</a>
+                by
                 a standard compound library or by <a href="#" class="FragA">fragmentation analysis</a>. Expansion of
                 these terms can be found in the <a href="{% url 'glossary' %}">Glossary</a>
             </p>
@@ -125,7 +130,7 @@
         var max_value =
         {{max_value}}
         var mean_value = {{mean_value}}
-        console.log(min_value, mean_value, max_value)
+            console.log(min_value, mean_value, max_value)
 
         const analysis_id = {{ analysis_id }};
         const is_fly_tissue_data =  {{ is_fly_tissue_data | yesno:"true,false" }};

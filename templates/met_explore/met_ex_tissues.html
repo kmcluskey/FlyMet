@@ -44,13 +44,21 @@
 
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
+                        <a class="nav-link"
+                           href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">All</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
+                        <a class="nav-link active"
+                           href="{% url 'met_ex_tissues' analysis_id=analysis_id %}">Identified</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">{{ control_label | title }} Comparisons</a>
+                        <a class="nav-link" href="{% url 'met_ex_comp_tissue' analysis_id=analysis_id %}">
+                            {% if is_fly_tissue_data or is_fly_age_data %}
+                                {{ control_label | title }} Comparisons
+                            {% else %}
+                                Comparisons
+                            {% endif %}
+                        </a>
                     </li>
                 </ul>
                 <div class="top-right">
@@ -88,7 +96,8 @@
                     <tr>
                         {% for m in met_exp_data %}
                             {% if forloop.first %}
-                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search={{ m }}" target="_blank">{{ m }}</a>
+                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search={{ m }}"
+                                       target="_blank">{{ m }}</a>
                                 </td>
                             {% else %}
                                 {% if m > 0 %}
