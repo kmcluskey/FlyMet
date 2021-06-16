@@ -3,6 +3,7 @@ import pandas as pd
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from loguru import logger
+from pals.common import REACTOME_SPECIES_DROSOPHILA_MELANOGASTER
 from tqdm import tqdm
 
 from met_explore.constants import CSV_GROUP_COLNAME, LABEL_PROJECT_CONFIG, LABEL_METABOLOMICS, LABEL_CATEGORIES
@@ -69,8 +70,12 @@ def populate_analysis_comparisions(analysis_set):
 
     for project in projects:
         try:
+            # get species from config, used for pathway analysis
+            # if not specified, then default to fly
+            species = project['species'] if 'species' in project else REACTOME_SPECIES_DROSOPHILA_MELANOGASTER
             new_project, project_created = Project.objects.get_or_create(name=project["project_name"],
-                                                                         description=project["project_description"])
+                                                                         description=project["project_description"],
+                                                                         species=species)
             if project_created:
                 metabolomics = project[LABEL_METABOLOMICS]
                 project_categories = metabolomics[LABEL_CATEGORIES]

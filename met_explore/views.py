@@ -345,7 +345,7 @@ def pathway_search(request, analysis_id):
             pathway_id, summ_values, pwy_table_data, columns, single_factor, pathway_name = get_pwy_search_table(
                 pals_df, search_query, analysis)
 
-        reactome_token = get_highlight_token()
+        reactome_token = get_highlight_token(analysis)
         # Get the indexes for M/z, RT and ID so that they are not formatted like the rest of the table
 
         context = {
@@ -817,7 +817,7 @@ def pathway_explorer(request, analysis_id):
 
     logger.info("Returning the pals data took: %s S" % str(stop - start))
 
-    reactome_token = get_highlight_token()
+    reactome_token = get_highlight_token(analysis)
 
     context = {
         'analysis_id': analysis_id,
