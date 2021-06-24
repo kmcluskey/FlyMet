@@ -203,7 +203,7 @@ function updatePathwayPanel(obj, pathway_url){
             // let pwy_name = details['display_name']
             // let pathway_name = escape(pwy_name)
 
-            let pwy_url =`<a href="${pathway_url}?${pathway_url}=${pwy_id}" data-toggle="tooltip"
+            let pwy_url =`<a href="${pathway_url}?pathway_search=${pwy_id}" data-toggle="tooltip"
             title="${pwy_name} changes in FlyMet tissues" target="_blank">${pwy_name}</a>`
             groupDiv.innerHTML =  pwy_url;
             pwyDiv.appendChild(groupDiv)

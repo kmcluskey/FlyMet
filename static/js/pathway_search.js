@@ -43,7 +43,7 @@ function updatePathwayDetails(obj, met_ex_url) {
   .then(handleUpdate);
 
 
-  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
+  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites/${analysis_id}?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
   title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
   enableTooltips();
@@ -63,7 +63,7 @@ $(document).ready(function() {
   $("[class^='pathway_details']").hide();
   $("#diagram_info").hide();
 
-  let met_ex_url = `met_ex_all`;
+  let met_ex_url = `met_ex_all/${analysis_id}`;
   let project = `Tissue`;
   let input = pathway_search;
 

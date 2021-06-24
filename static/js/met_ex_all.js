@@ -7,7 +7,7 @@ $(document).ready(function() {
 
   let peak_url = `peak_explorer/${analysis_id}/`;
   debugger;
-  let pathway_url = `pathway_search`
+  let pathway_url = `pathway_search/${analysis_id}`
   let metabolite_table = initialise_met_table("metabolite_list");
 
       metabolite_table.on( 'click', 'tr', function () {

@@ -70,16 +70,16 @@ $(document).ready(function() {
   });
 
   let nd_title = "This MS peak was not detected for this tissue/life stage combination";
-  let peak_side_url = `peak_explorer/`;
+  let peak_side_url = `peak_explorer/${analysis_id}/`;
   let peak_side_text =`Intensities for peak `;
-  let met_url = `met_ex_all/`;
+  let met_url = `met_ex_all/${analysis_id}/`;
 
   try {
     for (var i = 0; i < num_metabolites; i++) {
 
       let pwy_met_table = pcompare_pathways_table(`pwy_met_table_${i}`, min, mid, max, headerTips);
       // let pwy_met_table = initialise_pcompare_table2(`pwy_met_table_${i}`, min, mid, max);
-      $("p[id^='pwy_id']").html(`<a href="pathway_search?pathway_search=${pathway_name}" data-toggle="tooltip"
+      $("p[id^='pwy_id']").html(`<a href="pathway_search/${analysis_id}?pathway_search=${pathway_name}" data-toggle="tooltip"
       title="${pathway_name} changes in FlyMet tissues" target="_blank">${pathway_name} in FlyMet</a>`);
 
 

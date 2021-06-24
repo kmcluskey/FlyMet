@@ -197,6 +197,7 @@
 {% block js_block %}
     <script type='text/javascript'>
         var url = "{{json_url}}"
+        var analysis_id = "{{analysis_id | safe}}"
         var pathway_name = "{{pathway_name | safe}}" //Django template using html which fails.
         var min =
         {{min_value}}
