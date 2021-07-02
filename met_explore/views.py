@@ -145,8 +145,12 @@ def add_if_found(config, ui_config, key):
 
 
 def flymet_workaround(analysis):
-    is_fly_tissue_data = True if analysis.name == 'Tissue Comparisons' else False
-    is_fly_age_data = True if analysis.name == 'Age Comparisons' else False
+    is_fly_tissue_data = False
+    is_fly_age_data = False
+    if analysis.name in ['Tissue Comparisons', 'M/F Comparisons']:
+        is_fly_tissue_data = True
+    if analysis.name in ['Age Comparisons', 'Age M/F Comparisons']:
+        is_fly_age_data = True
     return is_fly_tissue_data, is_fly_age_data
 
 

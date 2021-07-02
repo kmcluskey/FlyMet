@@ -73,17 +73,31 @@
                     <a class="nav-link" href="{% url 'about' %}">About FlyMet</a>
                 </li>
             {% endif %}
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">Metabolite
-                    Explorer</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Peak
-                    Explorer</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'pathway_explorer' analysis_id=analysis_id %}">Pathway Explorer</a>
-            </li>
+            {% if linked_analysis_id %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'met_ex_all' analysis_id=linked_analysis_id cmpd_list='All' %}">Metabolite
+                        Explorer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'peak_explorer' analysis_id=linked_analysis_id peak_list='All' %}">Peak
+                        Explorer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pathway_explorer' analysis_id=linked_analysis_id %}">Pathway Explorer</a>
+                </li>
+            {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'met_ex_all' analysis_id=analysis_id cmpd_list='All' %}">Metabolite
+                        Explorer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'peak_explorer' analysis_id=analysis_id peak_list='All' %}">Peak
+                        Explorer</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'pathway_explorer' analysis_id=analysis_id %}">Pathway Explorer</a>
+                </li>
+            {% endif %}
             {% if project_name == 'FlyMet' %}
                 {% if is_fly_tissue_data %}
                     <li class="nav-item">
