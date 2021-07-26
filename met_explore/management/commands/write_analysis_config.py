@@ -148,7 +148,7 @@ class Command(BaseCommand):
             skeleton_config["projects"][0]['metabolomics']["categories"] = cat_list
 
             try:
-                with open("data/flymet_analysis_config_new.json", 'w') as file:
+                with open("data/flymet_analysis_config_final.json", 'w') as file:
                     json.dump(skeleton_config, file)
                 logger.info("The flymet configuration file has been written")
 

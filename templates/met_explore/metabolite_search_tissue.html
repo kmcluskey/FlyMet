@@ -118,8 +118,8 @@
                   <li><a href="{% url 'pathway_search' %}?pathway_search={{name}}">{{ name }}</a>
                     <p class="m-2">This is currently a placeholder for details of {{name}}.</p>
                   </li>
-                </ul>
                   {% endfor %}
+                </ul>
                   {% else %}
                     <p class="p-2">There are no Reactome pathways currently mapped to {{metabolite}} in <i>Drosophila</i>.</p>
                   {% endif %}
