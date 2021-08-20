@@ -397,8 +397,11 @@ class CompoundSelector(object):
             fact_dict = s.get_factor_dict()
             pfact = fact_dict[primary_factor_type]
             if secondary_factor_type is not None:
-                sfact = fact_dict[secondary_factor_type]
-                gp_factor_dict[s.group.name] = [pfact, sfact]
+                try:
+                    sfact = fact_dict[secondary_factor_type]
+                    gp_factor_dict[s.group.name] = [pfact, sfact]
+                except KeyError: #If there is no secondary factor just return the primary factor
+                    gp_factor_dict[s.group.name] = [pfact]
             else:
                 gp_factor_dict[s.group.name] = [pfact]
 

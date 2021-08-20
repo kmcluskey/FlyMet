@@ -71,16 +71,22 @@ except Exception as e:
 
 try:
     # This is here so we only call these once but this is not the way to do it.
-
-    analysis_tissue = Analysis.objects.get(name="Tissue Comparisons")
     analysis_age = Analysis.objects.get(name="Age Comparisons")
-    mo_tissue = MultiOmics(analysis_tissue)
     mo_age = MultiOmics(analysis_age)
+
 except Exception as e:
-    logger.warning("Cannot initialise multi-omics studies for tissue and age comparisons due to %s" % e)
-    logger.warning("Hopefully just that the DB not ready, start server again once populated")
-    mo_tissue = None
+    logger.warning("Cannot initialise multi-omics studies for age comparisons due to %s" % e)
     mo_age = None
+
+try:
+    # This is here so we only call these once but this is not the way to do it. Here first analysis becomes mo_tissue
+    analysis_tissue = Analysis.objects.get(id=1)
+    mo_tissue = MultiOmics(analysis_tissue)
+
+except Exception as e:
+    logger.warning("Cannot initialise multi-omics studies for tissue due to %s" % e)
+    mo_tissue = None
+
 
 
 def str2bool(v):
@@ -145,12 +151,15 @@ def add_if_found(config, ui_config, key):
 
 
 def flymet_workaround(analysis):
+
     is_fly_tissue_data = False
     is_fly_age_data = False
-    if analysis.name in ['Tissue Comparisons', 'M/F Comparisons']:
+
+    if analysis.name in ['Tissue Comparisons', 'M/F Comparisons', 'Mutant Comparisons']:
         is_fly_tissue_data = True
     if analysis.name in ['Age Comparisons', 'Age M/F Comparisons']:
         is_fly_age_data = True
+
     return is_fly_tissue_data, is_fly_age_data
 
 
