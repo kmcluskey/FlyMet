@@ -61,15 +61,12 @@
                         Investigate ranked {{ project_name }} pathways using the <a href="{% url 'pathway_explorer' analysis_id=analysis_id %}">Pathway
                         Explorer</a>
                     </li>
+                    {% if is_fly_tissue_data %}
                     <li class="list-group-item lead shaded p-4">
-                        {% if is_fly_tissue_data %}
-                            Investigate mapped {{ project_name }} genes using the <a href="{% url 'gene_tissue_explorer' 'All' %}">Gene
+                            Investigate mapped {{ project_name }} genes using the <a href="{% url 'gene_explorer'  analysis_id=analysis_id gene_list='All' %}">Gene
                             Explorer</a>
-                        {% elif is_fly_age_data %}
-                            Investigate mapped {{ project_name }} genes using the <a href="{% url 'gene_age_explorer' 'All' %}">Gene
-                            Explorer</a>
-                        {% endif %}
                     </li>
+                    {% endif %}
                 </ul>
             </div>
             <div class="myspan50 p-2 mt-2 mb-2">

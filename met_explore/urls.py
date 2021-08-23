@@ -60,8 +60,7 @@ urlpatterns = [
 
     # Gene views
 
-    path('gene_tissue_explorer/<str:gene_list>', views.gene_tissue_explorer, name='gene_tissue_explorer'),
-    path('gene_age_explorer/<str:gene_list>', views.gene_age_explorer, name='gene_age_explorer'),
+    path('gene_explorer/<int:analysis_id>/<str:gene_list>', views.gene_explorer, name='gene_explorer'),
     path('gene_data/<str:gene_ids>', c(views.gene_data), name='gene_data'),
     path('gene_omics_data/<str:gene_id>', views.gene_omics_data, name='gene_omics_data'),
 

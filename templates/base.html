@@ -101,11 +101,7 @@
             {% if project_name == 'FlyMet' %}
                 {% if is_fly_tissue_data %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'gene_tissue_explorer' 'All' %}">Gene Explorer</a>
-                    </li>
-                {% elif is_fly_age_data %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'gene_age_explorer' 'All' %}">Gene Explorer</a>
+                        <a class="nav-link" href="{% url 'gene_explorer' analysis_id=analysis_id gene_list='All' %}">Gene Explorer</a>
                     </li>
                 {% endif %}
                 <li class="nav-item">

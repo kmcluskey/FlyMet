@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load render_bundle from webpack_loader %}
-{% block title %} Gene Explorer: Age {% endblock %}
+{% block title %} Gene Explorer: Tissues {% endblock %}
 
 {% block head_block %}
-  {% render_bundle 'gene_age_explorer' 'css' %}
+  {% render_bundle 'gene_explorer' 'css' %}
 {% endblock %}
 
 {% block body_block %}
@@ -23,8 +23,18 @@
   <!-- extra Tabs for Analysis type -->
   <nav>
     <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-      <a class="navdark nav-item nav-link"  href="{% url 'gene_tissue_explorer' 'All' %}">Tissues</a>
-      <a class="navdark nav-item nav-link active " href="{% url 'gene_age_explorer' 'All' %}">Aged Flies</a>
+      {% for curr_category_desc, curr_analysis_id in all_categories %}
+          {% if curr_analysis_id == analysis_id %}
+              <a class="navdark nav-item nav-link active"
+                 href="{% url 'gene_explorer' analysis_id=curr_analysis_id gene_list='All'%}">
+                  {{ curr_category_desc }}
+              </a>
+          {% else %}
+              <a class="navdark nav-item nav-link" href="{% url 'gene_explorer' analysis_id=curr_analysis_id gene_list='All'%}">
+                  {{ curr_category_desc }}
+              </a>
+          {% endif %}
+      {% endfor %}
     </div>
   </nav>
 
@@ -33,7 +43,7 @@
    <div class="card-header">
      <ul id = "menu" class="nav nav-tabs card-header-tabs float_title">
        <li class="nav-item">
-         <a class="nav-link active" href="{% url 'gene_age_explorer' 'All' %}">Genes</a>
+         <a class="nav-link active" href="{% url 'gene_explorer' analysis_id=analysis_id gene_list='All' %}">Genes</a>
        </li>
      </ul>
      <div class="top-right">
@@ -115,5 +125,5 @@
     const analysis_id = {{ analysis_id }};
   </script>
 
-{% render_bundle 'gene_age_explorer' 'js' %}
+{% render_bundle 'gene_explorer' 'js' %}
 {% endblock %}

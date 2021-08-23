@@ -1611,26 +1611,15 @@ def enzyme_search(request):
     return render(request, 'met_explore/enzyme_search.html')
 
 
-def gene_tissue_explorer(request, gene_list):
+def gene_explorer(request, analysis_id, gene_list):
     gene_df = mo_tissue.get_cache_gene_df().reset_index()
     column_headers = gene_df.columns.tolist()
 
     context = {'gene_list': gene_list, 'columns': column_headers}
 
-    analysis = Analysis.objects.get(pk=1)
+    analysis = Analysis.objects.get(pk=analysis_id)
     context = set_ui_config(context, analysis)
-    return render(request, 'met_explore/gene_tissue_explorer.html', context)
-
-
-def gene_age_explorer(request, gene_list):
-    gene_df = mo_age.get_cache_gene_df().reset_index()
-    column_headers = gene_df.columns.tolist()
-
-    context = {'gene_list': gene_list, 'columns': column_headers}
-
-    analysis = Analysis.objects.get(pk=3)
-    context = set_ui_config(context, analysis)
-    return render(request, 'met_explore/gene_age_explorer.html', context)
+    return render(request, 'met_explore/gene_explorer.html', context)
 
 
 def gene_data(request, gene_ids):
