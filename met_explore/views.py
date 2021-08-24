@@ -381,9 +381,10 @@ def pathway_search(request, analysis_id):
 def get_pwy_search_table(pals_df, search_query, analysis):
     logger.info("getting %s table data" % search_query)
 
-    pathway_id, summ_values, pwy_table_data = "", [], []
+    pathway_id, summ_values, pwy_table_data, columns = "", [], [], []
     pathway_id_names_dict = get_pathway_id_names_dict(analysis)
     pathway_name = search_query
+    single_factor = False
 
     try:
         try:
@@ -411,32 +412,23 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
         columns = reorder_columns(columns)
 
-        # FIXME: messy codes from this point onwards!!
-        single_factor = False
         if len(columns) == 0:  # if no secondary factor, then just use the primary factor as the names
-            columns = factor_names
+            columns = [primary_factor]
             single_factor = True
 
         nm_samples_df = pd.DataFrame(index=factor_names, columns=columns, data="NM")  # Not measured samples
-        if single_factor:
-            for factor in factor_names:
-                for ls in columns:
-                    value = single_pwy_df.iloc[0][factor]
-                    nm_samples_df.loc[factor, ls] = value
 
-            # hack: all the columns have the same entries (p-values for each primary factor),
-            # so we only need to keep the first one!
-            nm_samples_df = pd.DataFrame(nm_samples_df.iloc[:, 0])
-            nm_samples_df.columns.values[0] = 'p-value'
-
-        else:
-            for factor in factor_names:
-                for ls in columns:
-                    try:
+        for factor in factor_names:
+            for ls in columns:
+                try:
+                    if single_factor:
+                        value = single_pwy_df.iloc[0][factor]
+                        nm_samples_df.loc[factor, ls] = value
+                    else:
                         value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
                         nm_samples_df.loc[factor, ls] = value
-                    except KeyError as e:
-                        pass
+                except KeyError:
+                    pass
 
         pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
         index = nm_samples_df.index.tolist()
