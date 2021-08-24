@@ -6,7 +6,7 @@ import django
 import numpy as np
 import pandas as pd
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db.models import Q
 from django.db.models import Q
 from django.http import JsonResponse
@@ -384,6 +384,8 @@ def get_pwy_search_table(pals_df, search_query, analysis):
     pathway_id, summ_values, pwy_table_data = "", [], []
     pathway_id_names_dict = get_pathway_id_names_dict(analysis)
     pathway_name = search_query
+    single_factor = True
+    columns = set()
 
     try:
         try:
@@ -406,37 +408,37 @@ def get_pwy_search_table(pals_df, search_query, analysis):
 
         analysis_case_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=primary_factor))
         factor_names = set([a.name for a in analysis_case_factors if a.name != 'nan'])
-
         analysis_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
+
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
         columns = reorder_columns(columns)
 
-        # FIXME: messy codes from this point onwards!!
+        #FIXME: messy codes from this point onwards!!
         single_factor = False
         if len(columns) == 0:  # if no secondary factor, then just use the primary factor as the names
             columns = factor_names
             single_factor = True
 
-        nm_samples_df = pd.DataFrame(index=factor_names, columns=columns, data="NM")  # Not measured samples
-        if single_factor:
-            for factor in factor_names:
-                for ls in columns:
-                    value = single_pwy_df.iloc[0][factor]
-                    nm_samples_df.loc[factor, ls] = value
+        #not to push for mutant data only
+        columns = [primary_factor]
+        single_factor = True
+        mutant_factor_names = pals_df.columns[5:]
+        nm_samples_df = pd.DataFrame(index=mutant_factor_names, columns=columns, data="NM")  # Not measured samples
 
-            # hack: all the columns have the same entries (p-values for each primary factor),
-            # so we only need to keep the first one!
-            nm_samples_df = pd.DataFrame(nm_samples_df.iloc[:, 0])
-            nm_samples_df.columns.values[0] = 'p-value'
+        # nm_samples_df = pd.DataFrame(index=factor_names, columns=columns, data="NM")  # Not measured samples
 
-        else:
-            for factor in factor_names:
-                for ls in columns:
-                    try:
+
+        for factor in mutant_factor_names:
+            for ls in columns:
+                try:
+                    if single_factor:
+                        value = single_pwy_df.iloc[0][factor]
+                        nm_samples_df.loc[factor, ls] = value
+                    else:
                         value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
                         nm_samples_df.loc[factor, ls] = value
-                    except KeyError as e:
-                        pass
+                except KeyError as e:
+                    pass
 
         pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
         index = nm_samples_df.index.tolist()
@@ -445,10 +447,11 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         for t, v in zip(index, pwy_values):
             pwy_table_data.append(([t] + v))
 
-    except KeyError:
-
+    except KeyError as e:
+        print (e)
         logger.warning("A proper pathway name: %s was not passed to the search" % search_query)
         pathway_id = ""  # The pathway_id wasn't passed so reset to empty string.
+
 
     return pathway_id, summ_values, pwy_table_data, columns, single_factor, pathway_name
 
@@ -976,8 +979,14 @@ def pathway_search_data(pwy_id, analysis):
             cmpd_name = Compound.objects.get(chebi_id=cmpd).cmpd_name
             cmpd_id = Compound.objects.get(chebi_id=cmpd).id
         except ObjectDoesNotExist:
-            cmpd_name = Compound.objects.get(related_chebi__contains=cmpd).cmpd_name
-            cmpd_id = Compound.objects.get(related_chebi__contains=cmpd).id
+            try:
+                cmpd_name = Compound.objects.get(related_chebi__contains=cmpd).cmpd_name
+                cmpd_id = Compound.objects.get(related_chebi__contains=cmpd).id
+            except  MultipleObjectsReturned as e:
+                logger.warning("%s suggests multiple related chebi ids - just taking the first compound" % e)
+                compound = Compound.objects.filter(related_chebi__contains=cmpd)[0]
+                cmpd_id = compound.id
+                cmpd_name = compound.cmpd_name
         except Exception as e:
             logger.warning("A compound for chebi id %s was not found, this shouldn't happen" % cmpd)
             logger.warning("Failed with the exception %s " % e)
