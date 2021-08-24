@@ -410,26 +410,35 @@ def get_pwy_search_table(pals_df, search_query, analysis):
         analysis_sec_factors = Factor.objects.filter(Q(group__case_group__analysis=analysis), Q(type=secondary_factor))
         columns = set([a.name for a in analysis_sec_factors if a.name != 'nan'])
         columns = reorder_columns(columns)
+
+        # FIXME: messy codes from this point onwards!!
         single_factor = False
         if len(columns) == 0:  # if no secondary factor, then just use the primary factor as the names
             columns = factor_names
             single_factor = True
 
         nm_samples_df = pd.DataFrame(index=factor_names, columns=columns, data="NM")  # Not measured samples
-
-        for factor in factor_names:
-            for ls in columns:
-                try:
-                    if single_factor:
-                        value = single_pwy_df.iloc[0][factor]
-                    else:
-                        value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
+        if single_factor:
+            for factor in factor_names:
+                for ls in columns:
+                    value = single_pwy_df.iloc[0][factor]
                     nm_samples_df.loc[factor, ls] = value
-                except KeyError as e:
-                    pass
+
+            # hack: all the columns have the same entries (p-values for each primary factor),
+            # so we only need to keep the first one!
+            nm_samples_df = pd.DataFrame(nm_samples_df.iloc[:, 0])
+            nm_samples_df.columns.values[0] = 'p-value'
+
+        else:
+            for factor in factor_names:
+                for ls in columns:
+                    try:
+                        value = single_pwy_df.iloc[0][factor + ' (' + ls + ')']
+                        nm_samples_df.loc[factor, ls] = value
+                    except KeyError as e:
+                        pass
 
         pwy_values = nm_samples_df.values.tolist()  # This is what we are sending to the user.
-
         index = nm_samples_df.index.tolist()
 
         # Get a list to return to the view
