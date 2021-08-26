@@ -1068,8 +1068,6 @@ def met_ex_comp_age(request):
     new_df = merge_df.drop(['m/z', 'RT'], axis=1)
     new_df = new_df.fillna("-")
 
-    print (new_df)
-
     column_headers = new_df.columns.tolist()
     compare_data = new_df.values.tolist()
 
@@ -1624,19 +1622,14 @@ def get_metabolite_search_page(analysis, search_query):
 
     case_s = analysis.get_case_samples()
     control_s = analysis.get_control_samples()
-    samples = case_s | control_s
 
     primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
     secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
 
-    all_factors = get_factors_from_samples(samples, primary_factor_type)
-    control_factors = get_factors_from_samples(control_s, primary_factor_type)
+    all_factors = get_factors_from_samples(case_s, primary_factor_type)
+    analysis_comparison = AnalysisComparison.objects.filter(analysis=analysis)
 
-    assert len(control_factors) == 1, 'The number of control factors should be 1, please check'
-    control = control_factors[0]
-
-    peak_id = None
-    met_table_data, columns = [], []
+    met_table_data, columns, peak_id = [], [], None
     min = MIN
     max = MAX
     mean = MEAN
@@ -1661,7 +1654,7 @@ def get_metabolite_search_page(analysis, search_query):
 
             df = pd.DataFrame(index=all_factors, columns=columns, dtype=float)
             nm_samples_df = pd.DataFrame(index=all_factors, columns=columns, data="NM")  # Not measured samples
-            gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
+            gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, case_s)
 
             # Fill in the DF with Tissue/Life stages and intensities.
             for factor in all_factors:
@@ -1669,26 +1662,30 @@ def get_metabolite_search_page(analysis, search_query):
                     for g in gp_tissue_ls_dict:
                         if gp_tissue_ls_dict[g] == [factor, ls]:
                             value = met_search_df.iloc[0][g]
-                            df.loc[factor, ls] = value
-                            nm_samples_df.loc[factor, ls] = value
 
-            # Standardise the DF by dividing by the Whole cell/Lifestage
-            whole_row = df.loc[control]
+                            # Standardise the DF by dividing case by control
+                            control = get_control_from_case(g, analysis_comparison)
+                            control_value = met_search_df.iloc[0][control]
+
+                            if np.isnan(control_value):
+                                control_value = WF_MIN
+                            std_value = value / control_value
+
+                            df.loc[factor, ls] = std_value
+                            nm_samples_df.loc[factor, ls] = std_value
 
             # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
             # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
             # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
-            whole_row = whole_row.replace(np.nan, WF_MIN)
+            log_df = np.log2(df)
+            view_df = log_df.round(2)
+            # Above: if control_value == np.nan: control_value = WF_MIN
 
-            sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
-            log_df = np.log2(sdf)
-            view_df = log_df.drop(index=control).round(2)
-
-            nm_df = nm_samples_df.drop(index=control)
-            nm2 = nm_df[nm_df == 'NM']
+            nm2 = nm_samples_df[nm_samples_df == 'NM']
 
             log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
             log_nm = log_nm_df.fillna("-")
+            # log_nm_df = nm2.combine_first(log_df)  # Replace NM values for not measured samples in final df
             log_values = log_nm.values.tolist()  # This is what we are sending to the user.
 
             index = view_df.index.tolist()
