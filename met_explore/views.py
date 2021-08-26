@@ -1381,6 +1381,8 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
 
     i=0
     for gp, v in gp_intensities.items():
+            if np.isnan(v):
+                v = WF_MIN
             pfact = group_ls_tissue_dict[gp][0]
             sfact = group_ls_tissue_dict[gp][1]
             met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
