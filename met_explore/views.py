@@ -1448,16 +1448,12 @@ def get_column_headers(data_group_names, analysis):
 def get_metabolite_search_page(analysis, search_query):
     case_s = analysis.get_case_samples()
     control_s = analysis.get_control_samples()
-    samples = case_s | control_s
 
     primary_factor_type = get_factor_type_from_analysis(analysis, 'primary_factor')
     secondary_factor_type = get_factor_type_from_analysis(analysis, 'secondary_factor')
 
-    all_factors = get_factors_from_samples(samples, primary_factor_type)
-    control_factors = get_factors_from_samples(control_s, primary_factor_type)
-
-    assert len(control_factors) == 1, 'The number of control factors should be 1, please check'
-    control = control_factors[0]
+    all_factors = get_factors_from_samples(case_s, primary_factor_type)
+    analysis_comparison = AnalysisComparison.objects.filter(analysis=analysis)
 
     peak_id = None
     met_table_data, columns = [], []
@@ -1472,6 +1468,10 @@ def get_metabolite_search_page(analysis, search_query):
 
         met_search_df = single_cmpds_df[single_cmpds_df['Metabolite'] == search_query]
 
+        # Mutant only nonsense
+
+        mutant_rows = [x for x in met_search_df.columns if any(w in x for w in all_factors)]
+
         # If there is a row in the DF matching the searched for metabolite
         if met_search_df.shape[0] == 1:
 
@@ -1480,53 +1480,84 @@ def get_metabolite_search_page(analysis, search_query):
 
             logger.info("Getting the details for %s " % search_query)
 
-            # Get the metabolite/tissue comparison DF
+            #Get the metabolite/tissue comparison DF
             columns = get_factors_from_samples(control_s, secondary_factor_type)
             single_factor = False
             if len(columns) == 0:
                 single_factor = True
                 columns = [None]
 
+            # mutant hack, sorry
+            if analysis.name == 'Mutant Comparisons':
+                single_factor = True
+                columns = [None]
+
             df = pd.DataFrame(index=all_factors, columns=columns, dtype=float)
             nm_samples_df = pd.DataFrame(index=all_factors, columns=columns, data="NM")  # Not measured samples
-            gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, samples)
+            gp_tissue_ls_dict = cmpd_selector.get_group_tissue_ls_dicts(analysis, case_s)
 
-            # Fill in the DF with Tissue/Life stages and intensities.
-            for factor in all_factors:
-                for ls in columns:
-                    if ls is not None:  # both primary and secondary factors are present
-                        for g in gp_tissue_ls_dict:
-                            if gp_tissue_ls_dict[g] == [factor, ls]:
-                                value = met_search_df.iloc[0][g]
-                                df.loc[factor, ls] = value
-                                nm_samples_df.loc[factor, ls] = value
+            #This code just takes each sample group (ignoring factors and shows the intensites for that metabolite)
+            if analysis.name == "Mutant Comparisons":
 
-                    else:  # single factor only
-                        for g in gp_tissue_ls_dict:
-                            if gp_tissue_ls_dict[g] == [factor]:
-                                value = met_search_df.iloc[0][g]
-                                df.loc[factor, ls] = value
-                                nm_samples_df.loc[factor, ls] = value
+                df = pd.DataFrame(index=mutant_rows, columns=columns, dtype=float)
+                nm_samples_df = pd.DataFrame(index=mutant_rows, columns=columns, data="NM")  # Not measured samples
+
+                for rw in mutant_rows:
+
+                    value = met_search_df.iloc[0][rw]
+                    control = get_control_from_case(rw, analysis_comparison)
+                    control_value = met_search_df.iloc[0][control]
+                    if np.isnan(control_value):
+                        control_value = WF_MIN
+                    std_value = value / control_value
+
+                    df.loc[rw, None] = std_value
+                    nm_samples_df.loc[rw, None] = std_value
+            else:
+                # Fill in the DF with Tissue/Life stages and intensities.
+                for factor in all_factors:
+                    for ls in columns:
+                        if ls is not None:  # both primary and secondary factors are present
+                            for g in gp_tissue_ls_dict:
+                                if gp_tissue_ls_dict[g] == [factor, ls]:
+                                    value = met_search_df.iloc[0][g]
+
+                                    control = get_control_from_case(g, analysis_comparison)
+                                    control_value = met_search_df.iloc[0][control]
+                                    if np.isnan(control_value):
+                                        control_value = WF_MIN
+                                    std_value = value / control_value
+
+                                    df.loc[factor, ls] = std_value
+                                    nm_samples_df.loc[factor, ls] = std_value
+
+
+                        else:  # single factor only
+                            for g in gp_tissue_ls_dict:
+                                if gp_tissue_ls_dict[g] == [factor]:
+                                    value = met_search_df.iloc[0][g]
+
+                                    control = get_control_from_case(g, analysis_comparison)
+                                    control_value = met_search_df.iloc[0][control]
+                                    if np.isnan(control_value):
+                                        control_value = WF_MIN
+                                    std_value = value / control_value
+
+                                    df.loc[factor, ls] = std_value
+                                    nm_samples_df.loc[factor, ls] = std_value
 
             if single_factor:  # get rid of None as the column header, replace with ''
                 columns = ['FC']
                 df = df.rename(columns={None: columns[0]})
                 nm_samples_df = nm_samples_df.rename(columns={None: columns[0]})
 
-            # Standardise the DF by dividing by the Whole cell/Lifestage
-            whole_row = df.loc[control]
-
             # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
             # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
             # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
-            whole_row = whole_row.replace(np.nan, WF_MIN)
+            log_df = np.log2(df)
+            view_df = log_df.round(2)
 
-            sdf = df.divide(whole_row)  # Standardised df - divided by the row with the whole data.
-            log_df = np.log2(sdf)
-            view_df = log_df.drop(index=control).round(2)
-
-            nm_df = nm_samples_df.drop(index=control)
-            nm2 = nm_df[nm_df == 'NM']
+            nm2 = nm_samples_df[nm_samples_df == 'NM']
 
             log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
             log_nm = log_nm_df.fillna("-")

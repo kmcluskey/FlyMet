@@ -171,7 +171,7 @@ def get_factors_from_samples(samples, factor_type):
         try:
             factor_set.add(fact_dict[factor_type])
         except KeyError as e:
-            logger.info("This key is not of the factor type requested %s " % e)
+            logger.info("This sample does not contain the factor type %s " % e)
             continue
 
     factor_list = list(factor_set)
