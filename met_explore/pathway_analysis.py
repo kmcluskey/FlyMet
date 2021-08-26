@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import requests
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from loguru import logger
 from pals.PLAGE import PLAGE
@@ -393,10 +393,16 @@ def get_formula_set(cmpd_list):
 
     formula_list = set()
     for cmpd_id in cmpd_list:
+        print ("cmpd_id", cmpd_id)
         try:
             cmpd_formula = all_cmpds.get(chebi_id=cmpd_id).cmpd_formula
         except ObjectDoesNotExist:
-            cmpd_formula = all_cmpds.get(related_chebi__contains=cmpd_id).cmpd_formula
+            try:
+                cmpd_formula = all_cmpds.get(related_chebi__contains=cmpd_id).cmpd_formula
+            except  MultipleObjectsReturned as e:
+                logger.warning("Get %s, possible multiple related chebi and taking first compound" % e)
+                compound = all_cmpds.filter(related_chebi__contains=cmpd_id)[0]
+                cmpd_formula = compound.cmpd_formula
         except Exception as e:
             raise e
         formula_list.add(cmpd_formula)
