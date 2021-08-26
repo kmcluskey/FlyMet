@@ -615,29 +615,6 @@ def peak_mf_compare(request, analysis_id):
     return render(request, 'met_explore/peak_mf_compare.html', context)
 
 
-def peak_mf_age_compare(request):
-    """
-       :param request: The peak Explorer page
-       :return: The template and required parameters for the peak explorer page.
-       """
-
-    logger.info("Peak m/f age comparison table requested")
-    start = timeit.default_timer()
-
-    analysis = Analysis.objects.get(name="Age M/F Comparisons")
-    view_df, min, mean, max = get_peak_mf_compare_df(analysis)
-
-    column_headers = get_peak_mf_header(view_df, analysis)
-
-    stop = timeit.default_timer()
-
-    logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    context = {'columns': column_headers, 'max_value': max, 'min_value': min,
-               'mean_value': mean}
-    context = set_ui_config(context, analysis)
-    return render(request, 'met_explore/peak_mf_age_compare.html', context)
-
-
 def peak_explorer(request, analysis_id, peak_list):
     """
     :param request: The peak Explorer page
@@ -1127,6 +1104,13 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
             pfact = factors[0]
             sfact = factors[1]
             met_series_data.append({'name': pfact + " " + sfact, 'y': v, 'drilldown': str(i + 1)})
+            if np.isnan(v):
+                v = WF_MIN
+            pfact = group_ls_tissue_dict[gp][0]
+            sfact = group_ls_tissue_dict[gp][1]
+            met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
+            all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
+
             gp_name = pfact + " " + sfact
         elif len(factors) == 1:
             pfact = factors[0]
@@ -1438,7 +1422,7 @@ def get_metabolite_search_page(analysis, search_query):
     all_factors = get_factors_from_samples(case_s, primary_factor_type)
     analysis_comparison = AnalysisComparison.objects.filter(analysis=analysis)
 
-    peak_id = None
+
     met_table_data, columns, peak_id = [], [], None
     min = MIN
     max = MAX
@@ -1511,7 +1495,6 @@ def get_metabolite_search_page(analysis, search_query):
                 df = df.rename(columns={None: columns[0]})
                 nm_samples_df = nm_samples_df.rename(columns={None: columns[0]})
 
-
             # Add a minimum value to the whole fly data. This is so that we don't flatten any of the tissue data if
             # the whole fly data is missing. i.e. if the whole fly is missing and we divide the tissue by NaN we get
             # NaN for the tissue when in reality there was a greater intensity for the tissue than the whole fly.
@@ -1519,10 +1502,12 @@ def get_metabolite_search_page(analysis, search_query):
             log_df = np.log2(df)
             view_df = log_df.round(2)
 
+
             nm2 = nm_samples_df[nm_samples_df == 'NM']
 
             log_nm_df = nm2.combine_first(view_df)  # Replace NM values for not measured samples in final df
             log_nm = log_nm_df.fillna("-")
+            # log_nm_df = nm2.combine_first(log_df)  # Replace NM values for not measured samples in final df
             log_values = log_nm.values.tolist()  # This is what we are sending to the user.
 
             index = view_df.index.tolist()

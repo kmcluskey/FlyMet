@@ -40,7 +40,7 @@ class PeakSelector(object):
 
         self.std_temp_dict = {"Maltose": 775.8, "sucrose": 742.2, "trans-4-Hydroxy-L-proline": 720.6,
                               "5-Aminolevulinate": 696.0, "D-Fructose 6-phosphate": 783.6,
-                              "D-glucose 6-phosphate": 754.8}
+                              "D-glucose 6-phosphate": 754.8, "Nicotinate": 437.4, "Isonicotinic acid":451.2}
 
         # These are all stds_db compounds where the compound formulas don't match the inchi-keys so just updating them.
         self.inchi_changers = {'Succinate': 'KDYFGRWQOYBRFD-UHFFFAOYSA-N',

@@ -182,6 +182,7 @@ def get_factors_from_samples(samples, factor_type):
 
 
 def reorder_columns(factor_list):
+
     if ('F' in factor_list) and ('M' in factor_list) and ('L' in factor_list) and (len(factor_list) == 3):
         factor_list = ['F', 'M', 'L']
     return factor_list
