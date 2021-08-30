@@ -1100,16 +1100,17 @@ def met_search_highchart_data(request, analysis_id, tissue, metabolite):
     i = 0
     for gp, v in gp_intensities.items():
         factors = group_ls_tissue_dict[gp]
+        if np.isnan(v):
+            v = WF_MIN
         if len(factors) == 2:
             pfact = factors[0]
             sfact = factors[1]
             met_series_data.append({'name': pfact + " " + sfact, 'y': v, 'drilldown': str(i + 1)})
-            if np.isnan(v):
-                v = WF_MIN
-            pfact = group_ls_tissue_dict[gp][0]
-            sfact = group_ls_tissue_dict[gp][1]
-            met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
-            all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
+
+            # pfact = group_ls_tissue_dict[gp][0]
+            # sfact = group_ls_tissue_dict[gp][1]
+            # met_series_data.append({'name': pfact+" "+sfact, 'y': v, 'drilldown': str(i+1)})
+            # all_intensities.append(cmpd_selector.get_group_ints(metabolite, gp, hc_int_df))
 
             gp_name = pfact + " " + sfact
         elif len(factors) == 1:
