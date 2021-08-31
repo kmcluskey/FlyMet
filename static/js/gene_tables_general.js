@@ -180,8 +180,8 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
             title="Reactome protein: ${current_attributes[d+1]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='reactions' && columns[d]=='ID') {
-            data_segment=`<td><a href="https://reactome.org/content/detail/${current_attributes[d+1]}" data-toggle="tooltip"
-            title="Reactome protein: ${current_attributes[d+1]}" target="_blank">${current_attributes[d]}</a></td>`
+            data_segment=`<td><a href="https://reactome.org/content/detail/${current_attributes[d]}" data-toggle="tooltip"
+            title="Reactome reactions: ${current_attributes[d+1]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else  {
               data_segment = `<td>${current_attributes[d]}</td>`
