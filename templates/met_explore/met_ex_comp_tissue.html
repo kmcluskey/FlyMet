@@ -94,7 +94,7 @@
                     <tr>
                         {% for m in metabolite_row %}
                             {% if forloop.first %}
-                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search_tissue={{ m }}"
+                                <td><a href="metabolite_search/{{ analysis_id }}?metabolite_search={{ m }}"
                                        target="_blank">{{ m }}</a></td>
                             {% else %}
                                 {% if m == '-' %}
