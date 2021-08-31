@@ -30,7 +30,7 @@ function initialise_compare_list_table(tableName, lowpoint, midpoint, highpoint,
         dom: "<'row'<'col-sm-3'l><'col-sm-4'B><'col-sm-3'f>>" +
         "<'row'<'col-sm-12'rt>>" +
         "<'row'<'col-sm-6'i><'col-sm-6'p>>",
-        buttons: [ 'copy',
+        buttons: [ 'colvis', 'copy',
             {
                 extend: 'collection',
                 text: 'Export',
