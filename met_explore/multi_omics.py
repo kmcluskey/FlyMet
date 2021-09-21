@@ -21,7 +21,7 @@ class MultiOmics(object):
     def __init__(self, analysis):
 
         self.DATA_FOLDER = os.path.abspath(os.path.join('.', 'omics_data'))
-        self.fly_atlas2_df = pd.read_csv(os.path.join(self.DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes.csv'),
+        self.fly_atlas2_df = pd.read_csv(os.path.join(self.DATA_FOLDER, 'FlyAtlas2_Alltissues_Allgenes_Sept21.csv'),
                                     encoding='unicode_escape', index_col='FlyBaseID')
 
         self.analysis = analysis
@@ -29,6 +29,7 @@ class MultiOmics(object):
 
     def get_cache_ap(self):
         a_id = str(self.analysis.id)
+        # cache.delete('ap_' + a_id)
         cache_name = 'ap_' + a_id
 
         # cache.delete(cache_name)
@@ -46,7 +47,7 @@ class MultiOmics(object):
     def get_analysis_pipeline(self):
 
         ## Currently the gene data and design were just produced by hand from the flyatlas data
-        gene_data = pd.read_csv(os.path.join(self.DATA_FOLDER, 'flyatlas_data.csv'), index_col='Identifier')
+        gene_data = pd.read_csv(os.path.join(self.DATA_FOLDER, 'flyatlas_data_Sept21.csv'), index_col='Identifier')
         gene_design = pd.read_csv(os.path.join(self.DATA_FOLDER, 'flyatlas_design.csv'), index_col='sample')
 
         compound_data = self.get_cache_omics_df()
@@ -232,7 +233,7 @@ class MultiOmics(object):
     def get_cache_gene_df(self):
 
         a_id = str(self.analysis.id)
-        # cache.delete('omics_df'+a_id)
+        # cache.delete('gene_df' + a_id)
         cache_name = 'gene_df' + a_id
 
         if cache.get(cache_name) is None:
