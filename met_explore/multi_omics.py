@@ -29,7 +29,6 @@ class MultiOmics(object):
 
     def get_cache_ap(self):
         a_id = str(self.analysis.id)
-        # cache.delete('ap_' + a_id)
         cache_name = 'ap_' + a_id
 
         # cache.delete(cache_name)
@@ -77,8 +76,8 @@ class MultiOmics(object):
     def get_cache_omics_df(self):
 
         a_id = str(self.analysis.id)
-        # cache.delete('omics_df'+a_id)
-        cache_name = 'omics_ds'+a_id
+        cache_name = 'omics_df'+a_id
+        #cache.delete(cache_name)
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the omics_df function")
@@ -233,8 +232,9 @@ class MultiOmics(object):
     def get_cache_gene_df(self):
 
         a_id = str(self.analysis.id)
-        # cache.delete('gene_df' + a_id)
         cache_name = 'gene_df' + a_id
+        #cache.delete(cache_name)
+
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so getting the gene_df")
@@ -243,6 +243,8 @@ class MultiOmics(object):
         else:
             logger.info("we have cache for the gene_df so retrieving it")
             gene_df = cache.get(cache_name)
+
+        logger.info("The shape of the gene df is %s " % str(gene_df.shape))
 
         return gene_df
 
