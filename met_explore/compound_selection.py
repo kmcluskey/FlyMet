@@ -142,7 +142,7 @@ class CompoundSelector(object):
 
         return int_df
 
-    def  get_group_df(self, analysis, peaks):
+    def get_group_df(self, analysis, peaks):
 
         logger.info("Getting the peak group DF")
         start = timeit.default_timer()
