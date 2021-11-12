@@ -3,8 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from met_explore.views import single_cmpds_df
 from met_explore.compound_selection import CompoundSelector
-from met_explore.models import Analysis, Peak
-
+from met_explore.models import Analysis, Peak, Annotation
+from met_explore.multi_omics import MultiOmics
+from met_explore.compound_selection import get_cmpid_from_chebi
 
 class Outliers(object):
     """
@@ -19,7 +20,7 @@ class Outliers(object):
         :param column_set: All of the samples to be compared across the set, added as a list
         :param k: This parameter is used for IQR (1.5 = outlier, 3 = extreme outlier) or No of STD away from the means
         :param run_std: If True run standard deviation, otherwise run IQR
-        :param isID: If True working with idetified metabolites, if false working with all metabolites.
+        :param isID: If True working with identified metabolites, if false working with all metabolites.
         """
 
         analysis = Analysis.objects.get(id=analysis_id)
@@ -161,17 +162,23 @@ class Outliers(object):
 
         return count_df
 
-    def get_high_low_df(self):
+    def get_high_low_df(self, peak_list=None):
         """
         This method takes an outlier df and returns a dictionary of High/Low values (isid=None)
         for the peak Ids or the identified metabolites (isid=True)
         """
+        print (peak_list)
+        if peak_list:
+            outlier_df = self.outlier_df.loc[peak_list]
+        else:
+            outlier_df = self.outlier_df
+
         if self.isID:
-            peaks_ix = self.get_hl_ix_dict(self.outlier_df)
+            peaks_ix = self.get_hl_ix_dict(outlier_df)
             gene_high_low_dict = self.get_gene_high_low_dict(peaks_ix)
             high_low_df = pd.DataFrame.from_dict(gene_high_low_dict)
         else:
-            peaks_ix = self.get_hl_ix_dict(self.outlier_df)
+            peaks_ix = self.get_hl_ix_dict(outlier_df)
             high_low_df = pd.DataFrame.from_dict(peaks_ix)
 
         return high_low_df
@@ -186,10 +193,58 @@ class Outliers(object):
         set_high_low = self.get_high_low_df()
         set_high_low.transpose().to_csv("./data/high_low_mets/"+fname + '.csv')
 
+    def get_all_peaks_boxplot(self, gene_name, sample_name):
+        """
+        This method looks for all the metabolites that should be associated with a gene and returns a box plot for all of
+        the metabolites that are outliers in the data. Those that are not outliers are not returned.
+        """
+        omics_dict = self.get_omics_cmpd_dict(gene_name)
+        cmpd_peaks = self.get_cmpd_peaks(omics_dict)
+        for cmpd, peaks in cmpd_peaks.items():
+            self.get_related_boxplot(cmpd, sample_name, omics_dict, cmpd_peaks)
+
+    def get_cmpd_peaks(self, omics_dict):
+
+        cmpd_peaks = {}
+        for cmpd_id, cmpd in omics_dict.items():
+            peak_conf = {}
+            annots = Annotation.objects.filter(compound_id=cmpd_id)
+            for a in annots:
+                peak_conf[a.peak_id] = a.confidence
+
+            peak_list = [peak for peak, conf in peak_conf.items() if conf > 0]
+            if not peak_list:
+                peak_list = [peak for peak, conf in peak_conf.items() if conf == 0]
+
+            cmpd_peaks[cmpd_id] = peak_list
+
+        return cmpd_peaks
+
+
+    def get_omics_cmpd_dict(self, gene_name):
+
+        analysis = Analysis.objects.get(id=1)
+        mo = MultiOmics(analysis)
+        fbgn = mo.get_fbgn_codes([gene_name])
+
+        omics_data_df = mo.get_single_entity_relation(fbgn)
+        omics_data_df.reset_index(inplace=True)
+        omics_dict = {}
+
+        compounds = omics_data_df[omics_data_df.data_type == 'compounds']
+
+        for ix, row in compounds.iterrows():
+            cmpd_id = get_cmpid_from_chebi(row.entity_id)
+            if cmpd_id is not None:
+                omics_dict[cmpd_id] = row.display_name
+        return omics_dict
+
+
+
     def get_boxplot(self, sample_name, savefig=True):
         """
 
-        :param sample_name: The sample that you want to look at all the outliers for
+        :param sample_name: The sample that you want to look at all the outliers for identified metabolites
         :param savefig: Saves a PDF of the boxplot
         :return:
         """
@@ -224,3 +279,49 @@ class Outliers(object):
         if savefig:
             filename = sample_name + 'boxplot.pdf'
             plt.savefig("./data/boxplots/"+filename)
+
+    def get_related_boxplot(self, cmpd, sample_name, omics_dict, cmpd_peaks):
+        """
+        A method to show the box plot of all the peaks that are outliers
+        for a particular compound within a sample.
+
+        :param cmpd: Pass the ID of the cmpd to be examined
+        :param sample_name: Name of the samples e.g a particular mutant or tissue
+        :param omics_dict: The compounds related to the sample of interest (Id:Name)
+        :param cmpd_peaks: Cmpd_id: Related_peaks
+        :return: Plots the boxplot
+        """
+        cmpd_name = omics_dict[cmpd]
+        peak_list = cmpd_peaks[cmpd]
+        hl_df = self.get_high_low_df(peak_list)
+        hl_peaks = hl_df[sample_name].High + hl_df[sample_name].Low
+        if hl_peaks:
+            met_df = self.df.loc[hl_peaks].copy()
+            met_df = met_df.fillna(1000)
+            met_df = np.log2(met_df)
+
+            select_df = met_df
+            columns = list(select_df.index)
+            if len(columns) < 2:
+                fig_width = 2
+            else:
+                fig_width = len(columns)
+
+            n = select_df[sample_name].values
+            boxplot = select_df.T.boxplot(figsize=(fig_width, 8), rot=90)
+
+            # Add the label MT at the intenisty position for each metabolite for the sample being analysed.
+            for i in range(0, len(columns)):
+                boxplot.annotate(
+                    'MT',
+                    xy=(i + 1.1, n[i]))  # put text at the RHS of the x point (+0.1)
+            plt.xlabel(cmpd_name, fontsize=14)
+            plt.ylabel('Log2 Intensity', fontsize=14)
+            plt.title(sample_name + ' (MT)', fontsize=14)
+
+            plt.gcf().subplots_adjust(bottom=0.15, left=0.1, right=0.11)
+            plt.tight_layout()
+            plt.show()
+        else:
+            print("There are no outliers for %s for sample %s " % (cmpd_name, sample_name))
+
