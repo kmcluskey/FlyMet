@@ -23,7 +23,7 @@ class Outliers(object):
         :param isID: If True working with identified metabolites, if false working with all metabolites.
         """
 
-        analysis = Analysis.objects.get(id=analysis_id)
+        self.analysis = Analysis.objects.get(id=analysis_id)
         peaks = Peak.objects.all()
         cmpd_selector = CompoundSelector()
         self.isID = isID
@@ -31,7 +31,7 @@ class Outliers(object):
         if isID:
             self.df = single_cmpds_df
         else:
-            self.df = cmpd_selector.get_group_df(analysis, peaks)
+            self.df = cmpd_selector.get_group_df(self.analysis, peaks)
 
         self.column_set = column_set
         self.run_std = run_std
@@ -167,7 +167,6 @@ class Outliers(object):
         This method takes an outlier df and returns a dictionary of High/Low values (isid=None)
         for the peak Ids or the identified metabolites (isid=True)
         """
-        print (peak_list)
         if peak_list:
             outlier_df = self.outlier_df.loc[peak_list]
         else:
@@ -199,9 +198,12 @@ class Outliers(object):
         the metabolites that are outliers in the data. Those that are not outliers are not returned.
         """
         omics_dict = self.get_omics_cmpd_dict(gene_name)
-        cmpd_peaks = self.get_cmpd_peaks(omics_dict)
-        for cmpd, peaks in cmpd_peaks.items():
-            self.get_related_boxplot(cmpd, sample_name, omics_dict, cmpd_peaks)
+        if omics_dict:
+            cmpd_peaks = self.get_cmpd_peaks(omics_dict)
+            for cmpd, peaks in cmpd_peaks.items():
+                self.get_related_boxplot(cmpd, sample_name, omics_dict, cmpd_peaks)
+        else:
+            print ("No Omics dict")
 
     def get_cmpd_peaks(self, omics_dict):
 
@@ -223,20 +225,30 @@ class Outliers(object):
 
     def get_omics_cmpd_dict(self, gene_name):
 
-        analysis = Analysis.objects.get(id=1)
-        mo = MultiOmics(analysis)
+        mo = MultiOmics(self.analysis)
         fbgn = mo.get_fbgn_codes([gene_name])
+
+        # A quick and dirty trick to make sure the gene_name given translates to an fbgn code.
+        assert fbgn, "The gene name does not exist in Reactome, try again"
 
         omics_data_df = mo.get_single_entity_relation(fbgn)
         omics_data_df.reset_index(inplace=True)
         omics_dict = {}
 
-        compounds = omics_data_df[omics_data_df.data_type == 'compounds']
+        # Code for 18128 as we don't have the related compounds in this version but we can find them (below)
 
+        # cmpds = [16534, 204, 9726, 1595, 4758, 1061]
+        # for c in cmpds:
+        #     omics_dict[c]= "CMPD_ID"+str(c)
+
+        compounds = omics_data_df[omics_data_df.data_type == 'compounds']
+        if compounds.empty:
+            print ("No compounds associated with %s " % gene_name)
         for ix, row in compounds.iterrows():
             cmpd_id = get_cmpid_from_chebi(row.entity_id)
             if cmpd_id is not None:
-                omics_dict[cmpd_id] = row.display_name
+              omics_dict[cmpd_id] = row.display_name
+
         return omics_dict
 
 
@@ -259,7 +271,12 @@ class Outliers(object):
 
         select_df = met_df.loc[metabolite_names]
         columns = list(select_df.index)
-        fig_width = len(columns)
+
+        if len(columns) < 2:
+            fig_width = 2
+        else:
+            fig_width = len(columns)
+
         n = select_df[sample_name].values
 
         boxplot = select_df.T.boxplot(figsize=(fig_width, 8), rot=90)
@@ -292,15 +309,18 @@ class Outliers(object):
         :return: Plots the boxplot
         """
         cmpd_name = omics_dict[cmpd]
+        print (cmpd_name)
         peak_list = cmpd_peaks[cmpd]
         hl_df = self.get_high_low_df(peak_list)
         hl_peaks = hl_df[sample_name].High + hl_df[sample_name].Low
         if hl_peaks:
+
             met_df = self.df.loc[hl_peaks].copy()
+            met_df = met_df[self.column_set]
             met_df = met_df.fillna(1000)
             met_df = np.log2(met_df)
-
             select_df = met_df
+
             columns = list(select_df.index)
             if len(columns) < 2:
                 fig_width = 2
