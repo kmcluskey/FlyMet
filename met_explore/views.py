@@ -1337,7 +1337,7 @@ def peak_explore_annotation_data(request, peak_id):
     peak = Peak.objects.get(id=peak_id)
 
     annots = Annotation.objects.filter(peak=peak)
-    cmpd_ids = Annotation.objects.filter(peak=peak).values_list('compound_id', flat=True)
+    cmpd_ids = Annotation.objects.filter(peak=peak).values_list('compound_id', flat=True).order_by('compound_id')
 
     adducts = annots.values_list('adduct', flat=True).order_by('compound_id')
     neutral_mass = annots.values_list('neutral_mass', flat=True).order_by('compound_id')

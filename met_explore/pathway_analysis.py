@@ -14,6 +14,7 @@ from pals.common import DATABASE_REACTOME_CHEBI, REACTOME_SPECIES_DROSOPHILA_MEL
 from pals.feature_extraction import DataSource
 from scipy.sparse import coo_matrix
 from django.core.exceptions import ObjectDoesNotExist
+from tqdm import tqdm
 
 from met_explore.compound_selection import CompoundSelector
 from met_explore.helpers import load_object, save_object, get_control_from_case
@@ -296,7 +297,7 @@ def get_pals_annot_df():
     annotation_df.insert(0, 'cmpd_ids', cmpd_ids)
     annotation_df.insert(0, 'peak_ids', peak_ids)
 
-    for ix, row in annotation_df.iterrows():
+    for ix, row in tqdm(annotation_df.iterrows()):
         cmpd = Compound.objects.get(id=row.cmpd_ids)
         chebi_id = cmpd.chebi_id
         related_chebi = cmpd.related_chebi
