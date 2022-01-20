@@ -10,7 +10,7 @@ import {initialise_table, updateMetSidePanel} from './flymet_tables';
 import {get_data_index} from './metabolite_tables_general';
 
 function add_table_tooltips(obj){
-  $('.notDetected').tooltip({title: "A MS peak was not detected for this Age/life stage combination", placement: "top"})
+  $('.NotDetected').tooltip({title: "A MS peak was not detected for this Age/life stage combination", placement: "top"})
   $('.notMeasured').tooltip({title: "A sample has not been measured for this Age/life stage combination", placement: "top"})
 
 }

@@ -69,7 +69,7 @@
     <thead class="thead-light">
       <tr id = "columns">
         {% for column_name in columns %}
-        <th id = "col">{{column_name}}</th>
+        <th class = "col">{{column_name}}</th>
         {% endfor %}
       </tr>
     </thead>
@@ -78,13 +78,9 @@
       <tr>
             {% for m in met_exp_data %}
             {% if forloop.first %}
-              <td><a href="metabolite_search_age?metabolite_search_age={{m}}" target="_blank">{{m}}</a></td>
+              <td><a href="metabolite_search_tissue?metabolite_search_tissue={{m}}" target="_blank">{{m}}</a></td>
             {% else %}
-              {% if m > 0 %}
-                <td>{{m|stringformat:".2e"}}</td>
-                {% else %}
-                <td class="NotDetected">-</td>
-              {% endif %}
+                <td>{{m}}</td>
             {% endif %}
         {% endfor %}
       </tr>

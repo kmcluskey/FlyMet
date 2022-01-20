@@ -1121,11 +1121,12 @@ def met_ex_tissues(request):
     group_names = get_group_names(analysis)
     group_names.insert(0, "Metabolite")
 
-
     view_df = single_cmpds_df.drop(['cmpd_id'], axis=1, inplace=False)
     select_df = view_df[group_names]
 
     sorted_select_df = sort_df_and_headers(select_df, analysis)
+    sorted_select_df = sorted_select_df.fillna("-")
+
     met_ex_list = sorted_select_df.values.tolist()
 
     column_headers = sorted_select_df.columns.tolist()
@@ -1156,6 +1157,7 @@ def met_age_id(request):
     select_df = view_df[group_names]
 
     sorted_select_df = sort_df_and_headers(select_df, analysis)
+    sorted_select_df = sorted_select_df.fillna("-")
 
     met_ex_list = sorted_select_df.values.tolist()
     column_headers = sorted_select_df.columns.tolist()
