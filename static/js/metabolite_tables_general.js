@@ -220,6 +220,100 @@ function updatePathwayPanel(obj, pathway_url){
 
 };
 
+function updateGenePanel(obj, gene_url){
+  const num_cols = 6;
+  let currentRow = $(obj).closest("tr");
+  let cmpd_id = $('#metabolite_list').DataTable().row(currentRow).data()[0];
+  let cmpd_name = $(obj).children().first().text();
+
+  // Returned data is the data returned from the url below.
+  const handleUpdate = function(returned_data) {
+    // updatePathways(returned_data, pathways_url)
+
+    let geneDiv =  document.getElementById("geneDetails");
+    geneDiv.innerHTML = "";
+
+    let gene_dict = returned_data.gene_data;
+    let no_genes = Object.keys(gene_dict).length
+    console.log("The number of genes are ", no_genes)
+
+    let gene_list = Object.keys(gene_dict)
+    let gene_list_url = `<a href="${gene_url}/${gene_list}" data-toggle="tooltip"
+    title="All ${cmpd_name} associated genes" target="_blank">All genes associated with ${cmpd_name}</a>`
+
+
+    if (no_genes === 0){
+      let gene_text = `<p> There are currently no Genes mapped to ${cmpd_name}</p>`
+      let groupDiv = document.createElement('div');
+      groupDiv.setAttribute('class', 'p-1');
+      groupDiv.innerHTML =  gene_text;
+      geneDiv.appendChild(groupDiv)
+    }
+    else {
+
+        //Make a div to hold the gene group
+        let groupDiv = document.createElement('div');
+        groupDiv.setAttribute('class', 'p-1');
+        // Make a new row
+        let rowDiv = document.createElement('div');
+        rowDiv.setAttribute('class', 'row');
+        // for each row
+        let i=0
+        for (var gene_id in gene_dict) {
+
+        if (i<num_cols) {
+          i++;
+              let gene_name = gene_dict[gene_id]['display_name'];
+              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-toggle="tooltip"
+              title="${gene_name} gene" target="_blank">${gene_name}</a>`
+              //Make and populate a column
+              let colDiv = document.createElement('div');
+              colDiv.setAttribute('class', 'col-sm')
+              colDiv.innerHTML =  dy_gene_url;
+              rowDiv.appendChild(colDiv)
+            }
+            else { //we are out of columns so make a new row with i=1 as we add a gene to the row
+              i=1
+              // Append row onto group and make a new row
+              geneDiv.appendChild(rowDiv);
+              rowDiv = getRowDiv();
+
+              let gene_name = gene_dict[gene_id]['display_name'];
+              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-toggle="tooltip"
+              title="${gene_name} gene" target="_blank">${gene_name}</a>`
+
+              let colDiv = document.createElement('div');
+              colDiv.setAttribute('class', 'col-sm')
+              colDiv.innerHTML =  dy_gene_url;
+              rowDiv.appendChild(colDiv)
+      }
+    }
+    geneDiv.appendChild(rowDiv);
+    // Add final list
+    let colDiv = document.createElement('div');
+    colDiv.setAttribute('class', 'col-sm');
+    colDiv.innerHTML =  `<br>${gene_list_url}`;
+    rowDiv = getRowDiv();
+    rowDiv.appendChild(colDiv);
+    geneDiv.appendChild(rowDiv);
+
+  }}
+  const url = `/met_explore/met_ex_pathway_data/${cmpd_id}`
+  fetch(url)
+  .then(res => res.json())//response type
+  .then(handleUpdate);
+
+  // find all the paragraphs with id peak in the side panel
+  $("#geneDiv").show();
+  $("legend[id^='gene_name']").text(`Genes associated with ${cmpd_name}`);
+
+};
+
+function getRowDiv(obj){
+  let rowDiv = document.createElement('div');
+  rowDiv.setAttribute('class', 'row');
+  return rowDiv
+}
 
 //Update the metabolite side panel depending on which row is selected.
 //Let tissue name = the first text sent back from the row (more or less)
@@ -240,7 +334,6 @@ function updateMetboliteSidePanel(obj, peak_url){
     // radio_all_check should start off false
 
   // Update the peak table
-  console.log("handling update")
   updatePeakData(returned_data, radio_all_check, cmpd_name, peak_url)
   //
     // Redraw the adduct data is the radio button is clicked.
@@ -279,7 +372,6 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name, pk_url){
   const columns = returned_data.columns
 
   console.log("peak_groups", peak_groups)
-  console.log("peak_url", pk_url)
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
@@ -425,5 +517,6 @@ export {
     initialise_met_table,
     updateMetboliteSidePanel,
     updatePathwayPanel,
+    updateGenePanel,
     get_data_index
   }

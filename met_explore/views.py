@@ -550,14 +550,19 @@ def met_ex_pathway_data(request, cmpd_id):
     chebi_id = Compound.objects.get(id=cmpd_id).chebi_id
     entities = [chebi_id] + list(get_related_chebi_ids([chebi_id]))
 
-    #Get the pathways associated with the compound
+    # Get the pathways associated with the compound
     pathway_df = mo_tissue.get_single_entity_relation(entities, "pathways")
+
+    # Get the genes associated with the compound
+    gene_df = mo_tissue.get_single_entity_relation(entities, "genes")
+    gene_df = gene_df[gene_df.observed == True]
 
     # pwy_df = pathway_df.reset_index()
     pwy_data = pathway_df.T.to_dict()
 
+    gene_data = gene_df.T.to_dict()
 
-    return JsonResponse({'pwy_data': pwy_data})
+    return JsonResponse({'pwy_data': pwy_data, 'gene_data': gene_data})
 
 
 
