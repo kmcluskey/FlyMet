@@ -3,9 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from met_explore.views import single_cmpds_df
 from met_explore.compound_selection import CompoundSelector
-from met_explore.models import Analysis, Peak, Annotation
+from met_explore.models import Analysis, Peak, Annotation, Compound, CompoundDBDetails
 from met_explore.multi_omics import MultiOmics
 from met_explore.compound_selection import get_cmpid_from_chebi
+from django.core.exceptions import ObjectDoesNotExist
+
 
 class Outliers(object):
     """
@@ -201,7 +203,7 @@ class Outliers(object):
         if omics_dict:
             cmpd_peaks = self.get_cmpd_peaks(omics_dict)
             for cmpd, peaks in cmpd_peaks.items():
-                self.get_related_boxplot(cmpd, sample_name, omics_dict, cmpd_peaks)
+                self.get_related_boxplot(cmpd, sample_name, cmpd_peaks, omics_dict)
         else:
             print ("No Omics dict")
 
@@ -297,7 +299,7 @@ class Outliers(object):
             filename = sample_name + 'boxplot.pdf'
             plt.savefig("./data/boxplots/"+filename)
 
-    def get_related_boxplot(self, cmpd, sample_name, omics_dict, cmpd_peaks):
+    def get_related_boxplot(self, cmpd, sample_name, cmpd_peaks, omics_dict=None):
         """
         A method to show the box plot of all the peaks that are outliers
         for a particular compound within a sample.
@@ -308,7 +310,11 @@ class Outliers(object):
         :param cmpd_peaks: Cmpd_id: Related_peaks
         :return: Plots the boxplot
         """
-        cmpd_name = omics_dict[cmpd]
+
+        if isinstance(cmpd, str):
+            cmpd_name = cmpd
+        else:
+            cmpd_name = omics_dict[cmpd]
         print (cmpd_name)
         peak_list = cmpd_peaks[cmpd]
         hl_df = self.get_high_low_df(peak_list)
@@ -345,3 +351,102 @@ class Outliers(object):
         else:
             print("There are no outliers for %s for sample %s " % (cmpd_name, sample_name))
 
+        # If there are outliers this draws a box plot - can we draw a boxplot without outliers? for any peak we choose?
+
+    def get_boxplot_from_metabolite_list(self, metabolite_list, sample_name):
+        """
+        Get the boxplot for all the peaks using a list of metabolites regardless of wether or not
+        they are outliers (outlier will be highlighted)
+        """
+
+        cmpd_name_id_dict = self.get_cmpd_name_id_dict(metabolite_list)
+        cmpd_peaks = self.get_cmpd_peaks(cmpd_name_id_dict)
+        self.get_outlier_boxplot(cmpd_name_id_dict, cmpd_peaks, sample_name)
+
+    def get_cpmd_id_from_name(self, cmpd_name):
+        """
+        This checks for the chebi name in the compound, then checks in the CompoundDBDetails
+        and finally returns None if the compound is not in the DB
+        :param cmpd_name: String of the cmpd_name we need the ID from
+        :return cmpd_id or None if cmpd_name is not in the DB
+        """
+        cmpd_name_space = cmpd_name + " "  # need to check this due to error of additional spaces in the DB
+        name_list = [cmpd_name, cmpd_name_space]
+        cmpd_id = None
+        for name in name_list:
+            try:
+                cmpd_id = Compound.objects.get(chebi_name=name).id
+            except ObjectDoesNotExist as e:
+                try:
+                    cmpd_id = CompoundDBDetails.objects.filter(cmpd_name=name)[0].compound.id
+                except Exception as e:
+                    pass
+        if cmpd_id == None:
+            print(" %s cannot be found in the DB returning %s " % (cmpd_name, str(cmpd_id)))
+        else:
+            print("returning %s for %s" % (str(cmpd_id), cmpd_name))
+
+        return cmpd_id
+
+        # Add the cmpd_id to the list if it is not None
+
+    def get_cmpd_name_id_dict(self, met_names):
+        """
+        :param met_names: List of metabolite name (strings)
+        :return: Met_name: Cmpd_id dictionary
+        """
+        cmpd_name_dict = {}
+        for met in met_names:
+            cmpd_id = self.get_cpmd_id_from_name(met)
+            if cmpd_id:
+                cmpd_name_dict[cmpd_id] = met
+
+        return cmpd_name_dict
+
+    def get_outlier_boxplot(self, cmpd_name_dict, cmpd_peaks, sample_name):
+        """
+        #This is a method to draw a boxplot for a set of cmpds with or without outliers?
+        :param cmpd_name_dict: Met_name: cmpd_id dict
+        :param cmpd_peaks: Cmpd_id: id of peaks
+        :param sample_name: Sample we want to see the data for
+        :return: print a box plot
+        """
+        for cmpd, cmpd_name in cmpd_name_dict.items():
+            peak_list = cmpd_peaks[cmpd]
+            hl_df = self.get_high_low_df(peak_list)
+            hl_peaks = hl_df[sample_name].High + hl_df[sample_name].Low
+            if hl_peaks:
+                peak_selection = hl_peaks
+                print("%s is an outlier for sample %s " % (cmpd_name, sample_name))
+
+            else:
+                peak_selection = peak_list
+                print("There are no outliers for %s for sample %s " % (cmpd_name, sample_name))
+
+            met_df = self.df.loc[peak_selection].copy()
+            met_df = met_df[self.column_set]
+            met_df = met_df.fillna(1000)
+            met_df = np.log2(met_df)
+            select_df = met_df
+
+            columns = list(select_df.index)
+            if len(columns) < 2:
+                fig_width = 2
+            else:
+                fig_width = len(columns)
+
+            n = select_df[sample_name].values
+            boxplot = select_df.T.boxplot(figsize=(fig_width, 8), rot=90)
+
+            # Add the label MT at the intenisty position for each metabolite for the sample being analysed.
+            for i in range(0, len(columns)):
+                boxplot.annotate(
+                    'Mkr',
+                    xy=(i + 1.1, n[i]))  # put text at the RHS of the x point (+0.1)
+            plt.xlabel(cmpd_name, fontsize=14)
+            plt.ylabel('Log2 Intensity', fontsize=14)
+            plt.title(sample_name + ' (Mkr)', fontsize=14)
+
+            plt.gcf().subplots_adjust(bottom=0.15, left=0.1, right=0.11)
+            plt.tight_layout()
+            plt.show()
