@@ -440,7 +440,7 @@ def get_pals_single_entity_annot_df():
         num_cmpds_no_id = len(no_identifiers)
         assert (num_cmpds_no_id == 0), "All compounds should have an identifier"
     except AssertionError as msg:
-        logger.error("There is a compound without a DB identfier %s" % msg)
+        logger.error("There is a compound without a DB identifier %s" % msg)
         raise
 
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]
@@ -472,7 +472,8 @@ def get_single_db_entity_df(id_type):
                 for c in chebi_list:
                     new_row = annot_cmpd_df.loc[ix].copy()  # copy of the current row
                     new_row.entity_id = c #Add the related chebi to the entity list
-                    annot_cmpd_df = annot_cmpd_df.append(new_row, ignore_index=True)
+                    add_row = pd.DataFrame[new_row]
+                    annot_cmpd_df = pd.concat([annot_cmpd_df, add_row],ignore_index=True)
 
 
     annotation_df = annot_cmpd_df[['entity_id', 'peak_ids']]

@@ -33,7 +33,7 @@ class MultiOmics(object):
         a_id = str(self.analysis.id)
         cache_name = 'ap_' + a_id
 
-        # cache.delete(cache_name)
+        cache.delete(cache_name)
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the ap function")
             cache.set(cache_name, self.get_analysis_pipeline(), None)
@@ -86,7 +86,7 @@ class MultiOmics(object):
 
         a_id = str(self.analysis.id)
         cache_name = 'omics_df'+a_id
-        #cache.delete(cache_name)
+        cache.delete(cache_name)
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the omics_df function")
@@ -133,8 +133,7 @@ class MultiOmics(object):
                                        (~fly_annot_df['peak_ids'].isin(hc_peak_ids))]
 
         # Add back the high confidence dataframe.
-        chebi_peak_df = fly_filtered_df.append(hc_df)
-
+        chebi_peak_df = pd.concat([fly_filtered_df, hc_df])
         chebi_peak_df = chebi_peak_df[['peak_ids', 'chebi_id']].set_index('peak_ids')
 
         ### The pals_int_df gives the peak intensities for all samples in an analysis
