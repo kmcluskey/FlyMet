@@ -50,7 +50,7 @@ def get_cache_ds(analysis):
 
     if cache.get(cache_name) is None:
         logger.info("we dont have cache so running the pals_ds function")
-        cache.set(cache_name, get_pals_ds(analysis), 60 * 180000)
+        cache.set(cache_name, get_pals_ds(analysis), None)
         pals_ds = cache.get(cache_name)
     else:
         logger.info("we have cache for the pals ds, so retrieving it")
@@ -94,7 +94,7 @@ def get_cache_annot_df():
     # cache.delete('pals_annot_df')
     if cache.get('pals_annot_df') is None:
         logger.info("we dont have cache so running the pals_annot_df function")
-        cache.set('pals_annot_df', get_pals_annot_df(), 60 * 180000)
+        cache.set('pals_annot_df', get_pals_annot_df(), None)
         pals_annot_df = cache.get('pals_annot_df')
     else:
         logger.info("we have cache for the pals_annot_df, so retrieving it")

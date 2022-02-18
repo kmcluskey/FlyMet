@@ -1,13 +1,15 @@
 from met_explore.pathway_analysis import *
 from django.core.cache import cache
 from loguru import logger
+import os
 
-from pyMultiOmics.constants import *
+from pyMultiOmics.analysis import AnalysisPipeline
+from pyMultiOmics.query import QueryBuilder, Entity, Connected
+from pyMultiOmics.base import SingleOmicsData, MultiOmicsData
+from pyMultiOmics.constants import GENES, COMPOUNDS, DROSOPHILA_MELANOGASTER
 from pyMultiOmics.mapping import Mapper
-from pyMultiOmics.analysis import *
-from pyMultiOmics.query import *
-from pyMultiOmics.pipelines import *
 from pyMultiOmics.common import set_log_level_info
+
 
 
 # DATA_FOLDER = os.path.abspath(os.path.join('.', 'omics_data'))
@@ -34,7 +36,7 @@ class MultiOmics(object):
         # cache.delete(cache_name)
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the ap function")
-            cache.set(cache_name, self.get_analysis_pipeline(), 60 * 180000)
+            cache.set(cache_name, self.get_analysis_pipeline(), None)
             ap = cache.get(cache_name)
         else:
             logger.info("we have cache for the ap so retrieving it")
@@ -54,12 +56,19 @@ class MultiOmics(object):
 
         set_log_level_info()
 
-        m = Mapper(DROSOPHILA_MELANOGASTER, metabolic_pathway_only=True, include_related_chebi=True) \
-            .set_gene(gene_data, gene_design) \
-            .set_compound(compound_data, compound_design) \
-            .build()
+        transcript_data = SingleOmicsData(GENES, gene_data, gene_design)
+        compound_data = SingleOmicsData(COMPOUNDS, compound_data, compound_design)
 
-        ap = AnalysisPipeline(m)
+        publication = 'McLuskey K., Krause S. A., et al. "FlyMet.org: an online resource for tissue-specific metabolomics in Drosophila". In Preparation.'
+        url = 'http://www.FlyMet.org'
+
+        mo = MultiOmicsData(publication=publication, url=url)
+        mo.add_data([transcript_data, compound_data])
+
+        m = Mapper(mo, DROSOPHILA_MELANOGASTER, metabolic_pathway_only=True, include_related_chebi=True)
+        m.build()
+
+        ap = AnalysisPipeline(mo, m)
 
         return ap
 
@@ -81,7 +90,7 @@ class MultiOmics(object):
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the omics_df function")
-            cache.set(cache_name, self.get_omics_df(), 60 * 180000)
+            cache.set(cache_name, self.get_omics_df(), None)
             omics_df = cache.get(cache_name)
         else:
             logger.info("we have cache for the omics_df, so retrieving it")
@@ -238,7 +247,7 @@ class MultiOmics(object):
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so getting the gene_df")
-            cache.set(cache_name, self.get_gene_df(), 60 * 180000)
+            cache.set(cache_name, self.get_gene_df(), None)
             gene_df = cache.get(cache_name)
         else:
             logger.info("we have cache for the gene_df so retrieving it")
