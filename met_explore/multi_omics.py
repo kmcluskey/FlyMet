@@ -33,7 +33,7 @@ class MultiOmics(object):
         a_id = str(self.analysis.id)
         cache_name = 'ap_' + a_id
 
-        cache.delete(cache_name)
+        # cache.delete(cache_name)
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the ap function")
             cache.set(cache_name, self.get_analysis_pipeline(), None)
@@ -86,7 +86,7 @@ class MultiOmics(object):
 
         a_id = str(self.analysis.id)
         cache_name = 'omics_df'+a_id
-        cache.delete(cache_name)
+        # cache.delete(cache_name)
 
         if cache.get(cache_name) is None:
             logger.info("we dont have cache so running the omics_df function")

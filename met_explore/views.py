@@ -5,12 +5,15 @@ import timeit
 import django
 import numpy as np
 import pandas as pd
+import traceback
+
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from tqdm import tqdm
 
 from loguru import logger
 
@@ -69,6 +72,7 @@ except FileNotFoundError as e:
 
 except Exception as e:
     logger.warning("I'm catching this error %s" % e)
+    logger.info(traceback.print_exc())
     logger.warning("Hopefully just that the DB not ready, start server again once populated")
    # raise e
 
@@ -145,13 +149,33 @@ def metabolite_data(request, cmpd_ids):
 
         compounds = Compound.objects.all().order_by('id')
 
+        if cache.get('met_ex_df') is None:
+            logger.debug("we dont have cache for met table so running the function")
+            cache.set('met_ex_df', get_metabolite_data_list(compounds), None)
+            data_list = cache.get('met_ex_df')
+        else:
+            logger.debug("we have cache for met table so retrieving it")
+            data_list = cache.get('met_ex_df')
+
     else:
         cmpd_list = cmpd_ids.split(',')
-        logger.debug(cmpd_list)
         compounds = Compound.objects.filter(id__in=list(cmpd_list)).order_by('id')
+        data_list = get_metabolite_data_list(compounds)
 
+    stop = timeit.default_timer()
+    logger.info("Returning the metabolite data took: %s S" % str(stop - start))
+
+    return JsonResponse({'data': data_list})
+
+def get_metabolite_data_list(compounds):
+
+    """
+    :param compounds: the compounds we need to get the data list from
+    :return: A list of compounds for the metabolite explorer data table
+    """
     data_list = []
-    for c in compounds:
+
+    for c in tqdm(compounds):
         molecule_data = []
         metabolite = c.cmpd_name
         cmpd_id = c.id
@@ -187,11 +211,7 @@ def metabolite_data(request, cmpd_ids):
 
         data_list.append(molecule_data)
 
-    stop = timeit.default_timer()
-    logger.info("Returning the metabolite data took: %s S" % str(stop - start))
-
-    return JsonResponse({'data': data_list})
-
+    return data_list
 
 def metabolite_search_tissue(request):
     """
