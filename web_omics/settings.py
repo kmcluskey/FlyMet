@@ -64,6 +64,7 @@ class Common(Configuration):
         'registration',
         'rest_framework',
         'django_spaghetti',
+        'maintenance_mode', # Toggle maintenance mode with python manage.py maintenance_mode on
         'met_explore',
     ]
 
@@ -104,6 +105,7 @@ class Common(Configuration):
         'django.contrib.auth.middleware.AuthenticationMiddleware',
         'django.contrib.messages.middleware.MessageMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'maintenance_mode.middleware.MaintenanceModeMiddleware', #This should be kept at the end
     ]
 
     ROOT_URLCONF = 'web_omics.urls'

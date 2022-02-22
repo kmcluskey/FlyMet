@@ -4,6 +4,10 @@ from django.urls import include, path
 import web_omics.views as views
 from django.views.generic import RedirectView
 
+
+handler503 = 'web_omics.views.handler503'
+
+
 urlpatterns = [
     path('', RedirectView.as_view(pattern_name='met_explore_index')),
     path('met_explore/', include('met_explore.urls')),

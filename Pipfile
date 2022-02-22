@@ -43,6 +43,7 @@ bioservices = "*"
 appnope = "*"
 django-spaghetti-and-meatballs = "*"
 pymultiomics = "*"
+django-maintenance-mode = "*"
 
 [dev-packages]
 

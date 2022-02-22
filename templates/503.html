@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block title %} FlyMet is Down {% endblock %}
+
+{% block head_block %}
+{% endblock %}
+
+{% block body_block %}
+  <!-- div for main body-->
+  <div class="container-fluid p-4">
+
+    <!-- Splitting into two columns using flex to display the logo-->
+    <div class="logo_row">
+      <div class="logo_main">
+        <p class="mt-4 lead">
+            FlyMet offers a comprehensive tissue-specific metabolomics resource for <i> Drosophila </i>.
+          </p>
+        </div>
+      </div>
+
+  <div class="text-center">
+    <p class="mt-5 mb-5" >
+      <h4>Thank you for visiting FlyMet.</h4> <br>
+      No need for tissues, FlyMet and its Tissues are having a quick refurbishment.<br>
+      Please check back here soon. <br>
+      If we are gone too long feel free to <a href="mailto:webmaster@flymet.org?Subject=Contact%20FlyMet">contact us</a>
+      and we will get back to you as soon as possible.
+    </p>
+  </div>
+  </div>
+  <!--end of main div-->
+  <!--Spacer so that content is not hidden-->
+  <div class="spacer">
+  </div>
+
+
+  {% endblock %}

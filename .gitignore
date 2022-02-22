@@ -126,3 +126,4 @@ yarn.lock
 old_data
 data
 omics_data/
+maintenance_mode_state.txt

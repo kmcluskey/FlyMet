@@ -31,6 +31,8 @@ def index(request):
     }
     return render(request, 'met_explore/index.html', context)
 
+def handler503(request):
+    return render(request, "503.html", status=503)
 
 # class ExperimentListView(LoginRequired, ListView):
 
