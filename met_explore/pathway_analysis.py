@@ -472,7 +472,7 @@ def get_single_db_entity_df(id_type):
                 for c in chebi_list:
                     new_row = annot_cmpd_df.loc[ix].copy()  # copy of the current row
                     new_row.entity_id = c #Add the related chebi to the entity list
-                    add_row = pd.DataFrame[new_row]
+                    add_row = pd.DataFrame([new_row])
                     annot_cmpd_df = pd.concat([annot_cmpd_df, add_row],ignore_index=True)
 
 

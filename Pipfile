@@ -44,6 +44,7 @@ appnope = "*"
 django-spaghetti-and-meatballs = "*"
 pymultiomics = "*"
 django-maintenance-mode = "*"
+python-http-client = "==3.3.6"
 
 [dev-packages]
 
