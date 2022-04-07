@@ -48,20 +48,6 @@ class PeakSelector(object):
                                'Malonate': 'OFOBLEOULBTSOW-UHFFFAOYSA-N',
                                'Nicotinate': 'PVNIIMVLHYAWGP-UHFFFAOYSA-N'}
 
-    def pre_process_compounds(self):
-        """
-        A method to take the peak_json_file from PiMP and give all the same compound the same pimp secondary ID
-        :return: processed_df: the dataframe with unique compounds having a single ID.
-
-        """
-
-        original_peak_df = pd.read_json(self.peak_json_file)
-        nm_inchi_df = self.prepare_df(original_peak_df)
-        pre_processor = PreprocessCompounds(nm_inchi_df)
-        peak_chebi_df = pre_processor.get_preprocessed_cmpds()
-
-        return peak_chebi_df
-
     def prepare_df(self, original_peak_df):
 
         """
@@ -160,6 +146,20 @@ class PeakSelector(object):
         ))
 
         return all_peak_df
+
+    def pre_process_compounds(self):
+        """
+        A method to take the peak_json_file from PiMP and give all the same compound the same pimp secondary ID
+        :return: processed_df: the dataframe with unique compounds having a single ID.
+
+        """
+
+        original_peak_df = pd.read_json(self.peak_json_file)
+        nm_inchi_df = self.prepare_df(original_peak_df)
+        pre_processor = PreprocessCompounds(nm_inchi_df)
+        peak_chebi_df = pre_processor.get_preprocessed_cmpds()
+
+        return peak_chebi_df
 
     def remove_duplicates(self, peak_df):
         """
