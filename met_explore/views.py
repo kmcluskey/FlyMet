@@ -1302,10 +1302,15 @@ def metabolite_peak_data(request, cmpd_id):
     """
 
     pg = PeakGroups(cmpd_id)
-
     peak_groups = pg.get_peak_groups()
+
+    peak_list = []
     gp_df_list = []
+
     for group_df in peak_groups:
+
+        # send back list of all peaks associated with the compound
+        peak_list = peak_list + group_df.peak_id.to_list()
 
         group_df["no_adducts"] = pd.Series([], dtype=object)
         for index, row in group_df.iterrows():
@@ -1326,7 +1331,7 @@ def metabolite_peak_data(request, cmpd_id):
 
         columns.insert(0, 'Conf')
 
-    return JsonResponse({'peak_groups': gp_df_list, 'columns': columns})
+    return JsonResponse({'peak_groups': gp_df_list, 'columns': columns, 'peak_list': peak_list})
 
 
 def metabolite_pathway_data(request, pw_id):

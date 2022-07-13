@@ -369,9 +369,23 @@ function updatePeakData(returned_data, radio_all_check, cmpd_name, pk_url){
   console.log("Updating peak data")
 
   const peak_groups = returned_data.peak_groups;
-  const columns = returned_data.columns
+  const columns = returned_data.columns;
+  const total_peak_list = returned_data.peak_list;
 
   console.log("peak_groups", peak_groups)
+  console.log ("peak_list", total_peak_list)
+
+  // make a div so that we can click through to all peaks for a metabolite
+  let allPeakDiv = document.getElementById("allPeaks")
+  allPeakDiv.innerHTML = "";
+  let peakDiv = document.createElement('div');
+  peakDiv.setAttribute('class', 'p-1');
+  let all_peaks_url = `${pk_url}${total_peak_list}`
+  let all_peaks_header = `<hr class="my-2"><a class="highlight" href="${all_peaks_url}" target="_blank">All Peaks annotated for ${cmpd_name}</a>`
+
+  peakDiv.innerHTML = all_peaks_header
+  allPeakDiv.appendChild(peakDiv);
+
 
   let sideDiv =  document.getElementById("dataDiv");
   sideDiv.innerHTML = "";
