@@ -22,7 +22,7 @@
       <!-- extra Tabs for Analysis type -->
       <nav>
         <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
-          <a class="navdark nav-item nav-link active" href="{% url 'peak_mf_compare' %}">Tissues</a>
+          <a class="navdark nav-item nav-link active" href="{% url 'peak_mf_compare' 'All' %}">Tissues</a>
           <a class="navdark nav-item nav-link" href="{% url 'peak_mf_age_compare' %}">Aged Flies</a>
         </div>
       </nav>
@@ -33,13 +33,13 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
+          <a id ="PeakInts" class="nav-link" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
+          <a id = "PeakCompare" class="nav-link" href="{% url 'peak_ex_compare' 'All' %}">Tissue/Whole Comparisons</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
+          <a class="nav-link active" href="{% url 'peak_mf_compare' 'All' %}">M/F Comparisons</a>
         </li>
         </ul>
         <div class="top-right" >
@@ -124,7 +124,7 @@
     var max_value = {{max_value}}
     var mean_value = {{mean_value}}
     var peak_mf_list = "{{peak_mf_list | safe}}"
-    console.log(min_value, mean_value, max_value)
+    console.log(peak_mf_list, min_value, mean_value, max_value)
 
     </script>
 

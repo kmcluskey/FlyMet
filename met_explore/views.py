@@ -663,15 +663,21 @@ def peak_age_compare(request, peak_compare_list):
     return render(request, 'met_explore/peak_age_compare.html', response)
 
 
-def peak_mf_compare(request):
+def peak_mf_compare(request, peak_mf_list):
     """
        :param request: The peak Explorer page
        :return: The template and required parameters for the peak explorer page.
        """
 
     logger.info("Peak m/f comparison table requested")
+
+    if peak_mf_list == "All":
+        peaks = Peak.objects.all()
+    else:
+        peak_list_split = peak_mf_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_list_split))
+
     start = timeit.default_timer()
-    peaks = Peak.objects.all()
 
     analysis = Analysis.objects.get(name="M/F Comparisons")
     view_df, min, mean, max = get_peak_compare_df(analysis, peaks)
@@ -685,7 +691,7 @@ def peak_mf_compare(request):
     stop = timeit.default_timer()
 
     logger.info("Returning the peak DF took: %s S" % str(stop - start))
-    response = {'columns': column_headers, 'max_value': max, 'min_value': min,
+    response = {'peak_mf_list':peak_mf_list,'columns': column_headers, 'max_value': max, 'min_value': min,
                 'mean_value': mean}
 
     return render(request, 'met_explore/peak_mf_compare.html', response)
@@ -896,15 +902,20 @@ def peak_compare_data(request, peak_compare_list):
     return JsonResponse({'data': peak_compare_data})
 
 
-def peak_mf_compare_data(request):
+def peak_mf_compare_data(request, peak_mf_list):
     """
     :param request: Request for the peak data for the Peak Explorer page
     :return: The cached url of the ajax data for the peak data table.
     """
 
     analysis = Analysis.objects.get(name="M/F Comparisons")
-    peaks = Peak.objects.all()
 
+    if peak_mf_list == "All":
+
+        peaks = Peak.objects.all()
+    else:
+        peak_compare_list = peak_mf_list.split(',')
+        peaks = Peak.objects.filter(id__in=list(peak_compare_list))
 
     view_df1, _, _, _ = get_peak_compare_df(analysis, peaks)
     view_df_sorted = sort_df_and_headers(view_df1, analysis)

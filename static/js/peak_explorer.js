@@ -1,4 +1,4 @@
-import {initialise_pcompare_table, updatePeakSidePanel, get_lifestage} from './peak_tables_general.js';
+import {initialise_pcompare_table, updatePeakSidePanel, get_lifestage, upDateFilteredPeaks} from './peak_tables_general.js';
 
 function headerTips(settings) {
 
@@ -42,27 +42,15 @@ $(document).ready(function() {
 
   let nd_title = "A MS peak was not detected for this tissue/life stage combination";
   let ajax_url = `peak_data/${peak_list}`;
-  let peak_side_url = `peak_ex_compare/`;
+  let peak_comp_url = `peak_ex_compare/`;
+
   let peak_side_text =`Compare tissues for peak `;
   let met_url = `met_ex_all/`;
-  upDateFilteredPeaks(peak_side_url);
+  upDateFilteredPeaks();
 
   let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
       peak_table.on( 'click', 'tr', function () {
-        updatePeakSidePanel(this, peak_side_url, peak_side_text, met_url);
+        updatePeakSidePanel(this, peak_comp_url, peak_side_text, met_url);
       } );
 
 });
-
-function upDateFilteredPeaks(peak_side_url){
-  console.log("In here")
-  let pathArray = window.location.pathname.split('/');
-  let filteredPeaks = pathArray.slice(-1);
-  // let peak_mf_url = `peak_mf_compare/`;
-  let filtered_url = peak_side_url+filteredPeaks
-  // let filtered_mf = peak_mf_url+filteredPeaks
-
-  $("a[id='PeakCompare']").html(`<a href="${filtered_url}" target="_blank" >Tissue/Whole Comparisons</a>`);
-  // $("a[id='MFCompare']").html(`<a href="${filtered_mf}" target="_blank" >M/F Comparisons</a>`);
-
-}

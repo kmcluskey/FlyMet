@@ -1,5 +1,5 @@
 // require('./peak_tables_general.js');
-import {initialise_pcompare_table, updatePeakSidePanel} from './peak_tables_general.js';
+import {initialise_pcompare_table, updatePeakSidePanel, upDateFilteredPeaks} from './peak_tables_general.js';
 
 function headerTips(settings) {
 
@@ -40,10 +40,11 @@ $('[data-toggle="tooltip"]').tooltip({
   $("fieldset[class^='peak_details']").hide();
 
     let nd_title = " M and/or F data was not detected for this peak";
-    let ajax_url = "peak_mf_compare_data";
+    let ajax_url = `peak_mf_compare_data/${peak_mf_list}`;
     let peak_side_url = `peak_explorer/`;
     let peak_side_text =`Intensities for peak `
     let met_url = `met_ex_all/`;
+    upDateFilteredPeaks()
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value, nd_title, ajax_url, headerTips);
 

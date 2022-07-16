@@ -32,14 +32,13 @@
 
       <ul class="nav nav-tabs card-header-tabs">
         <li class="nav-item">
-          <a class="nav-link active" href="{% url 'peak_age_explorer' 'All' %}">Intensities</a>
+          <a class="nav-link active" href="{% url 'peak_explorer' 'All' %}">Intensities</a>
         </li>
         <li class="nav-item">
-          <!-- <a  id= "PeakCompare" class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a> -->
-          <a id= "PeakCompare" class="nav-link"> Tissue/Whole Comparisons</a>
+          <a  id= "PeakCompare" class="nav-link" href="{% url 'peak_ex_compare' 'All' %}"> Tissue/Whole Comparisons</a>
         </li>
         <li class="nav-item">
-          <a id = "MFCompare" class="nav-link" href="{% url 'peak_mf_compare' %}">M/F Comparisons</a>
+          <a id = "MFCompare" class="nav-link" href="{% url 'peak_mf_compare' 'All' %}">M/F Comparisons</a>
         </li>
         </ul>
         <div class="top-right" >
@@ -77,7 +76,7 @@
               <p class="m-2">Click on a peak to see the metabolites associated with it.</p>
             </div>
           </fieldset>
-
+          
           <fieldset class="peak_details fieldset-details">
             <legend class="sidebar">Peak Annotations</legend>
             <div class="p-2">

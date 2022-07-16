@@ -1,4 +1,4 @@
-import {initialise_pcompare_table, updatePeakSidePanel, get_lifestage} from './peak_tables_general.js';
+import {initialise_pcompare_table, updatePeakSidePanel, get_lifestage, upDateFilteredPeaks} from './peak_tables_general.js';
 
 function headerTips(settings) {
 
@@ -62,6 +62,7 @@ $(document).ready(function() {
     let peak_side_url = `peak_explorer/`;
     let peak_side_text =`Intensities for peak `;
     let met_url = `met_ex_all/`;
+    upDateFilteredPeaks();
 
     let peak_table = initialise_pcompare_table("peak_list", min_value, mean_value, max_value,
     nd_title, ajax_url, headerTips);

@@ -527,7 +527,31 @@ function pathways_pcompare_table(tableName, lowpoint, midpoint, highpoint){
     return table;
 }
 
+function upDateFilteredPeaks(){
+  // A method to update all the nav-links when filtered peaks have been selected.
+  //This does it for all Tabs on the page - not sure that's wise.
+  let pathArray = window.location.pathname.split('/');
+  let filteredPeaks = pathArray.slice(-1);
+
+  let peak_url = `peak_explorer/`;
+  let peak_comp_url = `peak_ex_compare/`;
+  let peak_mf_url = `peak_mf_compare/`;
+
+
+  let filtered_url = peak_url+filteredPeaks
+  let filtered_comp = peak_comp_url+filteredPeaks
+  let filtered_mf = peak_mf_url+filteredPeaks
+
+  $("a[id='PeakInts']").attr("href", `${filtered_url}`);
+  $("a[id='PeakCompare']").attr("href", `${filtered_comp}`);
+  $("a[id='MFCompare']").attr("href", `${filtered_mf}`);
+
+}
+
+
+
+
 export {
     initialise_pcompare_table, pcompare_pathways_table,
-    updatePeakSidePanel, updateAdducts, get_lifestage
+    updatePeakSidePanel, updateAdducts, get_lifestage, upDateFilteredPeaks
   }
