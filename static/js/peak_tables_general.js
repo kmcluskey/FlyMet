@@ -514,11 +514,11 @@ function pathways_pcompare_table(tableName, lowpoint, midpoint, highpoint){
                       }
                         //Change the title attribute of the column to the string/tooltip info
                       $td.attr({title: `${string}`});
-                      $td.attr('data-toggle', "tooltip");
-                      $td.attr('data-placement', "top" );
+                      $td.attr('data-bs-toggle', "tooltip");
+                      $td.attr('data-bs-placement', "top" );
                   });
                   /* Apply the tooltips */
-                  $('[data-toggle="tooltip"]').tooltip({
+                  $('[data-bs-toggle="tooltip"]').tooltip({
                       container: 'body'
                   });
               },

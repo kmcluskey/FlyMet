@@ -35,7 +35,7 @@ function updatePathwayDetails(obj, met_ex_url) {
   .then(handleUpdate);
 
 
-  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-toggle="tooltip"
+  $("p[id^='pwy_id']").html(`<a href="pathway_metabolites?pathway_metabolites=${pathway_name}" data-bs-toggle="tooltip"
   title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
   enableTooltips();

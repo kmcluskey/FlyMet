@@ -203,7 +203,7 @@ function updatePathwayPanel(obj, pathway_url){
             // let pwy_name = details['display_name']
             // let pathway_name = escape(pwy_name)
 
-            let pwy_url =`<a href="${pathway_url}?${pathway_url}=${pwy_id}" data-toggle="tooltip"
+            let pwy_url =`<a href="${pathway_url}?${pathway_url}=${pwy_id}" data-bs-toggle="tooltip"
             title="${pwy_name} changes in FlyMet tissues" target="_blank">${pwy_name}</a>`
             groupDiv.innerHTML =  pwy_url;
             pwyDiv.appendChild(groupDiv)
@@ -238,7 +238,7 @@ function updateGenePanel(obj, gene_url){
     console.log("The number of genes are ", no_genes)
 
     let gene_list = Object.keys(gene_dict)
-    let gene_list_url = `<a href="${gene_url}/${gene_list}" data-toggle="tooltip"
+    let gene_list_url = `<a href="${gene_url}/${gene_list}" data-bs-toggle="tooltip"
     title="All ${cmpd_name} associated genes" target="_blank">All genes associated with ${cmpd_name}</a>`
 
 
@@ -264,7 +264,8 @@ function updateGenePanel(obj, gene_url){
         if (i<num_cols) {
           i++;
               let gene_name = gene_dict[gene_id]['display_name'];
-              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-toggle="tooltip"
+              console.log(gene_dict[gene_id])
+              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-bs-toggle="tooltip"
               title="${gene_name} gene" target="_blank">${gene_name}</a>`
               //Make and populate a column
               let colDiv = document.createElement('div');
@@ -279,7 +280,7 @@ function updateGenePanel(obj, gene_url){
               rowDiv = getRowDiv();
 
               let gene_name = gene_dict[gene_id]['display_name'];
-              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-toggle="tooltip"
+              let dy_gene_url =`<a href="${gene_url}/${gene_id}" data-bs-toggle="tooltip"
               title="${gene_name} gene" target="_blank">${gene_name}</a>`
 
               let colDiv = document.createElement('div');

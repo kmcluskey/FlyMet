@@ -27,11 +27,11 @@ function headerTips(settings) {
       ls = get_lifestage(head_split[ls_check])    }
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string} ${ls}`});
-    $td.attr('data-toggle', "tooltip");
-    $td.attr('data-placement', "top" );
+    $td.attr('data-bs-toggle', "tooltip");
+    $td.attr('data-bs-placement', "top" );
 });
 /* Apply the tooltips */
-$('[data-toggle="tooltip"]').tooltip({
+$('[data-bs-toggle="tooltip"]').tooltip({
     container: 'body'
 });
 

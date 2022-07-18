@@ -3,7 +3,7 @@ require('bootstrap/js/dist/tooltip');
 
 // Enable tooltips as a reusable function as most are made dynamically.
 function enableTooltips(){
-  $('[data-toggle="tooltip"]').tooltip({
+  $('[data-bs-toggle="tooltip"]').tooltip({
       container: 'body'
   });
 }
@@ -15,7 +15,7 @@ function updateReactomePathway(pathway_id, pathway_name, reactome_token){
       dTitleDiv.innerHTML = "";
       //
       let pwyDiv = document.createElement(`p`);
-      let pwy_tooltip =  `data-toggle="tooltip" title="${pathway_name} in Reactome"`
+      let pwy_tooltip =  `data-bs-toggle="tooltip" title="${pathway_name} in Reactome"`
 
       let pwy_info =  `<a href="https://reactome.org/content/detail/${pathway_id}" ${pwy_tooltip} target="_blank">${pathway_name}: Reactome</a>`;
       pwyDiv.innerHTML = pwy_info
@@ -64,7 +64,7 @@ function updatePathwayInfo(returned_data, pathway_name, met_ex_url){
   //Set the header with a link to all metabolites in the cmpd_list
   let url_pwm = `${met_ex_url}/${cmpd_list}`; //pathway metabolites
 
-  let met_tooltip =  `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
+  let met_tooltip =  `data-bs-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
 
   let metabolite_header = `<a href="${url_pwm}"${met_tooltip} target=_"blank">Metabolites in FlyMet`;
   headerDiv.innerHTML =  metabolite_header;

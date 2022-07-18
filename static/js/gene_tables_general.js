@@ -4,7 +4,7 @@ require('bootstrap/js/dist/tooltip');
 
 // Enable tooltips as a reusable function as most are made dynamically.
 function enableTooltips(){
-  $('[data-toggle="tooltip"]').tooltip({
+  $('[data-bs-toggle="tooltip"]').tooltip({
       container: 'body'
   });
 }
@@ -80,8 +80,8 @@ function initialise_gene_table(tableName){
                               //Change the title attribute of the column to the string/tooltip info
                               // console.log("This is the string ", string)
                               $td.attr({title: `${string}`});
-                              $td.attr('data-toggle', "tooltip");
-                              $td.attr('data-placement', "top" );
+                              $td.attr('data-bs-toggle', "tooltip");
+                              $td.attr('data-bs-placement', "top" );
                           });
                           enableTooltips();
                       },
@@ -168,19 +168,19 @@ let group_table = `<div class="pl-2 pb-0 table-responsive">
           group_table = group_table+`<tr>`;
           for (var d = 0; d < current_attributes.length; d++) {
           if (group_name=='compounds' && columns[d]=='ID' && current_attributes[d]!==null){
-            data_segment =`<td><a href="${cmpd_url}/${current_attributes[d]}" data-toggle="tooltip"
+            data_segment =`<td><a href="${cmpd_url}/${current_attributes[d]}" data-bs-toggle="tooltip"
             title="Compound ${current_attributes[d]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='pathways' && columns[d]=='ID') {
-            data_segment=`<td><a href="${pwy_url}?${pwy_url}=${current_attributes[d]}" data-toggle="tooltip"
+            data_segment=`<td><a href="${pwy_url}?${pwy_url}=${current_attributes[d]}" data-bs-toggle="tooltip"
             title="${current_attributes[d+1]} changes in FlyMet ${category}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='proteins' && columns[d]=='ID') {
-            data_segment=`<td><a href="https://www.uniprot.org/uniprot/${current_attributes[d+1]}" data-toggle="tooltip"
+            data_segment=`<td><a href="https://www.uniprot.org/uniprot/${current_attributes[d+1]}" data-bs-toggle="tooltip"
             title="Reactome protein: ${current_attributes[d+1]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else if (group_name=='reactions' && columns[d]=='ID') {
-            data_segment=`<td><a href="https://reactome.org/content/detail/${current_attributes[d]}" data-toggle="tooltip"
+            data_segment=`<td><a href="https://reactome.org/content/detail/${current_attributes[d]}" data-bs-toggle="tooltip"
             title="Reactome reactions: ${current_attributes[d+1]}" target="_blank">${current_attributes[d]}</a></td>`
           }
           else  {

@@ -230,8 +230,8 @@ function initialise_pals_table(tableName, lowpoint, midpoint, highpoint, data_ur
                       //Change the title attribute of the column to the string/tooltip info
                       // console.log("This is the string ", string)
                       $td.attr({title: `${string}`});
-                      $td.attr('data-toggle', "tooltip");
-                      $td.attr('data-placement', "top" );
+                      $td.attr('data-bs-toggle', "tooltip");
+                      $td.attr('data-bs-placement', "top" );
                   });
 
                   enableTooltips();
@@ -284,7 +284,7 @@ function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url){
   // find all the paragraphs with id peak in the side panel
   $("fieldset[id='click_info']").hide();
   $("fieldset[class^='pathway_details']").show();
-  $("p[id^='pwy_id']").html(`<a href="${pwy_url}?${pwy_url}=${pathway_name}" data-toggle="tooltip"
+  $("p[id^='pwy_id']").html(`<a href="${pwy_url}?${pwy_url}=${pathway_name}" data-bs-toggle="tooltip"
   title="FlyMet metabolites and peaks found in ${pathway_name}" target="_blank">${pathway_name} in FlyMet</a>`);
 
   enableTooltips();
@@ -292,7 +292,7 @@ function updatePathwaySidePanel(obj, data_url, met_ex_url, pwy_url){
 
 //Enable tooltips as a reusable function as most are made dynamically.
 function enableTooltips(){
-  $('[data-toggle="tooltip"]').tooltip({
+  $('[data-bs-toggle="tooltip"]').tooltip({
       container: 'body'
   });
 }
@@ -313,7 +313,7 @@ function updatePathwayInfo(returned_data, pathway_name, met_ex_url){
   //Set the header with a link to all metabolites in the cmpd_list
   let url_pwm = `${met_ex_url}${cmpd_list}`; //pathway metabolites
 
-  let met_tooltip =  `data-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
+  let met_tooltip =  `data-bs-toggle="tooltip" title="${pathway_name} metabolites found in Flymet"`
 
   let metabolite_header = `<a href="${url_pwm}"${met_tooltip} target=_"blank">Metabolites in FlyMet`;
   headerDiv.innerHTML =  metabolite_header;
@@ -359,7 +359,7 @@ function updateReactomePathway(pathway_id, pathway_name){
       dTitleDiv.innerHTML = "";
       //
       let pwyDiv = document.createElement(`p`);
-      let pwy_tooltip =  `data-toggle="tooltip" title="${pathway_name} in Reactome"`
+      let pwy_tooltip =  `data-bs-toggle="tooltip" title="${pathway_name} in Reactome"`
 
       let pwy_info =  `<a href="https://reactome.org/content/detail/${pathway_id}" ${pwy_tooltip} target="_blank">${pathway_name}: Reactome</a>`;
       pwyDiv.innerHTML = pwy_info

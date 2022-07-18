@@ -40,11 +40,11 @@ function headerTips(settings) {
       }
       //Change the title attribute of the column to the string/tooltip info
     $td.attr({title: `${string}`});
-    $td.attr('data-toggle', "tooltip");
-    $td.attr('data-placement', "top" );
+    $td.attr('data-bs-toggle', "tooltip");
+    $td.attr('data-bs-placement', "top" );
 });
 /* Apply the tooltips */
-$('[data-toggle="tooltip"]').tooltip({
+$('[data-bs-toggle="tooltip"]').tooltip({
     container: 'body'
 });
 
@@ -77,7 +77,7 @@ $(document).ready(function() {
 
       let pwy_met_table = pcompare_pathways_table(`pwy_met_table_${i}`, min, mid, max, headerTips);
       // let pwy_met_table = initialise_pcompare_table2(`pwy_met_table_${i}`, min, mid, max);
-      $("p[id^='pwy_id']").html(`<a href="pathway_age_search?pathway_age_search=${pathway_name}" data-toggle="tooltip"
+      $("p[id^='pwy_id']").html(`<a href="pathway_age_search?pathway_age_search=${pathway_name}" data-bs-toggle="tooltip"
       title="${pathway_name} changes in FlyMet tissues" target="_blank">${pathway_name} in FlyMet</a>`);
 
 
