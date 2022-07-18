@@ -375,10 +375,10 @@ function updateReactomePathway(pathway_id, pathway_name){
       // diagram.highlightItem('')
       diagram.onDiagramLoaded(function (loaded) {
             console.info("Loaded ", loaded);
-
+            if (loaded == pathway_id) diagram.selectItem(pathway_id);
         });
 
-        diagram.setAnalysisToken(reactome_token,'TOTAL')
+        // diagram.setAnalysisToken(reactome_token,"TOTAL")
 
       //This allows exansion of the Reactome Diagram to the page using width_100
       let diagram_holder = document.getElementsByClassName("pwp-DiagramVisualiser")
